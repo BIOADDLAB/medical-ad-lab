@@ -50,7 +50,7 @@ export function SiteHeader({ solid, onDiagnosis, onMenuOpen, menuOpen }: Props) 
                         <Link
                             key={href}
                             href={href}
-                            className={`relative whitespace-nowrap py-[30px] text-body font-semibold after:absolute after:inset-x-0 after:bottom-[22px] after:h-0.5 after:rounded after:bg-current after:transition-transform hover:after:scale-x-100 ${
+                            className={`relative whitespace-nowrap py-[30px] text-body font-semibold after:absolute after:inset-x-0 after:bottom-[22px] after:h-px after:rounded after:bg-current after:transition-transform hover:after:scale-x-100 ${
                                 isCurrent(pathname, href) ? 'after:scale-x-100' : 'after:scale-x-0'
                             }`}
                         >
