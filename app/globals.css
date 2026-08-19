@@ -1,26 +1,248 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ============ 디자인 시스템 ============ */
+@theme {
+    /* Font */
+    --font-sans: 'SUIT Variable', SUIT, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+    /* Color — 브랜드 3색 + 파생. JSX에는 생짜 hex를 쓰지 않는다 */
+    --color-brand: #2468f0;
+    --color-brand-deep: #1b4fd0;
+    --color-brand-light: #5d93f4;
+    --color-brand-soft: #7da9ff;
+    --color-brand-line: #c9d9f8;
+    --color-brand-tint: #e8eef6;
+    --color-brand-pale: #dce8fe;
+    --color-mint: #00ffae;
+    --color-ink: #0e182a;
+    --color-slate: #4c5a72;
+    --color-muted: #6b7a90;
+    --color-subtle: #9aa6b8;
+    --color-line-strong: #d0d9e6;
+    --color-line: #e6ebf3;
+    --color-card-line: #eef2f8;
+    --color-soft: #f6f9fd;
+    --color-field: #f4f6fa;
+    --color-deep: #071125;
+    --color-night: #02060f;
+    --color-success: #0f9d58;
+    --color-success-deep: #06785a;
+    --color-success-pale: #e8f7ef;
+
+    /* Text size — 390px~1920px 사이를 clamp로 잇는 유동 스케일 */
+    --text-display: clamp(31px, 26.67px + 1.111vw, 48px);
+    --text-display--line-height: 1.36;
+    --text-display--font-weight: 800;
+    --text-display--letter-spacing: -0.04em;
+
+    --text-h1: clamp(26px, 20.39px + 1.438vw, 48px);
+    --text-h1--line-height: 1.45;
+    --text-h1--font-weight: 800;
+    --text-h1--letter-spacing: -0.035em;
+
+    --text-h2: clamp(25px, 21.94px + 0.784vw, 37px);
+    --text-h2--line-height: 1.5;
+    --text-h2--font-weight: 800;
+    --text-h2--letter-spacing: -0.035em;
+
+    --text-h3: clamp(21px, 17.94px + 0.784vw, 33px);
+    --text-h3--line-height: 1.45;
+    --text-h3--font-weight: 800;
+    --text-h3--letter-spacing: -0.035em;
+
+    --text-h4: clamp(20px, 19.24px + 0.196vw, 23px);
+    --text-h4--line-height: 1.5;
+    --text-h4--font-weight: 800;
+    --text-h4--letter-spacing: -0.03em;
+
+    --text-h5: clamp(18px, 17.75px + 0.065vw, 19px);
+    --text-h5--line-height: 1.45;
+    --text-h5--font-weight: 800;
+    --text-h5--letter-spacing: -0.03em;
+
+    --text-lead: clamp(16px, 14.47px + 0.392vw, 22px);
+    --text-lead--line-height: 1.8;
+    --text-lead--font-weight: 500;
+
+    --text-body: clamp(15px, 14.75px + 0.065vw, 16px);
+    --text-body--line-height: 1.7;
+
+    --text-sm: clamp(14px, 13.75px + 0.065vw, 15px);
+    --text-sm--line-height: 1.7;
+
+    --text-xs: 13px;
+    --text-xs--line-height: 1.6;
+
+    --text-label: 12px;
+    --text-label--line-height: 1.5;
+    --text-label--font-weight: 700;
+
+    /* Spacing — 섹션 상하 여백과 컨테이너 좌우 여백 */
+    --spacing-section: clamp(64px, 47.18px + 4.314vw, 130px);
+    --spacing-gutter: clamp(20px, 9.8px + 2.614vw, 60px);
+
+    /* Radius */
+    --radius-field: 10px;
+    --radius-card: 20px;
+    --radius-panel: 26px;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+    body {
+        margin: 0;
+        overflow-x: hidden;
+        background: #fff;
+        color: var(--color-ink);
+        font-family: var(--font-sans);
+        word-break: keep-all;
+        -webkit-font-smoothing: antialiased;
+    }
+    body,
+    button,
+    input,
+    select,
+    textarea {
+        font: inherit;
+    }
+    button {
+        cursor: pointer;
+    }
+    a {
+        color: inherit;
+        text-decoration: none;
+    }
+    img,
+    svg {
+        display: block;
+    }
+    section[id] {
+        scroll-margin-top: 76px;
+    }
+    ::selection {
+        color: #fff;
+        background: var(--color-brand);
+    }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@layer components {
+    /* 세 곳 이상 반복되는 패턴만 클래스로 둔다. 나머지는 JSX에서 유틸리티로 쓴다 */
+    .site-container {
+        @apply mx-auto w-full max-w-[1320px] px-gutter;
+    }
+    .btn-primary {
+        @apply inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-brand px-7 text-sm font-extrabold text-white transition-colors hover:bg-brand-deep lg:min-h-[56px] lg:px-[34px];
+    }
+    .btn-outline {
+        @apply inline-flex h-12 items-center justify-center rounded-full border border-line-strong px-6 text-sm font-bold text-slate transition-colors;
+    }
+    .field-input {
+        @apply h-[52px] w-full rounded-field border border-transparent bg-field px-4 text-body text-ink outline-none transition-colors placeholder:text-subtle focus:border-brand focus:bg-white aria-[invalid=true]:border-red-500;
+    }
+    .field-label {
+        @apply grid gap-2 text-sm font-bold text-slate;
+    }
+    .card-base {
+        @apply rounded-card border border-card-line bg-white;
+    }
+    .honeypot {
+        @apply pointer-events-none absolute left-[-9999px] h-px w-px opacity-0;
+    }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ============ GSAP·모션이 직접 제어하거나, 유틸리티로 표현할 수 없는 것만 남긴다. ============ */
+.hero-bg {
+    background: #06275f url('/images/bg-main.jpg') 50% 50% / cover;
+}
+.metrics-bg {
+    background: var(--color-night) url('/images/bg-s5.jpg') center bottom / cover no-repeat;
+}
+.results-bg {
+    background: linear-gradient(180deg, #151521 0%, #16233f 45%, #3582e2 100%);
+}
+.metric-scene strong {
+    transition:
+        color 0.35s ease,
+        text-shadow 0.35s ease;
+}
+.metric-scene h2 {
+    transition: opacity 0.3s ease;
+}
+.metric-scene.is-active strong {
+    color: #fff;
+    text-shadow: 0 22px 70px rgba(27, 97, 224, 0.4);
+}
+.metric-scene.is-active h2 {
+    opacity: 1;
+}
+.faq-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease;
+}
+.faq-item.is-open .faq-panel {
+    grid-template-rows: 1fr;
+}
+.process-item {
+    opacity: 0;
+    transform: translateY(16px);
+    transition:
+        opacity 0.5s ease var(--delay),
+        transform 0.5s ease var(--delay);
+}
+.is-played .process-item {
+    opacity: 1;
+    transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    .metrics-scroll.is-static {
+        height: auto;
+        padding: 90px 0;
+    }
+    .metrics-scroll.is-static .metrics-stage {
+        height: auto;
+        overflow: visible;
+    }
+    .metrics-scroll.is-static .metric-stage-inner {
+        height: auto;
+    }
+    .metrics-scroll.is-static .metric-intro {
+        position: relative;
+        top: auto;
+    }
+    .metrics-scroll.is-static .metric-scenes {
+        position: relative;
+        display: grid;
+        margin-top: 40px;
+        gap: 40px;
+    }
+    .metrics-scroll.is-static .metric-scene {
+        position: relative;
+        display: block;
+        height: auto;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+    .metrics-scroll.is-static .metric-scene strong {
+        color: #fff;
+    }
+    .metrics-scroll.is-static .metric-scene h2 {
+        opacity: 1;
+    }
+    .metrics-scroll.is-static .metric-progress {
+        display: none;
+    }
 }
