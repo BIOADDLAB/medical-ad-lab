@@ -167,17 +167,9 @@
 .metrics-bg {
     background: var(--color-night) url('/images/bg-s5.jpg') center bottom / cover no-repeat;
 }
+
 .results-bg {
-    background: linear-gradient(
-        180deg,
-        #151521 0%,
-        #151521 15%,
-        #192135 30%,
-        #203960 45%,
-        #26508a 60%,
-        #2d68b5 75%,
-        var(--color-brand-light) 90%
-    );
+    background: linear-gradient(180deg, #151521 54%, #3582e2 150%);
 }
 .metric-scene strong {
     transition:

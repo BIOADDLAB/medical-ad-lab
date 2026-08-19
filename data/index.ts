@@ -90,7 +90,7 @@ export const resultCards = [
         number: '01',
         title: '견적 검증 리포트',
         image: '/images/img-s3-01.png',
-        tags: ['적정가격', '누락비용', '심의비', '총집행비용'],
+        tags: ['적정가격 · 누락비용', '심의비 · 총집행비용'],
     },
     {
         number: '02',

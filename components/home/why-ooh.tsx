@@ -2,7 +2,6 @@ import Image from 'next/image';
 import { Reveal } from '@/components/ui/reveal';
 import { whyOoh } from '@/data';
 
-/* 시안이 카드마다 다른 배율로 이미지를 배치했다. 원본 PNG의 여백 비율도 달라 폭을 따로 준다 */
 const IMAGE_WIDTH = [320, 400, 390];
 
 export function WhyOoh() {
