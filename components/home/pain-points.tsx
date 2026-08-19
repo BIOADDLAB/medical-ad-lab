@@ -3,7 +3,7 @@ import { painPoints } from '@/data';
 
 export function PainPoints() {
     return (
-        <section className="bg-soft py-[150px]" id="service">
+        <section className="bg-soft py-section" id="service">
             <Reveal className="site-container ">
                 <h2 className="text-h1 font-black section-title mb-10 text-center lg:mb-[72px]">
                     지금 이런 고민을 하고 계신가요?

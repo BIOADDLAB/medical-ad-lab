@@ -1,43 +1,32 @@
 @import 'tailwindcss';
 
-/* ============================================================
-   디자인 시스템
-   출처: docs/reference/design-system.svg + main-final.svg
-   여기 정의한 토큰은 전부 Tailwind 유틸리티로 자동 생성된다.
-   예) --color-brand → bg-brand / text-brand
-       --text-h2     → text-h2 (크기 + 행간 + 굵기 포함)
-   값을 바꾸려면 이 블록만 수정하면 사이트 전체에 반영된다.
-   ============================================================ */
+/* =============== 디자인 시스템 =============== */
 @theme {
-    /* Font */
+    /* 전역 폰트 설정 */
     --font-sans: 'SUIT Variable', SUIT, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-    /* Color — 브랜드 3색 + 파생. JSX에는 생짜 hex를 쓰지 않는다 */
+    /* 컬러시스템 */
     --color-brand: #2468f0;
-    --color-brand-deep: #1b4fd0;
-    --color-brand-light: #5d93f4;
-    --color-brand-soft: #7da9ff;
-    --color-brand-line: #c9d9f8;
+    --color-brand-light: #3582e2;
     --color-brand-tint: #e8eef6;
     --color-brand-pale: #eaf2ff;
     --color-mint: #00ffae;
     --color-ink: #0e182a;
-    --color-slate: #4c5a72;
+    --color-slate: #5c6b82;
     --color-muted: #718096;
-    --color-subtle: #9aa6b8;
-    --color-line-strong: #d0d9e6;
-    --color-line: #e6ebf3;
-    --color-card-line: #eef2f8;
+    --color-line-strong: #dce4ee;
+    --color-line: #e8edf4;
     --color-soft: #f6f9fd;
     --color-field: #f4f7fb;
     --color-deep: #071125;
-    --color-night: #02060f;
+    --color-night: #000000;
+    --color-glass: #d9d9d9;
+
+    /* 폼에서만 사용하는 상태 색상 */
     --color-success: #0f9d58;
     --color-success-deep: #06785a;
     --color-success-pale: #e8f7ef;
-    --color-glass: #d9d9d9;
 
-    /* Text size — 390px~1920px 사이를 clamp로 잇는 유동 스케일 */
     --text-display: clamp(31px, 26.67px + 1.111vw, 48px);
     --text-display--line-height: 1.36;
     --text-display--font-weight: 800;
@@ -45,7 +34,7 @@
 
     --text-h1: clamp(26px, 20.39px + 1.438vw, 48px);
     --text-h1--line-height: 1.45;
-    --text-h1--font-weight: 800;
+    --text-h1--font-weight: 900;
     --text-h1--letter-spacing: -0.035em;
 
     --text-h2: clamp(25px, 21.94px + 0.784vw, 37px);
@@ -85,11 +74,11 @@
     --text-label--line-height: 1.5;
     --text-label--font-weight: 700;
 
-    /* Spacing — 섹션 상하 여백과 컨테이너 좌우 여백 */
-    --spacing-section: clamp(64px, 47.18px + 4.314vw, 130px);
+    /* 컨테이너 */
+    --spacing-section: clamp(64px, 42.08px + 5.621vw, 150px);
     --spacing-gutter: clamp(20px, 9.8px + 2.614vw, 60px);
 
-    /* Radius */
+    /* radius */
     --radius-field: 10px;
     --radius-card: 20px;
     --radius-panel: 26px;
@@ -136,28 +125,30 @@
 }
 
 @layer components {
-    /* 세 곳 이상 반복되는 패턴만 클래스로 둔다. 나머지는 JSX에서 유틸리티로 쓴다 */
     .site-container {
-        /* 콘텐츠 폭 1370(시안 1920 기준) + 좌우 gutter */
+        /* 콘텐츠 폭 1370(시안 1920 기준) + 좌우 guxtter */
         @apply mx-auto w-full max-w-[calc(1370px+2*var(--spacing-gutter))] px-gutter;
     }
     .btn-primary {
-        @apply inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-brand px-7 text-sm font-extrabold text-white transition-colors hover:bg-brand-deep lg:min-h-[56px] lg:px-[34px];
+        @apply inline-flex min-h-[52px] items-center justify-center gap-2 rounded-xl bg-brand px-7 text-sm font-extrabold text-white transition-colors hover:brightness-90 lg:min-h-[56px] lg:px-[34px];
     }
     .btn-outline {
         @apply inline-flex h-12 items-center justify-center rounded-full border border-line-strong px-6 text-sm font-bold text-slate transition-colors;
     }
     .field-input {
-        @apply h-[52px] w-full rounded-field border border-transparent bg-field tracking-tighter px-4 text-body text-ink outline-none transition-colors placeholder:text-subtle placeholder:font-normal focus:border-brand focus:bg-white aria-[invalid=true]:border-red-500;
+        @apply h-[52px] w-full rounded-field border border-transparent bg-field px-4 text-body text-ink outline-none transition-colors placeholder:text-muted focus:border-brand focus:bg-white aria-[invalid=true]:border-red-500;
     }
     .field-label {
-        @apply grid content-start gap-2 text-sm font-semibold text-muted;
+        /* content-start 없으면 옆 칸 오류 메시지로 높이가 커질 때 행이 늘어나 입력창이 밀린다 */
+        @apply grid content-start gap-2 text-sm font-bold text-slate;
+    }
+    /* 섹션 제목 기본형. 더 큰 제목이 필요한 섹션은 lg:text-h1 을 덧붙인다 */
+    .section-title {
+        @apply m-0 text-h2;
     }
     .card-base {
-        @apply rounded-card border border-card-line bg-white;
+        @apply rounded-card border border-line bg-white;
     }
-    /* 시안 Glass 이펙트. Fill D9D9D9 20% + 굴절 림.
-     Frost 0 이므로 backdrop-blur 를 쓰지 않는다 */
     .glass-pill {
         background: color-mix(in srgb, var(--color-glass) 20%, transparent);
         box-shadow:
@@ -169,17 +160,24 @@
     }
 }
 
-/* ============================================================
-   GSAP·모션이 직접 제어하거나, 유틸리티로 표현할 수 없는 것만 남긴다
-   ============================================================ */
+/* =============== GSAP·모션이 직접 제어하거나, 유틸리티로 표현할 수 없는 것만 남긴다 =============== */
 .hero-bg {
-    background: #06275f url('/images/bg-main.jpg') 50% 50% / cover;
+    background: var(--color-deep) url('/images/bg-main.jpg') 50% 50% / cover;
 }
 .metrics-bg {
     background: var(--color-night) url('/images/bg-s5.jpg') center bottom / cover no-repeat;
 }
 .results-bg {
-    background: linear-gradient(180deg, #151521 0%, #16233f 45%, #3582e2 100%);
+    background: linear-gradient(
+        180deg,
+        #151521 0%,
+        #151521 15%,
+        #192135 30%,
+        #203960 45%,
+        #26508a 60%,
+        #2d68b5 75%,
+        var(--color-brand-light) 90%
+    );
 }
 .metric-scene strong {
     transition:
