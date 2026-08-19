@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Icon } from '@/components/ui/icon';
@@ -37,12 +38,17 @@ export function SiteHeader({ solid, onDiagnosis, onMenuOpen, menuOpen }: Props) 
             }`}
         >
             <div className="site-container flex h-full items-center gap-4 lg:gap-[30px]">
-                <Link
-                    href="/"
-                    className="shrink-0 text-[17px] font-extrabold tracking-[-.035em] lg:text-[19px]"
-                    aria-label="병원광고연구소 홈"
-                >
-                    병원광고연구소
+                <Link href="/" className="shrink-0" aria-label="병원광고연구소 홈">
+                    {/* 흰 헤더에서는 블랙 로고로 바꾼다. SVG는 래스터가 아니라 최적화 대상이 아니므로 unoptimized */}
+                    <Image
+                        src={solid ? '/images/logo-b.svg' : '/images/logo.svg'}
+                        alt="병원광고연구소"
+                        width={161}
+                        height={25}
+                        priority
+                        unoptimized
+                        className="h-[18px] w-auto lg:h-[25px]"
+                    />
                 </Link>
 
                 <nav className="hidden flex-1 items-center justify-center gap-11 lg:flex" aria-label="주요 메뉴">
@@ -106,8 +112,15 @@ export function MobileNav({
             }`}
         >
             <div className="flex items-center justify-between">
-                <Link href="/" className="text-[17px] font-extrabold tracking-[-.035em]" onClick={onClose}>
-                    병원광고연구소
+                <Link href="/" onClick={onClose} aria-label="병원광고연구소 홈">
+                    <Image
+                        src="/logo-b.svg"
+                        alt="병원광고연구소"
+                        width={161}
+                        height={25}
+                        unoptimized
+                        className="h-[18px] w-auto"
+                    />
                 </Link>
                 <button
                     type="button"

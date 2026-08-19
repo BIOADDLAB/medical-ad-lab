@@ -113,7 +113,7 @@ export function LeadForm({
 
             <div className="grid gap-5 sm:grid-cols-2 sm:gap-[18px]">
                 <label className="field-label" htmlFor={`${id}-hospital`}>
-                    <span>병원명</span>
+                    <span className="">병원명</span>
                     <input
                         id={`${id}-hospital`}
                         className="field-input"
@@ -232,7 +232,7 @@ export function LeadForm({
             )}
 
             <button
-                className="btn-primary mt-2 min-h-[58px] w-full text-h5 lg:min-h-[62px]"
+                className="btn-primary mt-2 min-h-[58px] w-full text-h5 lg:min-h-[62px] font-extrabold"
                 type="submit"
                 disabled={status === 'loading'}
             >
