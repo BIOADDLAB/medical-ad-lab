@@ -2,7 +2,8 @@
 
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { SiteHeader } from '@/components/layout/site-header';
+import { MobileNav, SiteHeader } from '@/components/layout/site-header';
+import { SiteFooter } from '@/components/layout/site-footer';
 
 export function SiteShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -29,7 +30,9 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
                 onMenuOpen={() => setMenuOpen(true)}
                 onDiagnosis={() => {}}
             />
+            <MobileNav open={menuOpen} onClose={() => setMenuOpen(false)} onDiagnosis={() => {}} />
             {children}
+            <SiteFooter />
         </>
     );
 }
