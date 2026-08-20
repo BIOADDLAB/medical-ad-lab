@@ -2,8 +2,6 @@ import Image from 'next/image';
 import { Reveal } from '@/components/ui/reveal';
 import { whyOoh } from '@/data';
 
-const IMAGE_WIDTH = [320, 400, 390];
-
 export function WhyOoh() {
     return (
         <section className="bg-white py-section">
@@ -15,11 +13,13 @@ export function WhyOoh() {
                         <em className="not-italic text-brand">결과는 완전히 달라집니다.</em>
                     </h2>
                 </Reveal>
-                <div className="mx-auto grid max-w-[1120px] gap-5 lg:gap-[60px]">
+                <div className="mx-auto grid max-w-[1144px] gap-5 lg:gap-[52px]">
                     {whyOoh.map((item, index) => (
                         <Reveal
                             key={item.keyword}
-                            className={`story-row card-base flex flex-col items-center gap-7 p-7 lg:min-h-[335px] lg:flex-row lg:justify-between lg:gap-[40px] lg:p-[20px_204px] ${index % 2 ? 'lg:flex-row-reverse' : ''}`}
+                            className={`story-row card-base flex flex-col items-center gap-7 p-7 lg:h-[335px] lg:flex-row lg:justify-between lg:p-[0_210px] ${
+                                index % 2 ? 'lg:flex-row-reverse' : ''
+                            }`}
                             delay={0.05}
                         >
                             <div className="lg:max-w-[340px]">
@@ -33,10 +33,10 @@ export function WhyOoh() {
                                     {item.description}
                                 </p>
                             </div>
+                            {/* 세 장 모두 같은 폭. 글과 이미지가 카드 안쪽 같은 박스의 좌우 끝에 붙는다 */}
                             <div className="grid shrink-0 place-items-center">
                                 <Image
-                                    className="story-image h-auto w-full max-w-[260px] object-contain will-change-transform lg:w-(--w) lg:max-w-none"
-                                    style={{ '--w': `${IMAGE_WIDTH[index]}px` } as React.CSSProperties}
+                                    className="story-image h-auto w-full max-w-[260px] object-contain will-change-transform lg:w-[352px] lg:max-w-none"
                                     src={item.image}
                                     alt=""
                                     width={724}

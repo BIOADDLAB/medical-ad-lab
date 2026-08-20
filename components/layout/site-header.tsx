@@ -39,9 +39,8 @@ export function SiteHeader({ solid, onDiagnosis, onMenuOpen, menuOpen }: Props) 
         >
             <div className="site-container flex h-full items-center gap-4 lg:gap-[30px]">
                 <Link href="/" className="shrink-0" aria-label="병원광고연구소 홈">
-                    {/* 흰 헤더에서는 블랙 로고로 바꾼다. SVG는 래스터가 아니라 최적화 대상이 아니므로 unoptimized */}
                     <Image
-                        src={solid ? '/images/logo-b.svg' : '/images/logo.svg'}
+                        src={solid ? '/images/logo-blue-02.svg' : '/images/logo.svg'}
                         alt="병원광고연구소"
                         width={161}
                         height={25}
@@ -49,6 +48,7 @@ export function SiteHeader({ solid, onDiagnosis, onMenuOpen, menuOpen }: Props) 
                         unoptimized
                         className="h-[18px] w-auto lg:h-[25px]"
                     />
+                    {/* <span className="block text-[24px] font-black  text-brand">병원광고연구소</span> */}
                 </Link>
 
                 <nav className="hidden flex-1 items-center justify-center gap-11 lg:flex" aria-label="주요 메뉴">
@@ -114,7 +114,7 @@ export function MobileNav({
             <div className="flex items-center justify-between">
                 <Link href="/" onClick={onClose} aria-label="병원광고연구소 홈">
                     <Image
-                        src="/logo-b.svg"
+                        src="/images/logo-blue-02.svg"
                         alt="병원광고연구소"
                         width={161}
                         height={25}

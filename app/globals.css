@@ -14,6 +14,7 @@
     --color-ink: #0e182a;
     --color-slate: #5c6b82;
     --color-muted: #718096;
+    --color-brand-indigo: #3a3fb9; /* 아웃라인 버튼 호버 그라데이션 시작색 (시안 실측) */
     --color-line-strong: #dce4ee;
     --color-line: #e8edf4;
     --color-soft: #f6f9fd;
@@ -135,6 +136,12 @@
     .btn-outline {
         @apply inline-flex h-12 items-center justify-center rounded-full border border-line-strong px-6 text-sm font-bold text-slate transition-colors;
     }
+    /* 시안 호버: 좌 indigo → 우 brand 가로 그라데이션 */
+    .btn-outline:hover {
+        border-color: transparent;
+        color: #fff;
+        background-image: linear-gradient(90deg, var(--color-brand-indigo), var(--color-brand));
+    }
     .field-input {
         @apply h-[52px] w-full rounded-field border border-transparent bg-field px-4 text-body text-ink outline-none transition-colors placeholder:text-muted focus:border-brand focus:bg-white aria-[invalid=true]:border-red-500;
     }
@@ -171,20 +178,12 @@
 .results-bg {
     background: linear-gradient(180deg, #151521 54%, #3582e2 150%);
 }
+/* 가운데 장면만 민트. 위치·크기는 GSAP이 잡는다 */
 .metric-scene strong {
-    transition:
-        color 0.35s ease,
-        text-shadow 0.35s ease;
-}
-.metric-scene h2 {
-    transition: opacity 0.3s ease;
+    transition: color 0.35s ease;
 }
 .metric-scene.is-active strong {
-    color: #fff;
-    text-shadow: 0 22px 70px rgba(27, 97, 224, 0.4);
-}
-.metric-scene.is-active h2 {
-    opacity: 1;
+    color: var(--color-mint);
 }
 .faq-panel {
     display: grid;
@@ -245,13 +244,9 @@
         opacity: 1 !important;
         transform: none !important;
     }
-    .metrics-scroll.is-static .metric-scene strong {
-        color: #fff;
-    }
-    .metrics-scroll.is-static .metric-scene h2 {
+    .metrics-scroll.is-static .metric-label {
+        position: relative;
+        top: auto;
         opacity: 1;
-    }
-    .metrics-scroll.is-static .metric-progress {
-        display: none;
     }
 }
