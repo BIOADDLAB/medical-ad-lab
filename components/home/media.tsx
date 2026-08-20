@@ -35,7 +35,7 @@ export function Media() {
                                     대표 구성과 비용 확인
                                 </Link>
                             </div>
-                            <div className="order-1 grid place-items-center rounded-l-[28px] bg-brand-tint py-6 sm:order-2 sm:py-0">
+                            <div className="order-1 grid place-items-center rounded-b-[28px] lg:rounded-l-[28px] bg-brand-tint py-6 sm:order-2 sm:py-0">
                                 <Image
                                     src={item.image}
                                     alt=""
