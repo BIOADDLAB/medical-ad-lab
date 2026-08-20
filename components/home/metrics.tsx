@@ -58,14 +58,13 @@ export function Metrics() {
 
                 paint(0);
 
+                // 고정은 CSS sticky 가 한다. ScrollTrigger 는 진행도만 준다.
+                // GSAP pin 을 쓰면 핀이 풀린 뒤 섹션 아래쪽이 빈 화면으로 남는다
                 const trigger = ScrollTrigger.create({
                     trigger: root,
                     start: 'top top',
                     end: 'bottom bottom',
-                    pin: stage,
-                    pinSpacing: false,
                     scrub: 1,
-                    anticipatePin: 1,
                     invalidateOnRefresh: true,
                     onUpdate: (self) => paint(self.progress * (scenes.length - 1)),
                 });
@@ -86,11 +85,11 @@ export function Metrics() {
 
     return (
         <section
-            className="metrics-scroll relative h-[260vh] bg-night"
+            className="metrics-scroll relative h-[260svh] bg-night"
             ref={rootRef}
             aria-label="병원광고연구소 운영 데이터"
         >
-            <div className="metrics-stage metrics-bg relative h-screen w-full overflow-hidden" ref={stageRef}>
+            <div className="metrics-stage metrics-bg sticky top-0 h-svh w-full overflow-hidden" ref={stageRef}>
                 <div
                     className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_42%,rgba(2,6,15,.7),rgba(2,6,15,.36)_46%,transparent_74%)]"
                     aria-hidden
