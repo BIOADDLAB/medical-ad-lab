@@ -4,6 +4,7 @@ import { WhyOoh } from '@/components/home/why-ooh';
 import { Results } from '@/components/home/results';
 import { Media } from '@/components/home/media';
 import { Metrics } from '@/components/home/metrics';
+import { Lab } from '@/components/home/lab';
 
 export default function Home() {
     return (
@@ -14,6 +15,7 @@ export default function Home() {
             <Results />
             <Media />
             <Metrics />
+            <Lab />
         </main>
     );
 }
