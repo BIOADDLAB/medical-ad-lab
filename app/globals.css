@@ -8,13 +8,14 @@
     /* 컬러시스템 */
     --color-brand: #2468f0;
     --color-brand-light: #3582e2;
+    --color-brand-light-02: #78a3ff;
     --color-brand-tint: #e8eef6;
     --color-brand-pale: #eaf2ff;
     --color-mint: #00ffae;
     --color-ink: #0e182a;
     --color-slate: #5c6b82;
     --color-muted: #718096;
-    --color-brand-indigo: #3a3fb9; /* 아웃라인 버튼 호버 그라데이션 시작색 (시안 실측) */
+    --color-brand-indigo: #3a3fb9;
     --color-line-strong: #dce4ee;
     --color-line: #e8edf4;
     --color-soft: #f6f9fd;

@@ -7,6 +7,7 @@ import { Metrics } from '@/components/home/metrics';
 import { Lab } from '@/components/home/lab';
 import { Process } from '@/components/home/process';
 import { Faq } from '@/components/home/faq';
+import { BottomCta } from '@/components/home/bottom-cta';
 
 export default function Home() {
     return (
@@ -20,6 +21,7 @@ export default function Home() {
             <Lab />
             <Process />
             <Faq />
+            <BottomCta />
         </main>
     );
 }
