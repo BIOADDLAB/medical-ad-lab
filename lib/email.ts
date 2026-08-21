@@ -51,13 +51,22 @@ function buildHtml(lead: Lead) {
   </table>
 </body></html>`;
 }
-
 export async function sendLeadEmail(lead: Lead) {
-    if (!emailReady) throw new Error('Resend 환경변수가 설정되지 않았습니다.');
+    if (!emailReady) {
+        console.error('[Resend] 환경변수 없음', {
+            hasApiKey: Boolean(apiKey),
+            notifyEmails,
+        });
+
+        throw new Error('Resend 환경변수가 설정되지 않았습니다.');
+    }
 
     const response = await fetch('https://api.resend.com/emails', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+        headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
             from,
             to: notifyEmails,
@@ -67,5 +76,15 @@ export async function sendLeadEmail(lead: Lead) {
         }),
     });
 
-    if (!response.ok) throw new Error(`Resend ${response.status}: ${await response.text()}`);
+    const responseBody = await response.text();
+
+    console.log('[Resend 응답]', {
+        status: response.status,
+        ok: response.ok,
+        body: responseBody,
+    });
+
+    if (!response.ok) {
+        throw new Error(`Resend ${response.status}: ${responseBody}`);
+    }
 }

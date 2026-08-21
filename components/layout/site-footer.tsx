@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { DiagnosisButton } from '@/components/lead/diagnosis-button';
+import { ContactEmail } from '@/components/layout/contact-email';
 
 /** 도메인·사업자 정보 확정 전 자리값 */
 const businessInfo = ['사업자 정보', '주소', '연락처 영역'];
@@ -9,20 +10,10 @@ export function SiteFooter() {
         <footer className="border-t border-line bg-white py-14 lg:py-[70px]">
             <div className="site-container flex flex-col justify-between gap-9 lg:flex-row lg:items-start lg:gap-10">
                 <div>
-                    {/* <Link href="/" className="shrink-0" aria-label="병원광고연구소 홈">
-                        <Image
-                            src="/images/logo-ori.svg"
-                            alt="병원광고연구소"
-                            width={161}
-                            height={25}
-                            priority
-                            unoptimized
-                            className="h-[18px] w-auto lg:h-[25px]"
-                        />
-                    </Link> */}
-
+                    <strong className="block text-[16px] font-extrabold">병원광고연구소</strong>
                     <p className="mb-5 mt-2.5 text-sm lg:mb-[46px]">병원 광고를 더 쉽고, 더 투명하게.</p>
                     <small className="text-sm text-muted">{businessInfo.join(' · ')}</small>
+                    <ContactEmail />
                 </div>
                 <div className="grid gap-6 lg:justify-items-end lg:gap-[46px]">
                     <div className="flex gap-5 text-sm font-bold">
