@@ -9,7 +9,18 @@ export function SiteFooter() {
         <footer className="border-t border-line bg-white py-14 lg:py-[70px]">
             <div className="site-container flex flex-col justify-between gap-9 lg:flex-row lg:items-start lg:gap-10">
                 <div>
-                    <strong className="block text-[16px] font-extrabold">병원광고연구소</strong>
+                    {/* <Link href="/" className="shrink-0" aria-label="병원광고연구소 홈">
+                        <Image
+                            src="/images/logo-ori.svg"
+                            alt="병원광고연구소"
+                            width={161}
+                            height={25}
+                            priority
+                            unoptimized
+                            className="h-[18px] w-auto lg:h-[25px]"
+                        />
+                    </Link> */}
+
                     <p className="mb-5 mt-2.5 text-sm lg:mb-[46px]">병원 광고를 더 쉽고, 더 투명하게.</p>
                     <small className="text-sm text-muted">{businessInfo.join(' · ')}</small>
                 </div>

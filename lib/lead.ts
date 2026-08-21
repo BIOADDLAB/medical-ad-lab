@@ -1,0 +1,64 @@
+export type Lead = {
+    createdAt: string;
+    hospital: string;
+    area: string;
+    phone: string;
+    email: string;
+    message: string;
+    source: string;
+};
+
+/**
+ * 구글시트 1행 헤더와 순서가 반드시 일치해야 한다.
+ * 열 추가는 항상 맨 뒤에만 (중간 삽입 시 기존 데이터가 밀림).
+ */
+export const LEAD_COLUMNS = [
+    '접수일시',
+    '병원명',
+    '지역',
+    '연락처',
+    '이메일',
+    '문의내용',
+    '유입경로',
+    '처리상태',
+] as const;
+
+export const leadToRow = (lead: Lead) => [
+    lead.createdAt,
+    lead.hospital,
+    lead.area,
+    lead.phone,
+    lead.email,
+    lead.message,
+    lead.source,
+    '신규',
+];
+
+export const formatKST = (date = new Date()) =>
+    new Intl.DateTimeFormat('ko-KR', {
+        timeZone: 'Asia/Seoul',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false,
+    }).format(date);
+
+/** 시트 1행 → 화면용 객체. 열 순서는 LEAD_COLUMNS 와 같다. */
+export const rowToLead = (row: string[]) => ({
+    createdAt: row[0] ?? '',
+    hospital: row[1] ?? '',
+    area: row[2] ?? '',
+    phone: row[3] ?? '',
+    email: row[4] ?? '',
+    message: row[5] ?? '',
+    source: row[6] ?? '',
+    status: row[7] || '신규',
+});
+
+export type LeadRow = ReturnType<typeof rowToLead>;
+
+/** 개인정보는 가려서 내려보낸다. 원본 확인은 시트에서 한다 */
+export const maskPhone = (value: string) => value.replace(/(\d{2,3})-?(\d{3,4})-?(\d{4})/, '$1-****-$3');
+export const maskEmail = (value: string) => value.replace(/^(.{2}).*(@.*)$/, '$1***$2');
