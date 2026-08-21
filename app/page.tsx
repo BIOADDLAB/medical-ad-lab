@@ -6,6 +6,7 @@ import { Media } from '@/components/home/media';
 import { Metrics } from '@/components/home/metrics';
 import { Lab } from '@/components/home/lab';
 import { Process } from '@/components/home/process';
+import { Faq } from '@/components/home/faq';
 
 export default function Home() {
     return (
@@ -18,6 +19,7 @@ export default function Home() {
             <Metrics />
             <Lab />
             <Process />
+            <Faq />
         </main>
     );
 }
