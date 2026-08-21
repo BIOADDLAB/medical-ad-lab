@@ -1,3 +1,4 @@
+import { HomeMotion } from '@/components/home/home-motion';
 import { Hero } from '@/components/home/hero';
 import { PainPoints } from '@/components/home/pain-points';
 import { WhyOoh } from '@/components/home/why-ooh';
@@ -12,6 +13,7 @@ import { BottomCta } from '@/components/home/bottom-cta';
 export default function Home() {
     return (
         <main>
+            <HomeMotion />
             <Hero />
             <PainPoints />
             <WhyOoh />
