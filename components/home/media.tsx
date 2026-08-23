@@ -7,7 +7,7 @@ export function Media() {
     return (
         <section className="bg-white py-section" id="media">
             <div className="site-container">
-                <Reveal>
+                <Reveal variant="heading">
                     <h2 className="section-title mb-10 text-center lg:mb-[78px] lg:text-h1">
                         우리 병원 환자가 움직이는 곳에
                         <br />
@@ -19,8 +19,9 @@ export function Media() {
                     {mediaItems.map((item, index) => (
                         <Reveal
                             key={item.key}
-                            className="card-base grid overflow-hidden rounded-[28px] sm:grid-cols-[1fr_180px] lg:min-h-[243px] lg:grid-cols-[1fr_237px]"
+                            className="media-card card-base grid overflow-hidden rounded-[28px] sm:grid-cols-[1fr_180px] lg:min-h-[244px] lg:grid-cols-[1fr_237px]"
                             delay={(index % 2) * 0.06}
+                            variant="card"
                         >
                             <div className="order-2 p-7 sm:order-1 lg:p-[40px_40px_45px]">
                                 <h3 className="m-0 mb-2 text-h5 font-black text-brand lg:mb-2">{item.title}</h3>
@@ -35,7 +36,7 @@ export function Media() {
                                     대표 구성과 비용 확인
                                 </Link>
                             </div>
-                            <div className="order-1 grid place-items-center rounded-[28px] bg-brand-tint py-6 sm:order-2 sm:py-0">
+                            <div className="media-visual order-1 grid place-items-center rounded-[28px] bg-brand-tint py-6 sm:order-2 sm:py-0">
                                 <Image
                                     src={item.image}
                                     alt=""

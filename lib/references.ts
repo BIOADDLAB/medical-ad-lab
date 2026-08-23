@@ -9,13 +9,17 @@ export type Reference = {
     summary?: string;
 };
 
-type FirestoreValue = { stringValue?: string; timestampValue?: string };
+type FirestoreValue = { stringValue?: string; timestampValue?: string; integerValue?: string };
 type FirestoreDoc = { name: string; fields?: Record<string, FirestoreValue> };
 
 const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 
 const read = (fields: Record<string, FirestoreValue> | undefined, key: string) => fields?.[key]?.stringValue ?? '';
+const readNumber = (fields: Record<string, FirestoreValue> | undefined, key: string) => {
+    const value = Number(fields?.[key]?.integerValue);
+    return Number.isFinite(value) ? value : Number.MAX_SAFE_INTEGER;
+};
 
 /** Firestore 연결 전에는 data.ts 샘플을 그대로 사용한다. */
 export async function getReferences(): Promise<Reference[]> {
@@ -37,10 +41,11 @@ export async function getReferences(): Promise<Reference[]> {
                 area: read(doc.fields, 'area'),
                 image: read(doc.fields, 'image'),
                 summary: read(doc.fields, 'summary'),
+                order: readNumber(doc.fields, 'order'),
                 createdAt: doc.fields?.createdAt?.timestampValue ?? '',
             }))
             .filter((item) => item.slug && item.title && item.image)
-            .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+            .sort((a, b) => a.order - b.order || b.createdAt.localeCompare(a.createdAt))
             .map((item) => ({
                 slug: item.slug,
                 type: item.type,

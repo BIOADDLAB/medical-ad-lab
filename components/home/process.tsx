@@ -23,26 +23,38 @@ export function Process() {
     }, [played]);
 
     return (
-        <section ref={rootRef} className={`bg-white py-section ${played ? 'is-played' : ''}`} id="process">
+        <section ref={rootRef} className={`bg-white py-16 lg:py-20 ${played ? 'is-played' : ''}`} id="process">
             <div className="site-container">
-                <div className="mb-12 text-center lg:mb-[72px]">
-                    <h2 className="section-title lg:text-h1">
+                <div className="mb-10 text-center lg:mb-12">
+                    <h2 className="section-title">
                         병원이 해야 할 일은
                         <em className="not-italic text-brand"> 신청뿐입니다.</em>
                     </h2>
                 </div>
-                <ol className="relative m-0 grid list-none grid-cols-1 gap-10 p-0 sm:grid-cols-2 lg:grid-cols-5 lg:gap-0 lg:before:absolute lg:before:inset-x-[10%] lg:before:top-9 lg:before:h-px lg:before:bg-line lg:before:content-['']">
+                <ol className="process-track relative mx-auto grid max-w-[1120px] list-none grid-cols-1 gap-8 p-0 sm:grid-cols-2 lg:grid-cols-5 lg:gap-0">
                     {processItems.map(([number, title, description], index) => (
                         <li
                             key={number}
-                            className="process-item relative grid justify-items-center text-center"
+                            className="process-item relative grid grid-cols-[52px_1fr] items-center gap-x-4 text-left sm:grid-cols-1 sm:justify-items-center sm:text-center"
                             style={{ '--delay': `${index * 110}ms` } as React.CSSProperties}
                         >
-                            <span className="grid h-[60px] w-[60px] place-items-center rounded-full bg-brand text-sm font-extrabold text-white lg:h-[75px] lg:w-[89px] lg:text-[16px]">
-                                <span className="text-h5 font-bold">{number}</span>
+                            <span className="process-node relative z-10 grid h-12 w-[52px] shrink-0 place-items-center text-white">
+                                <svg
+                                    aria-hidden="true"
+                                    className="absolute inset-0 h-full w-full"
+                                    viewBox="0 0 96.058 89.48"
+                                >
+                                    <path
+                                        d="M12.49 71.52C24.954 88.06 50.969 89.48 70.597 74.69C90.225 59.9 96.032 34.5 83.568 17.96C71.104 1.42 45.089 0 25.461 14.79C5.833 29.58 0.026 54.98 12.49 71.52Z"
+                                        fill="#2468F0"
+                                    />
+                                </svg>
+                                <span className="relative z-10 text-sm font-bold">{number}</span>
                             </span>
-                            <h3 className="mt-5 text-h5 font-extrabold lg:mt-7 lg:text-[32px]">{title}</h3>
-                            <p className="mt-2.5 text-body text-muted lg:mt-px">{description}</p>
+                            <div>
+                                <h3 className="m-0 text-[18px] font-extrabold sm:mt-4">{title}</h3>
+                                <p className="mb-0 mt-1 text-sm text-muted sm:mt-1.5">{description}</p>
+                            </div>
                         </li>
                     ))}
                 </ol>

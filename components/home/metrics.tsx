@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { metrics } from '@/data';
 
-/** 활성 숫자 크기 대비 장면 간격. 시안 1920 기준 107px × 1.35 ≒ 145px */
+/** 활성 숫자 크기 대비 장면 간격. 시안 비율을 유지하며 짝수 108px 기준으로 계산 */
 const STEP_RATIO = 1.35;
 /** 좌우 장면 축소율. 시안 58 / 107 */
 const INACTIVE_SCALE = 0.54;
@@ -95,7 +95,7 @@ export function Metrics() {
                     aria-hidden
                 />
                 <div className="metric-stage-inner site-container relative z-[2] h-full">
-                    <p className="metric-intro absolute inset-x-0 top-[20%] m-0 -translate-y-1/2 text-center text-h5 font-extrabold text-white lg:text-[37px]">
+                    <p className="metric-intro absolute inset-x-0 top-[20%] m-0 -translate-y-1/2 text-center text-h5 font-extrabold text-white lg:text-[38px]">
                         빠르게 비교하고 있는 <em className="not-italic text-mint">병원광고연구소</em>
                     </p>
                     <div className="metric-scenes absolute inset-0">
@@ -105,7 +105,7 @@ export function Metrics() {
                                 key={metric.label}
                             >
                                 <span className="relative block text-center">
-                                    <strong className="block text-[54px] font-extrabold leading-none tracking-[-.045em] text-white lg:text-[107px]">
+                                    <strong className="block text-[54px] font-extrabold leading-none tracking-[-.045em] text-white lg:text-[108px]">
                                         {metric.value !== null ? (
                                             <>
                                                 {metric.value.toLocaleString('ko-KR')}

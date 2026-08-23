@@ -59,10 +59,10 @@ export function DiagnosisModal({ open, dirty, onClose, onDirty }: Props) {
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="diagnosis-title"
-                className="relative flex h-full w-full flex-col bg-white lg:h-auto lg:max-h-[92vh] lg:w-[560px] lg:rounded-panel"
+                className="relative flex h-full w-full flex-col bg-white lg:h-auto lg:max-h-[92vh] lg:w-[580px] lg:rounded-panel lg:shadow-[0_30px_90px_rgba(0,16,55,.24)]"
             >
                 <div className="flex items-center justify-between border-b border-line px-gutter py-4 lg:hidden">
-                    <strong className="text-[17px] font-extrabold">무료진단</strong>
+                    <strong className="text-[18px] font-extrabold">무료진단</strong>
                     <button
                         type="button"
                         aria-label="무료진단 창 닫기"
@@ -80,11 +80,16 @@ export function DiagnosisModal({ open, dirty, onClose, onDirty }: Props) {
                 >
                     <Icon name="close" className="w-[18px]" />
                 </button>
-                <div className="flex-1 overflow-y-auto px-gutter py-7 lg:px-11 lg:py-11">
-                    <h2 id="diagnosis-title" className="m-0 text-h4 lg:text-brand">
+                <div className="flex-1 overflow-y-auto px-gutter py-7 md:px-10 md:py-10 lg:px-[46px] lg:py-[46px]">
+                    <h2
+                        id="diagnosis-title"
+                        className="m-0 text-h4 font-black tracking-tighter text-brand lg:text-[36px] lg:leading-[1.3]"
+                    >
                         우리 병원 광고 무료진단
                     </h2>
-                    <p className="mb-7 mt-3 text-sm text-muted">24시간 이내 안내드립니다.</p>
+                    <p className="mb-7.5 mt-0 text-sm font-extrabold text-muted">
+                        간단한 정보를 남겨주시면 24시간 이내 안내드립니다.
+                    </p>
                     <LeadForm compact onDirty={onDirty} />
                 </div>
             </section>

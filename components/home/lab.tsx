@@ -6,7 +6,7 @@ export function Lab() {
     return (
         <section className="bg-soft py-section">
             <div className="site-container">
-                <Reveal>
+                <Reveal variant="heading">
                     <h2 className="section-title mb-10 text-center lg:mb-[72px] lg:text-h1">
                         옥외광고 회사는 많지만,
                         <br />
@@ -14,12 +14,13 @@ export function Lab() {
                     </h2>
                 </Reveal>
                 {/* 시안: 가운데를 기준으로 이미지와 글이 서로 안쪽으로 붙는다 */}
-                <div className="mx-auto grid max-w-[900px] gap-10 lg:gap-y-[50px]">
+                <div className="mx-auto grid max-w-[800px] gap-12 lg:gap-y-[56px]">
                     {whyLabItems.map((item, index) => (
                         <Reveal
                             key={item.keyword}
-                            className="grid items-center gap-6 lg:grid-cols-2 lg:gap-x-[90px]"
+                            className="lab-row grid items-center gap-6 lg:grid-cols-[320px_360px] lg:justify-center lg:gap-x-[80px]"
                             delay={0.05}
+                            variant="card"
                         >
                             <div
                                 className={`justify-self-center ${
@@ -31,7 +32,7 @@ export function Lab() {
                                     alt=""
                                     width={608}
                                     height={608}
-                                    className="h-auto w-[220px] lg:w-[320px]"
+                                    className="lab-image h-auto w-[220px] will-change-transform lg:w-[320px]"
                                 />
                             </div>
                             <div
@@ -42,7 +43,7 @@ export function Lab() {
                                 <span className="inline-flex h-9 items-center rounded-full border border-brand px-5 text-xs font-black text-brand lg:h-[41px] lg:px-[22px] lg:text-[16px] tracking-tight">
                                     {item.number}&#160; &#160;{item.keyword}
                                 </span>
-                                <h3 className="mb-3 mt-5 whitespace-pre-line text-h4 lg:mb-3.5 lg:mt-6 lg:text-[24px] lg:leading-[1.5] font-extrabold tracking-tight">
+                                <h3 className="mb-3 mt-5 max-w-[360px] whitespace-pre-line text-h4 font-extrabold tracking-tight lg:mb-3.5 lg:mt-6 lg:text-[24px] lg:leading-[1.5]">
                                     {item.title}
                                 </h3>
                                 <p className="m-0 max-w-[310px] whitespace-pre-line text-h4 text-muted lg:text-body lg:whitespace-pre-line lg:leading-[1.4]">

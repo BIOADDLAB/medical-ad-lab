@@ -29,7 +29,7 @@
     --color-success-deep: #06785a;
     --color-success-pale: #e8f7ef;
 
-    --text-display: clamp(31px, 26.67px + 1.111vw, 48px);
+    --text-display: clamp(32px, 27.92px + 1.046vw, 48px);
     --text-display--line-height: 1.36;
     --text-display--font-weight: 800;
     --text-display--letter-spacing: -0.04em;
@@ -39,22 +39,22 @@
     --text-h1--font-weight: 900;
     --text-h1--letter-spacing: -0.035em;
 
-    --text-h2: clamp(25px, 21.94px + 0.784vw, 37px);
+    --text-h2: clamp(24px, 20.94px + 0.784vw, 36px);
     --text-h2--line-height: 1.5;
     --text-h2--font-weight: 800;
     --text-h2--letter-spacing: -0.035em;
 
-    --text-h3: clamp(21px, 17.94px + 0.784vw, 33px);
+    --text-h3: clamp(22px, 19.45px + 0.654vw, 32px);
     --text-h3--line-height: 1.45;
     --text-h3--font-weight: 800;
     --text-h3--letter-spacing: -0.035em;
 
-    --text-h4: clamp(20px, 19.24px + 0.196vw, 23px);
+    --text-h4: clamp(20px, 18.98px + 0.261vw, 24px);
     --text-h4--line-height: 1.5;
     --text-h4--font-weight: 800;
     --text-h4--letter-spacing: -0.03em;
 
-    --text-h5: clamp(18px, 17.75px + 0.065vw, 19px);
+    --text-h5: clamp(18px, 17.49px + 0.131vw, 20px);
     --text-h5--line-height: 1.45;
     --text-h5--font-weight: 800;
     --text-h5--letter-spacing: -0.03em;
@@ -63,13 +63,13 @@
     --text-lead--line-height: 1.8;
     --text-lead--font-weight: 500;
 
-    --text-body: clamp(15px, 14.75px + 0.065vw, 16px);
+    --text-body: clamp(14px, 12.98px + 0.261vw, 16px);
     --text-body--line-height: 1.7;
 
-    --text-sm: clamp(14px, 13.75px + 0.065vw, 15px);
+    --text-sm: 14px;
     --text-sm--line-height: 1.7;
 
-    --text-xs: 13px;
+    --text-xs: 12px;
     --text-xs--line-height: 1.6;
 
     --text-label: 12px;
@@ -146,9 +146,15 @@
     .field-input {
         @apply h-[52px] w-full rounded-field border border-transparent bg-field px-4 text-body text-ink outline-none transition-colors placeholder:text-muted focus:border-brand focus:bg-white aria-[invalid=true]:border-red-500;
     }
+    .lead-message {
+        height: 76px;
+        line-height: 1.5;
+    }
     .field-label {
-        /* content-start 없으면 옆 칸 오류 메시지로 높이가 커질 때 행이 늘어나 입력창이 밀린다 */
-        @apply grid content-start gap-2 text-sm font-bold text-slate;
+        @apply relative grid content-start gap-2 text-sm font-bold text-slate;
+    }
+    .field-error {
+        @apply pointer-events-none absolute left-0 top-full mt-1 text-[12px] leading-none font-medium text-red-600;
     }
     /* 섹션 제목 기본형. 더 큰 제목이 필요한 섹션은 lg:text-h1 을 덧붙인다 */
     .section-title {
@@ -170,7 +176,44 @@
 
 /* =============== GSAP·모션이 직접 제어하거나, 유틸리티로 표현할 수 없는 것만 남긴다 =============== */
 .hero-bg {
-    background: var(--color-deep) url('/images/bg-main.jpg') 50% 50% / cover;
+    background-color: var(--color-deep);
+    background-image: url('/images/bg-main.jpg');
+    background-repeat: no-repeat;
+    background-position: 46% center;
+    background-size: cover;
+}
+.page-banner-copy {
+    left: 0;
+}
+.page-banner-frame {
+    width: calc(100% - 80px);
+}
+.page-banner[data-variant='journal'] .page-banner-copy {
+    top: 106px;
+}
+.page-banner[data-variant='reference'] .page-banner-copy {
+    top: 80px;
+}
+.page-banner-title {
+    margin-top: 18px;
+}
+.page-banner[data-variant='journal'] .page-banner-description {
+    margin-top: 34px;
+}
+.page-banner[data-variant='reference'] .page-banner-description {
+    margin-top: 20px;
+}
+.page-banner[data-variant='journal'] .page-banner-art {
+    right: -13px;
+    top: 30px;
+    width: 650px;
+    height: 430px;
+}
+.page-banner[data-variant='reference'] .page-banner-art {
+    right: 66px;
+    top: -11px;
+    width: 456px;
+    height: 458px;
 }
 .metrics-bg {
     background: var(--color-night) url('/images/bg-s5.jpg') center bottom / cover no-repeat;
@@ -178,6 +221,51 @@
 
 .results-bg {
     background: linear-gradient(180deg, #151521 54%, #3582e2 150%);
+}
+.media-card {
+    transition:
+        border-color 0.35s ease,
+        box-shadow 0.35s ease,
+        transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.media-card .media-visual img {
+    transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.media-card:hover {
+    border-color: color-mix(in srgb, var(--color-brand) 34%, var(--color-line));
+    box-shadow: 0 20px 54px rgba(20, 67, 143, 0.1);
+    transform: translateY(-4px);
+}
+.media-card:hover .media-visual img {
+    transform: translateY(-7px) rotate(-1.5deg);
+}
+.result-card {
+    position: relative;
+    overflow: hidden;
+    transition:
+        transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+        box-shadow 0.4s ease;
+}
+.result-card::after {
+    position: absolute;
+    inset: -40% auto -40% -25%;
+    width: 22%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+    content: '';
+    opacity: 0;
+    pointer-events: none;
+    transform: skewX(-14deg);
+    transition:
+        left 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.2s ease;
+}
+.result-card:hover {
+    box-shadow: 0 32px 72px rgba(4, 16, 41, 0.3);
+    transform: translateY(-5px);
+}
+.result-card:hover::after {
+    left: 112%;
+    opacity: 1;
 }
 /* 가운데 장면만 민트. 위치·크기는 GSAP이 잡는다 */
 .metric-scene strong {
@@ -201,14 +289,220 @@
         opacity 0.5s ease var(--delay),
         transform 0.5s ease var(--delay);
 }
+.process-track::before {
+    position: absolute;
+    top: 24px;
+    right: 10%;
+    left: 10%;
+    height: 1px;
+    background: var(--color-line);
+    content: '';
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 1.15s cubic-bezier(0.22, 1, 0.36, 1) 0.08s;
+}
+.is-played .process-track::before {
+    transform: scaleX(1);
+}
 .is-played .process-item {
     opacity: 1;
     transform: none;
+}
+.process-node svg {
+    transform: rotate(-8deg) scale(0.94);
+    transform-origin: center;
+    transition: transform 0.72s cubic-bezier(0.22, 1, 0.36, 1) var(--delay);
+}
+.is-played .process-node svg {
+    transform: rotate(0) scale(1);
+}
+.success-confetti {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+.success-confetti i {
+    position: absolute;
+    left: 50%;
+    top: 48%;
+    width: 7px;
+    height: 12px;
+    border-radius: 2px;
+    background: var(--confetti-color);
+    opacity: 0;
+    animation: success-confetti-burst 1.2s cubic-bezier(0.16, 0.72, 0.24, 1) var(--confetti-delay) forwards;
+}
+@keyframes success-confetti-burst {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.35) rotate(0);
+    }
+    12% {
+        opacity: 1;
+    }
+    72% {
+        opacity: 1;
+        transform: translate(calc(-50% + var(--confetti-x)), calc(-50% + var(--confetti-y))) scale(1)
+            rotate(var(--confetti-rotate));
+    }
+    100% {
+        opacity: 0;
+        transform: translate(calc(-50% + var(--confetti-x)), calc(-50% + var(--confetti-y) + 70px)) scale(0.92)
+            rotate(calc(var(--confetti-rotate) + 90deg));
+    }
+}
+.admin-scroll {
+    scrollbar-color: var(--color-line-strong) transparent;
+    scrollbar-width: thin;
+}
+.admin-scroll::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+.admin-scroll::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: var(--color-line-strong);
+}
+
+@media (min-width: 1280px) {
+    .hero-bg {
+        background-position: 50% 48%;
+        background-size: cover;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 1279px) {
+    .hero-bg {
+        /* 히어로 실제 높이를 끝까지 덮어 이미지 아래 단색 띠가 생기지 않게 한다. */
+        background-position: 48% center !important;
+        background-size: cover !important;
+    }
+    .page-banner-copy {
+        left: 0;
+        max-width: 62%;
+    }
+    .page-banner[data-variant='journal'] .page-banner-art {
+        right: -220px;
+        opacity: 0.72;
+    }
+    .page-banner[data-variant='reference'] .page-banner-art {
+        right: -120px;
+        opacity: 0.82;
+    }
+    .page-banner-title br {
+        display: none;
+    }
+    .page-banner-description {
+        max-width: 540px;
+    }
+}
+
+@media (min-width: 768px) and (max-width: 900px) {
+    .page-banner-copy {
+        max-width: calc(100% - 80px);
+    }
+    .page-banner .page-banner-art,
+    .page-banner[data-variant='journal'] .page-banner-art,
+    .page-banner[data-variant='reference'] .page-banner-art {
+        right: -80px;
+        top: auto;
+        bottom: -205px;
+        width: 390px;
+        height: 390px;
+        opacity: 0.3;
+    }
+    .page-banner .banner-art-primary {
+        width: 390px;
+        height: 390px;
+        object-fit: contain;
+    }
+}
+
+@media (max-width: 1023px) {
+    .process-track::before {
+        display: none;
+    }
+}
+
+@media (max-width: 767px) {
+    .hero-bg {
+        background-position: 43% center !important;
+        background-size: cover !important;
+    }
+    .lead-form {
+        gap: 16px;
+    }
+    .lead-message {
+        height: 84px;
+    }
+    .page-banner {
+        height: 360px;
+    }
+    .page-banner-frame {
+        width: calc(100% - 40px);
+    }
+    .page-banner-copy,
+    .page-banner[data-variant='journal'] .page-banner-copy,
+    .page-banner[data-variant='reference'] .page-banner-copy {
+        left: 0;
+        top: 58px;
+        max-width: 100%;
+    }
+    .page-banner h1 {
+        margin-top: 14px;
+        max-width: 330px;
+        font-size: 28px;
+        line-height: 1.46;
+    }
+    .page-banner-copy > p:first-child {
+        font-size: 12px;
+        letter-spacing: 0.04em;
+    }
+    .page-banner p:last-child {
+        margin-top: 14px;
+        max-width: 290px;
+        padding-right: 18px;
+    }
+    .page-banner .page-banner-art,
+    .page-banner[data-variant='journal'] .page-banner-art,
+    .page-banner[data-variant='reference'] .page-banner-art {
+        right: -92px;
+        top: auto;
+        bottom: -156px;
+        width: 300px;
+        height: 300px;
+        opacity: 0.42;
+    }
+    .page-banner .banner-art-primary {
+        width: 300px;
+        height: 300px;
+        object-fit: contain;
+    }
+    .process-track {
+        gap: 0;
+    }
+    .process-item {
+        min-height: 104px;
+        padding-bottom: 20px;
+    }
+    .process-item:not(:last-child)::after {
+        position: absolute;
+        bottom: 0;
+        left: 26px;
+        top: 48px;
+        width: 1px;
+        background: var(--color-line-strong);
+        content: '';
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
     html {
         scroll-behavior: auto;
+    }
+    .success-confetti {
+        display: none;
     }
     *,
     *::before,

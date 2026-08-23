@@ -4,6 +4,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Icon } from '@/components/ui/icon';
+import { MobileMenuIcon } from '@/components/layout/mobile-menu-icon';
+import { MOBILE_MENU_VARIANT } from '@/lib/ui-config';
 
 export const navItems = [
     ['서비스 소개', '/#service', 'SECTION 02'],
@@ -33,11 +35,11 @@ export function SiteHeader({ solid, onDiagnosis, onMenuOpen, menuOpen }: Props) 
 
     return (
         <header
-            className={`fixed inset-x-0 top-0 z-[100] h-[60px] border-b transition-[height,color,background,border-color] duration-200 lg:h-[88px] ${
-                solid ? 'border-ink/10 bg-white/95 text-ink backdrop-blur-lg lg:h-20' : 'border-white/20 text-white'
+            className={`fixed inset-x-0 top-0 z-[100] h-[60px] border-b transition-[height,color,background,border-color] duration-200 md:h-[72px] xl:h-[88px] ${
+                solid ? 'border-ink/10 bg-white/95 text-ink backdrop-blur-lg xl:h-20' : 'border-white/20 text-white'
             }`}
         >
-            <div className="site-container flex h-full items-center gap-4 lg:gap-[30px]">
+            <div className="site-container flex h-full items-center gap-4 xl:gap-[30px]">
                 <Link href="/" className="shrink-0" aria-label="병원광고연구소 홈">
                     <Image
                         src={solid ? '/images/logo-blue-02.svg' : '/images/logo.svg'}
@@ -46,12 +48,12 @@ export function SiteHeader({ solid, onDiagnosis, onMenuOpen, menuOpen }: Props) 
                         height={25}
                         priority
                         unoptimized
-                        className="h-[18px] w-auto lg:h-[25px]"
+                        className="h-[18px] w-auto xl:h-[25px]"
                     />
                     {/* <span className="block text-[24px] font-black  text-brand">병원광고연구소</span> */}
                 </Link>
 
-                <nav className="hidden flex-1 items-center justify-center gap-11 lg:flex" aria-label="주요 메뉴">
+                <nav className="hidden flex-1 items-center justify-center gap-11 xl:flex" aria-label="주요 메뉴">
                     {navItems.map(([label, href]) => (
                         <Link
                             key={href}
@@ -65,16 +67,16 @@ export function SiteHeader({ solid, onDiagnosis, onMenuOpen, menuOpen }: Props) 
                     ))}
                 </nav>
 
-                <div className="ml-auto flex items-center gap-2 lg:ml-0 lg:gap-0">
+                <div className="ml-auto flex items-center gap-2 xl:ml-0 xl:gap-0">
                     <button
                         type="button"
                         onClick={(event) => onDiagnosis(event.currentTarget)}
-                        className={`h-9 rounded-lg px-3.5 text-[13px] font-extrabold transition-colors lg:h-12 lg:px-[26px] lg:text-body ${
+                        className={`h-9 rounded-lg px-3.5 text-[14px] font-extrabold transition-colors xl:h-12 xl:px-[26px] xl:text-body ${
                             solid ? 'bg-brand text-white' : 'bg-white text-brand'
                         }`}
                     >
-                        <span className="lg:hidden">무료진단</span>
-                        <span className="hidden lg:inline">무료진단 받기</span>
+                        <span className="xl:hidden">무료진단</span>
+                        <span className="hidden xl:inline">무료진단 받기</span>
                     </button>
                     <button
                         type="button"
@@ -82,9 +84,13 @@ export function SiteHeader({ solid, onDiagnosis, onMenuOpen, menuOpen }: Props) 
                         aria-expanded={menuOpen}
                         aria-controls="mobile-navigation"
                         onClick={onMenuOpen}
-                        className="grid h-9 w-9 place-items-center rounded-lg text-current lg:hidden"
+                        className={`grid h-10 w-10 place-items-center rounded-xl border shadow-sm transition-[background,border-color,transform] active:scale-95 xl:hidden ${
+                            solid
+                                ? 'border-line bg-white text-ink'
+                                : 'border-white/30 bg-deep/15 text-white backdrop-blur-sm'
+                        }`}
                     >
-                        <Icon name="menu" className="w-6" />
+                        <MobileMenuIcon open={menuOpen} variant={MOBILE_MENU_VARIANT} />
                     </button>
                 </div>
             </div>
@@ -107,7 +113,7 @@ export function MobileNav({
         <div
             id="mobile-navigation"
             aria-hidden={!open}
-            className={`fixed inset-0 z-[210] flex flex-col bg-white px-gutter pb-7 pt-5 transition-[opacity,transform,visibility] duration-300 lg:hidden ${
+            className={`fixed inset-0 z-[210] flex flex-col overflow-y-auto bg-white px-gutter pb-7 pt-5 transition-[opacity,transform,visibility] duration-300 xl:hidden ${
                 open ? 'visible translate-x-0 opacity-100' : 'invisible translate-x-full opacity-0'
             }`}
         >
@@ -126,9 +132,9 @@ export function MobileNav({
                     type="button"
                     aria-label="메뉴 닫기"
                     onClick={onClose}
-                    className="grid h-10 w-10 place-items-center rounded-xl border border-line"
+                    className="grid h-10 w-10 place-items-center rounded-xl border border-line bg-white text-ink shadow-sm"
                 >
-                    <Icon name="close" className="w-5" />
+                    <MobileMenuIcon open variant={MOBILE_MENU_VARIANT} />
                 </button>
             </div>
             <nav className="mb-auto mt-10" aria-label="모바일 메뉴">
@@ -137,9 +143,9 @@ export function MobileNav({
                         key={href}
                         href={href}
                         onClick={onClose}
-                        className="grid min-h-16 grid-cols-[100px_1fr_20px] items-center border-b border-line text-h5 first:border-t"
+                        className="grid min-h-16 grid-cols-[92px_1fr_20px] items-center border-b border-line text-h5 first:border-t"
                     >
-                        <small className="text-[9px] font-extrabold tracking-[.11em] text-subtle">{section}</small>
+                        <small className="text-[10px] font-extrabold tracking-[.1em] text-subtle">{section}</small>
                         <span className={isCurrent(pathname, href) ? 'text-brand' : ''}>{label}</span>
                         <Icon name="arrow" className="w-[18px] text-subtle" />
                     </Link>

@@ -40,7 +40,9 @@ export async function POST(request: Request) {
         area: String(body.area).trim(),
         phone: String(body.phone).trim(),
         email: String(body.email).trim(),
-        message: String(body.message ?? '').trim(),
+        message: String(body.message ?? '')
+            .trim()
+            .slice(0, 300),
         source: String(body.source ?? '').trim(),
     };
 
@@ -55,11 +57,14 @@ export async function POST(request: Request) {
         emailReady ? sendLeadEmail(lead) : Promise.reject(new Error('email skipped')),
     ]);
 
-    if (sheetResult.status === 'rejected') console.error('[lead] 시트 저장 실패', sheetResult.reason);
-    if (mailResult.status === 'rejected') console.error('[lead] 메일 발송 실패', mailResult.reason);
+    if (sheetResult.status === 'rejected') {
+        console.error('[lead] 시트 저장 실패', sheetResult.reason);
 
-    if (sheetResult.status === 'rejected' && mailResult.status === 'rejected') {
-        return NextResponse.json({ message: '접수 처리에 실패했습니다.' }, { status: 500 });
+        return NextResponse.json({ message: '문의 저장에 실패했습니다. 잠시 후 다시 시도해 주세요.' }, { status: 500 });
+    }
+
+    if (mailResult.status === 'rejected') {
+        console.error('[lead] 메일 발송 실패', mailResult.reason);
     }
 
     return NextResponse.json({ ok: true });

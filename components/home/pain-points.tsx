@@ -4,7 +4,7 @@ import { painPoints } from '@/data';
 export function PainPoints() {
     return (
         <section className="bg-soft py-section" id="service">
-            <Reveal className="site-container ">
+            <Reveal className="site-container" variant="heading">
                 <h2 className="text-h1 font-black section-title mb-10 text-center lg:mb-[72px]">
                     지금 이런 고민을 하고 계신가요?
                 </h2>
@@ -14,6 +14,7 @@ export function PainPoints() {
                             key={item.title}
                             className="rounded-card border border-[#DCE4EE] bg-white p-8 shadow-[0_10px_30px_rgba(21,49,94,.04)] lg:p-[44px_40px_46px]"
                             delay={index * 0.07}
+                            variant="card"
                         >
                             <span className="mb-5 grid h-9 w-9 place-items-center rounded-full bg-brand-pale text-body font-extrabold text-brand lg:mb-[18px]">
                                 {item.number}

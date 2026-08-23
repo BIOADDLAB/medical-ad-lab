@@ -39,7 +39,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://medicaladlab.example.com',
     };
     return (
-        <html lang="ko">
+        <html lang="ko" data-scroll-behavior="smooth">
             <body>
                 <SiteShell>{children}</SiteShell>
                 <Analytics />

@@ -1,37 +1,30 @@
 import Link from 'next/link';
-import { DiagnosisButton } from '@/components/lead/diagnosis-button';
+import type { Metadata } from 'next';
+import { BottomCta } from '@/components/home/bottom-cta';
+import { PageBanner } from '@/components/layout/page-banner';
 import { insightPosts } from '@/data';
 
-export const metadata = {
+export const metadata: Metadata = {
     title: '병원광고연구소',
     description: '병원광고연구소가 직접 기록한 매체 분석과 실행 노트입니다.',
     alternates: { canonical: '/about' },
+    openGraph: {
+        title: '병원광고연구소 저널',
+        description: '현장에서 얻은 데이터와 판단 기준을 병원광고연구소가 직접 기록합니다.',
+        url: '/about',
+        type: 'website',
+        siteName: '병원광고연구소',
+        locale: 'ko_KR',
+        images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: '병원광고연구소 저널' }],
+    },
 };
 
 export default function AboutPage() {
     const [featured, ...rest] = insightPosts;
 
     return (
-        <main className="pt-[60px] lg:pt-0">
-            <section className="relative overflow-hidden bg-ink pb-14 pt-10 text-white lg:pb-[100px] lg:pt-[178px]">
-                <div className="site-container">
-                    <p className="m-0 text-xs font-extrabold tracking-[.12em] text-brand-light">
-                        MEDICAL AD LAB JOURNAL
-                    </p>
-                    <h1 className="mt-4 text-h1">
-                        분석하고 실행한 것을
-                        <br />
-                        <em className="not-italic text-brand-light">직접 기록합니다.</em>
-                    </h1>
-                    <p className="mt-4 max-w-[520px] text-sm text-white/60 lg:mt-5 lg:text-body">
-                        병원광고연구소가 현장에서 확인한 기준과 데이터를 정리하는 자체 제작 저널입니다.
-                    </p>
-                    <div
-                        className="mt-8 h-[90px] w-[130px] rounded-2xl border border-white/20 bg-white/5 lg:absolute lg:right-[10%] lg:top-1/2 lg:mt-0 lg:h-[200px] lg:w-[280px]"
-                        aria-hidden
-                    />
-                </div>
-            </section>
+        <main className="pt-[60px] md:pt-[72px] xl:pt-20">
+            <PageBanner variant="journal" />
 
             <section className="bg-white py-section">
                 <div className="site-container">
@@ -81,15 +74,7 @@ export default function AboutPage() {
                 </div>
             </section>
 
-            <section className="bg-deep py-section text-center text-white">
-                <div className="site-container">
-                    <h2 className="section-title">우리 병원에 직접 적용해 보고 싶다면</h2>
-                    <p className="mb-8 mt-4 text-sm text-white/70 lg:mb-10">
-                        연구한 기준을 바탕으로 매체와 비용을 비교해 드립니다.
-                    </p>
-                    <DiagnosisButton className="btn-primary">무료진단 신청하기</DiagnosisButton>
-                </div>
-            </section>
+            <BottomCta />
         </main>
     );
 }

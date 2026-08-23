@@ -6,7 +6,7 @@ export function Results() {
     return (
         <section className="results-bg py-section text-white" id="diagnosis">
             <div className="site-container">
-                <Reveal>
+                <Reveal variant="heading">
                     <h2 className="section-title mb-10 text-center lg:mb-[80px] lg:text-h1">
                         상담이 아니라, 직접 검토할 수 있는
                         <br />
@@ -17,10 +17,11 @@ export function Results() {
                     {resultCards.map((card, index) => (
                         <Reveal
                             key={card.number}
-                            className="flex flex-col rounded-panel glass-pill  p-7 text-white shadow-[0_26px_60px_rgba(4,16,41,.22)] lg:p-[65px_36px_50px]"
+                            className="result-card glass-pill flex flex-col rounded-panel p-7 text-white shadow-[0_26px_60px_rgba(4,16,41,.22)] lg:p-[64px_36px_50px]"
                             delay={index * 0.08}
+                            variant="card"
                         >
-                            <h3 className="mb-7 mt-3 text-h4 lg:mb-[30px] text-center lg:text-[30px]">{card.title}</h3>
+                            <h3 className="mb-7 mt-3 text-center text-h4 lg:mb-[30px] lg:text-[30px]">{card.title}</h3>
                             <div className="mb-7.5 grid place-items-center rounded-2xl  lg:mb-10.5">
                                 <Image
                                     src={card.image}

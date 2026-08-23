@@ -30,7 +30,7 @@ export function Faq() {
                                     onClick={() => setOpen(expanded ? null : index)}
                                     className="flex w-full items-center justify-between gap-5 border-0 bg-transparent py-6 text-left lg:pt-[24px]"
                                 >
-                                    <span className="text-[15px] font-semibold lg:text-h5">{question}</span>
+                                    <span className="text-[16px] font-semibold lg:text-h5">{question}</span>
                                     <i className="text-[24px] font-bold not-italic text-[#0E182A]">
                                         {expanded ? '−' : '+'}
                                     </i>
