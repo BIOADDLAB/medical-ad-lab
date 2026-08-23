@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 
-/** 절제된 방향성·마스크·시차만 사용한 2차 모션 */
+/** 연구소 톤에 맞춘 방향성·마스크·미세 시차 모션 */
 export function HomeMotion() {
     useEffect(() => {
         let dispose = () => {};
@@ -27,14 +27,14 @@ export function HomeMotion() {
                     .fromTo('.hero-support', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 }, '-=0.52')
                     .fromTo(
                         '.hero-badge',
-                        { x: -12, opacity: 0 },
-                        { x: 0, opacity: 1, duration: 0.55, stagger: 0.08 },
+                        { y: 9, opacity: 0, filter: 'blur(4px)' },
+                        { y: 0, opacity: 1, filter: 'blur(0px)', duration: 0.58, stagger: 0.08 },
                         '-=0.42',
                     )
                     .fromTo(
                         '.hero-form-column',
-                        { x: 34, opacity: 0, scale: 0.99 },
-                        { x: 0, opacity: 1, scale: 1, duration: 0.9 },
+                        { x: 24, opacity: 0, clipPath: 'inset(0 0 7% 0 round 26px)' },
+                        { x: 0, opacity: 1, clipPath: 'inset(0 0 0% 0 round 26px)', duration: 0.92 },
                         '-=0.88',
                     );
 
@@ -83,15 +83,15 @@ export function HomeMotion() {
                     );
                 });
 
-                gsap.utils.toArray<HTMLElement>('.lab-row').forEach((row, index) => {
+                gsap.utils.toArray<HTMLElement>('.lab-row').forEach((row) => {
                     const image = row.querySelector<HTMLElement>('.lab-image');
                     if (!image) return;
                     gsap.fromTo(
                         image,
-                        { y: 22, rotate: index % 2 ? 2 : -2 },
+                        { y: 18, scale: 0.985 },
                         {
-                            y: -12,
-                            rotate: 0,
+                            y: -10,
+                            scale: 1,
                             ease: 'none',
                             scrollTrigger: { trigger: row, start: 'top 90%', end: 'bottom 28%', scrub: 1 },
                         },
@@ -103,8 +103,7 @@ export function HomeMotion() {
 
                 if (pageBanner && bannerArt) {
                     gsap.to(bannerArt, {
-                        yPercent: 5,
-                        rotate: 1.2,
+                        yPercent: 3,
                         ease: 'none',
                         scrollTrigger: {
                             trigger: pageBanner,

@@ -3,8 +3,8 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Icon } from '@/components/ui/icon';
 import { MobileMenuIcon } from '@/components/layout/mobile-menu-icon';
+import { MobileNavPanel } from '@/components/layout/mobile-nav-panel';
 import { MOBILE_MENU_VARIANT } from '@/lib/ui-config';
 
 export const navItems = [
@@ -26,23 +26,24 @@ function isCurrent(pathname: string, href: string) {
 type Props = {
     solid: boolean;
     onDiagnosis: (opener: HTMLElement) => void;
-    onMenuOpen: () => void;
+    onMenuToggle: () => void;
     menuOpen: boolean;
 };
 
-export function SiteHeader({ solid, onDiagnosis, onMenuOpen, menuOpen }: Props) {
+export function SiteHeader({ solid, onDiagnosis, onMenuToggle, menuOpen }: Props) {
     const pathname = usePathname();
+    const isSolid = solid || menuOpen;
 
     return (
         <header
             className={`fixed inset-x-0 top-0 z-[100] h-[60px] border-b transition-[height,color,background,border-color] duration-200 md:h-[72px] xl:h-[88px] ${
-                solid ? 'border-ink/10 bg-white/95 text-ink backdrop-blur-lg xl:h-20' : 'border-white/20 text-white'
+                isSolid ? 'border-ink/10 bg-white/95 text-ink backdrop-blur-lg xl:h-20' : 'border-white/20 text-white'
             }`}
         >
-            <div className="site-container flex h-full items-center gap-4 xl:gap-[30px]">
+            <div className="site-container flex h-full items-center gap-3 sm:gap-4 xl:gap-5 2xl:gap-[30px]">
                 <Link href="/" className="shrink-0" aria-label="병원광고연구소 홈">
                     <Image
-                        src={solid ? '/images/logo-blue-02.svg' : '/images/logo.svg'}
+                        src={isSolid ? '/images/logo-blue-02.svg' : '/images/logo.svg'}
                         alt="병원광고연구소"
                         width={161}
                         height={25}
@@ -53,12 +54,12 @@ export function SiteHeader({ solid, onDiagnosis, onMenuOpen, menuOpen }: Props) 
                     {/* <span className="block text-[24px] font-black  text-brand">병원광고연구소</span> */}
                 </Link>
 
-                <nav className="hidden flex-1 items-center justify-center gap-11 xl:flex" aria-label="주요 메뉴">
+                <nav className="hidden flex-1 items-center justify-center gap-6 2xl:gap-11 xl:flex" aria-label="주요 메뉴">
                     {navItems.map(([label, href]) => (
                         <Link
                             key={href}
                             href={href}
-                            className={`relative whitespace-nowrap py-[30px] text-body font-semibold after:absolute after:inset-x-0 after:bottom-[22px] after:h-px after:rounded after:bg-current after:transition-transform hover:after:scale-x-100 ${
+                            className={`relative whitespace-nowrap py-[28px] text-sm font-semibold after:absolute after:inset-x-0 after:bottom-[20px] after:h-px after:rounded after:bg-current after:transition-transform hover:after:scale-x-100 2xl:py-[30px] 2xl:text-body 2xl:after:bottom-[22px] ${
                                 isCurrent(pathname, href) ? 'after:scale-x-100' : 'after:scale-x-0'
                             }`}
                         >
@@ -72,7 +73,7 @@ export function SiteHeader({ solid, onDiagnosis, onMenuOpen, menuOpen }: Props) 
                         type="button"
                         onClick={(event) => onDiagnosis(event.currentTarget)}
                         className={`h-9 rounded-lg px-3.5 text-[14px] font-extrabold transition-colors xl:h-12 xl:px-[26px] xl:text-body ${
-                            solid ? 'bg-brand text-white' : 'bg-white text-brand'
+                            isSolid ? 'bg-brand text-white' : 'bg-white text-brand'
                         }`}
                     >
                         <span className="xl:hidden">무료진단</span>
@@ -80,12 +81,14 @@ export function SiteHeader({ solid, onDiagnosis, onMenuOpen, menuOpen }: Props) 
                     </button>
                     <button
                         type="button"
-                        aria-label="메뉴 열기"
+                        aria-label={menuOpen ? '메뉴 닫기' : '메뉴 열기'}
                         aria-expanded={menuOpen}
                         aria-controls="mobile-navigation"
-                        onClick={onMenuOpen}
-                        className={`grid h-10 w-10 place-items-center rounded-xl border shadow-sm transition-[background,border-color,transform] active:scale-95 xl:hidden ${
-                            solid
+                        onClick={onMenuToggle}
+                        className={`grid h-10 place-items-center rounded-xl border shadow-sm transition-[width,background,border-color,transform] active:scale-95 xl:hidden ${
+                            MOBILE_MENU_VARIANT === 5 ? 'w-[64px]' : 'w-10'
+                        } ${
+                            isSolid
                                 ? 'border-line bg-white text-ink'
                                 : 'border-white/30 bg-deep/15 text-white backdrop-blur-sm'
                         }`}
@@ -113,47 +116,20 @@ export function MobileNav({
         <div
             id="mobile-navigation"
             aria-hidden={!open}
-            className={`fixed inset-0 z-[210] flex flex-col overflow-y-auto bg-white px-gutter pb-7 pt-5 transition-[opacity,transform,visibility] duration-300 xl:hidden ${
+            role="dialog"
+            aria-modal="true"
+            aria-label="모바일 메뉴"
+            className={`fixed inset-x-0 bottom-0 top-[60px] z-[90] overflow-y-auto bg-white transition-[opacity,transform,visibility] duration-300 ease-[cubic-bezier(.22,1,.36,1)] md:top-[72px] xl:hidden ${
                 open ? 'visible translate-x-0 opacity-100' : 'invisible translate-x-full opacity-0'
             }`}
         >
-            <div className="flex items-center justify-between">
-                <Link href="/" onClick={onClose} aria-label="병원광고연구소 홈">
-                    <Image
-                        src="/images/logo-blue-02.svg"
-                        alt="병원광고연구소"
-                        width={161}
-                        height={25}
-                        unoptimized
-                        className="h-[18px] w-auto"
-                    />
-                </Link>
-                <button
-                    type="button"
-                    aria-label="메뉴 닫기"
-                    onClick={onClose}
-                    className="grid h-10 w-10 place-items-center rounded-xl border border-line bg-white text-ink shadow-sm"
-                >
-                    <MobileMenuIcon open variant={MOBILE_MENU_VARIANT} />
-                </button>
-            </div>
-            <nav className="mb-auto mt-10" aria-label="모바일 메뉴">
-                {navItems.map(([label, href, section]) => (
-                    <Link
-                        key={href}
-                        href={href}
-                        onClick={onClose}
-                        className="grid min-h-16 grid-cols-[92px_1fr_20px] items-center border-b border-line text-h5 first:border-t"
-                    >
-                        <small className="text-[10px] font-extrabold tracking-[.1em] text-subtle">{section}</small>
-                        <span className={isCurrent(pathname, href) ? 'text-brand' : ''}>{label}</span>
-                        <Icon name="arrow" className="w-[18px] text-subtle" />
-                    </Link>
-                ))}
-            </nav>
-            <button className="btn-primary w-full" type="button" onClick={(event) => onDiagnosis(event.currentTarget)}>
-                무료진단 받기
-            </button>
+            <MobileNavPanel
+                variant={MOBILE_MENU_VARIANT}
+                pathname={pathname}
+                items={navItems}
+                onClose={onClose}
+                onDiagnosis={onDiagnosis}
+            />
         </div>
     );
 }

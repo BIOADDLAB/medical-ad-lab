@@ -74,7 +74,6 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
         if (!firebase || mode !== 'list') return;
 
         let alive = true;
-        setStatus('loading');
 
         getDocs(collection(firebase.db, 'references'))
             .then((snapshot) => {
@@ -98,7 +97,10 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
         [filter, rows],
     );
 
-    const refresh = () => setReloadKey((key) => key + 1);
+    const refresh = () => {
+        setStatus('loading');
+        setReloadKey((key) => key + 1);
+    };
 
     const handleCreate = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -247,7 +249,7 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
     if (mode === 'create') {
         return (
             <article className={panel}>
-                <form className="grid gap-5 lg:grid-cols-2" onSubmit={handleCreate}>
+                <form className="grid gap-5 md:grid-cols-2" onSubmit={handleCreate}>
                     <label className={label}>
                         <span>제목</span>
                         <input name="title" required placeholder="예: 환승역 디지털 포스터 패키지" className={input} />
@@ -279,7 +281,7 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
                             />
                         </div>
                     </label>
-                    <label className={`${label} lg:col-span-2`}>
+                    <label className={`${label} md:col-span-2`}>
                         <span>요약</span>
                         <textarea
                             name="summary"
@@ -290,7 +292,7 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
                             className={textarea}
                         />
                     </label>
-                    <label className={`${label} lg:col-span-2`}>
+                    <label className={`${label} md:col-span-2`}>
                         <span>대표 이미지</span>
                         <input
                             name="image"
@@ -300,8 +302,8 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
                             className="rounded-[10px] border border-dashed border-line-strong bg-soft p-3 text-xs"
                         />
                     </label>
-                    <div className="flex flex-wrap items-center gap-4 lg:col-span-2">
-                        <button className="btn-primary" type="submit" disabled={status === 'saving'}>
+                    <div className="flex flex-wrap items-center gap-4 md:col-span-2">
+                        <button className="btn-primary w-full sm:w-auto" type="submit" disabled={status === 'saving'}>
                             {status === 'saving' ? '업로드 중...' : '레퍼런스 등록'}
                         </button>
                         {message && (
@@ -384,7 +386,7 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
                 )}
 
                 {visibleRows.length > 0 && (
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                    <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
                         {visibleRows.map((row) => (
                             <article
                                 key={row.id}
@@ -408,7 +410,7 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
                                         sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                                     />
                                     {filter === 'all' && (
-                                        <span className="absolute left-3 top-3 rounded-full bg-deep/80 px-3 py-1.5 text-[10px] font-bold text-white backdrop-blur-sm">
+                                        <span className="absolute left-3 top-3 hidden rounded-full bg-deep/80 px-3 py-1.5 text-[10px] font-bold text-white backdrop-blur-sm md:inline-flex">
                                             끌어서 순서 변경
                                         </span>
                                     )}
@@ -459,8 +461,8 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
             </article>
 
             {editing && (
-                <div className="fixed inset-0 z-[200] grid place-items-center bg-deep/60 p-4 backdrop-blur-sm">
-                    <section className="max-h-[92vh] w-full max-w-[680px] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl lg:p-8">
+                <div className="fixed inset-0 z-[200] grid place-items-center bg-deep/60 p-3 backdrop-blur-sm sm:p-4">
+                    <section className="admin-scroll max-h-[calc(100dvh-24px)] w-full max-w-[680px] overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl sm:max-h-[92vh] sm:p-6 lg:p-8">
                         <div className="mb-6 flex items-start justify-between gap-4">
                             <div>
                                 <p className="m-0 text-[10px] font-extrabold tracking-[.12em] text-brand">EDIT REFERENCE</p>

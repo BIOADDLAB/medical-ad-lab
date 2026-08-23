@@ -201,7 +201,7 @@ export function AdminDashboard() {
     return (
         <main className="min-h-screen bg-field text-ink">
             <aside
-                className={`fixed inset-y-0 left-0 z-60 flex w-[260px] flex-col bg-ink px-5 pb-6 pt-[30px] text-white transition-transform duration-300 lg:translate-x-0 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                className={`fixed inset-y-0 left-0 z-60 flex w-[280px] max-w-[86vw] flex-col overflow-y-auto bg-ink px-5 pb-6 pt-[30px] text-white transition-transform duration-300 xl:w-[260px] xl:max-w-none xl:translate-x-0 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}
             >
                 <div className="grid border-b border-white/10 px-2.5 pb-[30px]">
                     <strong className="text-h5">병원광고연구소</strong>
@@ -213,7 +213,7 @@ export function AdminDashboard() {
                     type="button"
                     onClick={() => setMenuOpen(false)}
                     aria-label="관리자 메뉴 닫기"
-                    className="absolute right-4 top-4 text-xl lg:hidden"
+                    className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-xl border border-white/15 text-xl xl:hidden"
                 >
                     ×
                 </button>
@@ -262,17 +262,17 @@ export function AdminDashboard() {
                     type="button"
                     aria-label="관리자 메뉴 닫기"
                     onClick={() => setMenuOpen(false)}
-                    className="fixed inset-0 z-50 bg-black/40 lg:hidden"
+                    className="fixed inset-0 z-50 bg-black/40 xl:hidden"
                 />
             )}
 
-            <section className="min-h-screen lg:ml-[260px]">
-                <header className="sticky top-0 z-40 flex h-[68px] items-center justify-between border-b border-line bg-white/90 px-5 backdrop-blur-lg lg:h-[76px] lg:px-9">
+            <section className="min-h-screen xl:ml-[260px]">
+                <header className="sticky top-0 z-40 flex h-[68px] items-center justify-between border-b border-line bg-white/90 px-5 backdrop-blur-lg md:px-7 xl:h-[76px] xl:px-9">
                     <button
                         type="button"
                         onClick={() => setMenuOpen(true)}
                         aria-label="관리자 메뉴 열기"
-                        className="text-xl lg:hidden"
+                        className="grid h-10 w-10 place-items-center rounded-xl border border-line bg-white text-xl shadow-sm xl:hidden"
                     >
                         ☰
                     </button>
@@ -290,7 +290,7 @@ export function AdminDashboard() {
                     </div>
                 </header>
 
-                <div className="mx-auto w-full max-w-[1440px] px-5 py-10 lg:px-9 lg:py-14">
+                <div className="mx-auto w-full max-w-[1440px] px-4 py-8 sm:px-5 md:px-7 md:py-10 xl:px-9 xl:py-14">
                     {view === 'dashboard' && (
                         <>
                             <div className="mb-8 flex flex-wrap items-end justify-between gap-5 lg:mb-10">
@@ -301,11 +301,11 @@ export function AdminDashboard() {
                                         문의는 구글시트에서, 레퍼런스는 이 화면에서 관리합니다.
                                     </p>
                                 </div>
-                                <button className="btn-primary" type="button" onClick={() => move('create')}>
+                                <button className="btn-primary w-full sm:w-auto" type="button" onClick={() => move('create')}>
                                     레퍼런스 등록
                                 </button>
                             </div>
-                            <div className="mb-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                            <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                                 {stats.map(([label, value, note]) => (
                                     <Panel key={label}>
                                         <span className="text-xs text-muted">{label}</span>
@@ -314,7 +314,7 @@ export function AdminDashboard() {
                                     </Panel>
                                 ))}
                             </div>
-                            <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+                            <div className="grid gap-4 xl:grid-cols-[1.4fr_1fr]">
                                 <Panel>
                                     <div className="mb-4 flex items-start justify-between gap-4">
                                         <div>
@@ -332,7 +332,7 @@ export function AdminDashboard() {
                                         </button>
                                     </div>
                                     {leads?.ready ? (
-                                        <ul className="grid list-none gap-3 p-0 text-xs">
+                                        <ul className="admin-scroll grid max-h-[360px] list-none gap-3 overflow-y-auto p-0 pr-1 text-xs">
                                             {leads.leads.slice(0, 5).map((lead, index) => (
                                                 <li
                                                     key={`${lead.createdAt}-${index}`}
@@ -402,7 +402,7 @@ export function AdminDashboard() {
                                         사이트 /insight 페이지에 노출되는 집행 사례입니다.
                                     </p>
                                 </div>
-                                <button className="btn-primary" type="button" onClick={() => move('create')}>
+                                <button className="btn-primary w-full sm:w-auto" type="button" onClick={() => move('create')}>
                                     레퍼런스 등록
                                 </button>
                             </div>

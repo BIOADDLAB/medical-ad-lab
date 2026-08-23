@@ -54,7 +54,7 @@ export function LeadTable({ user }: { user: User }) {
 
     return (
         <>
-            <div className="admin-scroll grid max-h-[560px] gap-3 overflow-y-auto md:hidden">
+            <div className="admin-scroll grid max-h-[min(560px,calc(100vh-220px))] gap-3 overflow-y-auto lg:hidden">
                 {data.leads.map((lead, index) => (
                     <article className="rounded-xl border border-line bg-soft p-4" key={`${lead.createdAt}-${index}`}>
                         <div className="flex items-start justify-between gap-3">
@@ -91,7 +91,7 @@ export function LeadTable({ user }: { user: User }) {
                     </article>
                 ))}
             </div>
-            <div className="admin-scroll hidden max-h-[560px] overflow-auto md:block">
+            <div className="admin-scroll hidden max-h-[min(560px,calc(100vh-220px))] overflow-auto lg:block">
                 <table className="w-full min-w-[760px] border-collapse text-xs">
                     <thead>
                         <tr className="sticky top-0 z-10 border-b border-line-strong bg-white text-left text-muted">

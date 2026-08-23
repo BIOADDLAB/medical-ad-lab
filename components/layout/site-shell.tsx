@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { MobileNav, SiteHeader } from '@/components/layout/site-header';
 import { SiteFooter } from '@/components/layout/site-footer';
+import { ScrollTopButton } from '@/components/layout/scroll-top-button';
 import { DiagnosisModal } from '@/components/lead/diagnosis-modal';
 
 export function SiteShell({ children }: { children: React.ReactNode }) {
@@ -72,12 +73,13 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
             <SiteHeader
                 solid={scrolled || !isMain}
                 menuOpen={menuOpen}
-                onMenuOpen={() => setMenuOpen(true)}
+                onMenuToggle={() => setMenuOpen((open) => !open)}
                 onDiagnosis={openDiagnosis}
             />
             <MobileNav open={menuOpen} onClose={() => setMenuOpen(false)} onDiagnosis={openDiagnosis} />
             {children}
             <SiteFooter />
+            <ScrollTopButton hidden={menuOpen || modalOpen} />
             {!isMain && (
                 <DiagnosisModal
                     open={modalOpen}

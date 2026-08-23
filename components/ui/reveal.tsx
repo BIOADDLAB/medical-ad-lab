@@ -7,16 +7,16 @@ type RevealVariant = 'content' | 'heading' | 'card';
 
 const refinedVariants = {
     content: {
-        initial: { opacity: 0, y: 18 },
+        initial: { opacity: 0, y: 14 },
         visible: { opacity: 1, y: 0 },
     },
     heading: {
-        initial: { opacity: 0, y: 22, clipPath: 'inset(0 0 22% 0)' },
+        initial: { opacity: 0, y: 18, clipPath: 'inset(0 0 24% 0)' },
         visible: { opacity: 1, y: 0, clipPath: 'inset(0 0 0% 0)' },
     },
     card: {
-        initial: { opacity: 0, y: 14, scale: 0.988 },
-        visible: { opacity: 1, y: 0, scale: 1 },
+        initial: { opacity: 0, y: 12, clipPath: 'inset(0 0 7% 0 round 20px)' },
+        visible: { opacity: 1, y: 0, clipPath: 'inset(0 0 0% 0 round 20px)' },
     },
 } as const;
 
@@ -43,7 +43,7 @@ export function Reveal({
             initial={reduceMotion ? false : selected.initial}
             whileInView={reduceMotion ? undefined : selected.visible}
             viewport={{ once: true, amount: variant === 'heading' ? 0.45 : 0.22 }}
-            transition={{ duration: variant === 'heading' ? 0.78 : 0.62, delay, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: variant === 'heading' ? 0.76 : 0.6, delay, ease: [0.22, 1, 0.36, 1] }}
         >
             {children}
         </motion.div>

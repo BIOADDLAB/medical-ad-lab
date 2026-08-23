@@ -146,6 +146,15 @@
     .field-input {
         @apply h-[52px] w-full rounded-field border border-transparent bg-field px-4 text-body text-ink outline-none transition-colors placeholder:text-muted focus:border-brand focus:bg-white aria-[invalid=true]:border-red-500;
     }
+    select.field-input:required:invalid {
+        color: var(--color-muted);
+    }
+    select.field-input option {
+        color: var(--color-ink);
+    }
+    select.field-input option[value=''] {
+        color: var(--color-muted);
+    }
     .lead-message {
         height: 76px;
         line-height: 1.5;
@@ -164,10 +173,71 @@
         @apply rounded-card border border-line bg-white;
     }
     .glass-pill {
-        background: color-mix(in srgb, var(--color-glass) 20%, transparent);
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.42);
+        background: rgba(217, 217, 217, 0.2);
+        backdrop-filter: blur(7px) saturate(115%) brightness(1.03);
+        -webkit-backdrop-filter: blur(7px) saturate(115%) brightness(1.03);
         box-shadow:
-            inset 1px 1px 1.5px rgba(255, 255, 255, 0.45),
-            inset -1px -1px 1.5px rgba(255, 255, 255, 0.18);
+            inset 0 1px 0 rgba(255, 255, 255, 0.34),
+            inset 0 -1px 0 rgba(3, 18, 50, 0.1),
+            0 6px 18px rgba(2, 14, 43, 0.08);
+    }
+    .glass-pill::before {
+        position: absolute;
+        inset: 1px;
+        z-index: 0;
+        border-radius: inherit;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.11), transparent 52%);
+        content: '';
+        pointer-events: none;
+    }
+    /*
+     * Figma Glass 배지
+     * fill #D9D9D9 20% / radius 77 / frost 0
+     *
+     * 현재 히어로는 부드러운 그라데이션 배경이라 필터를 추가하면
+     * Figma보다 위쪽이 밝고 파란 광택처럼 보인다. 원본처럼 fill을
+     * 그대로 합성하고, depth는 1px 렌즈 림으로만 표현한다.
+     */
+    .figma-glass-pill {
+        position: relative;
+        isolation: isolate;
+        overflow: hidden;
+        border: 0;
+        background: rgba(217, 217, 217, 0.2);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+        box-shadow: none;
+    }
+    /* Figma 캔버스에서 보이는 위쪽은 살짝 밝고 아래쪽은 얇은 1px 렌즈 림 */
+    .figma-glass-pill::before {
+        position: absolute;
+        z-index: 1;
+        inset: 0;
+        padding: 1px;
+        border-radius: inherit;
+        background: linear-gradient(180deg, rgba(218, 232, 255, 0.42), rgba(200, 218, 245, 0.4));
+        content: '';
+        pointer-events: none;
+        -webkit-mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+        mask:
+            linear-gradient(#fff 0 0) content-box,
+            linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+    }
+    /* 추가 광택은 원본보다 강해지므로 사용하지 않는다. */
+    .figma-glass-pill::after {
+        display: none;
+    }
+    .figma-glass-pill-text {
+        position: relative;
+        z-index: 2;
     }
     .honeypot {
         @apply pointer-events-none absolute left-[-9999px] h-px w-px opacity-0;
@@ -369,6 +439,12 @@
     .hero-bg {
         background-position: 50% 48%;
         background-size: cover;
+    }
+}
+
+@media (min-width: 1280px) and (min-height: 760px) {
+    .hero-inner {
+        transform: translateY(24px);
     }
 }
 

@@ -26,15 +26,15 @@ export function Hero() {
 
     return (
         <section
-            className="hero-bg relative overflow-hidden pb-16 pt-[100px] text-white md:pb-24 md:pt-32 lg:flex lg:min-h-svh lg:items-center lg:py-[clamp(108px,10vh,150px)]"
+            className="hero-bg relative overflow-hidden pb-16 pt-[104px] text-white md:pb-28 md:pt-[136px] xl:flex xl:min-h-svh xl:items-center xl:py-[clamp(112px,10vh,150px)]"
             id="apply"
         >
-            <div className="site-container grid items-center gap-11 lg:grid-cols-[minmax(0,1fr)_minmax(420px,500px)] lg:gap-10 xl:grid-cols-[minmax(0,1fr)_580px] xl:gap-20">
-                <div className="hero-copy md:max-w-[720px]">
-                    <p className="hero-eyebrow m-0 mb-10 text-sm font-extrabold text-mint xl:mb-0 xl:text-[24px]">
+            <div className="hero-inner site-container grid items-center gap-12 md:gap-14 xl:grid-cols-[minmax(0,1fr)_minmax(460px,520px)] xl:gap-12 2xl:grid-cols-[minmax(0,1fr)_580px] 2xl:gap-20">
+                <div className="hero-copy max-w-[760px]">
+                    <p className="hero-eyebrow m-0 mb-8 text-sm font-extrabold text-mint md:mb-10 xl:mb-0 xl:text-[18px] 2xl:text-[24px]">
                         병원 옥외광고 견적, 무료로 비교해드립니다
                     </p>
-                    <h1 className="mt-0 text-display font-black xl:mt-10">
+                    <h1 className="mt-0 text-display font-black xl:mt-8 2xl:mt-10">
                         <span className="block overflow-hidden">
                             <span className="hero-title-line block">원장님, 그 옥외광고 견적</span>
                         </span>
@@ -45,29 +45,29 @@ export function Hero() {
                             <span className="hero-title-line block">확인해보셨나요?</span>
                         </span>
                     </h1>
-                    <p className="hero-support mt-6 text-lead font-semibold text-white/90 xl:mt-[38px]">
+                    <p className="hero-support mt-6 text-lead font-semibold text-white/90 xl:mt-8 2xl:mt-[38px]">
                         업체마다 다른 매체비부터 제작·설치·의료광고 심의 비용까지.
                         <br />
                         병원 옥외광고 전문팀이 같은 조건으로 비교해드립니다.
                     </p>
-                    <div className="mt-7 flex flex-wrap gap-2.5 xl:mt-[52px] xl:gap-4">
+                    <div className="mt-7 flex flex-wrap gap-2.5 xl:mt-10 xl:gap-3 2xl:mt-[52px] 2xl:gap-4">
                         {badges.map((text) => (
                             <span
                                 key={text}
-                                className="hero-badge glass-pill inline-flex min-h-11 items-center rounded-full px-[18px] text-xs font-extrabold xl:min-h-[54px] xl:px-[26px] xl:text-[18px]"
+                                className="hero-badge figma-glass-pill inline-flex min-h-11 items-center justify-center rounded-full px-[18px] text-xs font-extrabold whitespace-nowrap xl:min-h-12 xl:w-[174px] xl:px-4 xl:text-[14px] 2xl:min-h-[54px] 2xl:w-[191px] 2xl:px-4 2xl:text-[18px]"
                             >
-                                {text}
+                                <span className="figma-glass-pill-text">{text}</span>
                             </span>
                         ))}
                     </div>
                 </div>
 
-                <div className="hero-form-column mx-auto w-full max-w-[680px] lg:max-w-none">
+                <div className="hero-form-column mx-auto w-full max-w-[720px] xl:max-w-none">
                     <div
                         ref={cardRef}
-                        className="scroll-mt-[76px] rounded-panel bg-white p-7 text-ink shadow-[0_30px_80px_rgba(0,16,55,.22)] md:p-10 lg:p-8 xl:scroll-mt-[104px] xl:p-[46px]"
+                        className="scroll-mt-[76px] rounded-panel bg-white p-7 text-ink shadow-[0_30px_80px_rgba(0,16,55,.22)] md:p-10 xl:scroll-mt-[104px] xl:p-9 2xl:p-[46px]"
                     >
-                        <h2 className="m-0 text-h4 font-black tracking-tighter text-brand xl:text-[36px] xl:leading-[1.3]">
+                        <h2 className="m-0 text-h4 font-black tracking-tighter text-brand xl:text-[30px] xl:leading-[1.3] 2xl:text-[36px]">
                             우리 병원 광고 무료진단
                         </h2>
                         <p className="mb-7.5  font-extrabold text-sm text-muted">

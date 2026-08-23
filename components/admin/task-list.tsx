@@ -62,7 +62,7 @@ export function TaskList({ onCount }: { onCount?: (left: number) => void }) {
                 </button>
             </form>
             {ready && !tasks.length && <p className="mt-4 text-xs text-muted">등록된 할 일이 없습니다.</p>}
-            <ul className="mt-4 grid list-none gap-3 p-0 text-xs text-slate">
+            <ul className="admin-scroll mt-4 grid max-h-[360px] list-none gap-3 overflow-y-auto p-0 pr-1 text-xs text-slate">
                 {tasks.map((task) => (
                     <li className="flex items-center gap-2.5 border-b border-line pb-3" key={task.id}>
                         <button

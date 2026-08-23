@@ -1,11 +1,17 @@
 export type MobileMenuVariant = 1 | 2 | 3 | 4 | 5;
+export type ScrollTopVariant = 1 | 2 | 3 | 4 | 5;
 
 /**
- * 모바일 메뉴 아이콘 비교용 설정.
- * 1: 정밀 계측 모티프 + 2선 (비교용)
- * 2: 최종안 — 장식 없는 기본 2선
- * 3: 캡슐 프레임
- * 4: 3선 그리드
- * 5: 텍스트 MENU
+ * 펼쳐진 모바일 메뉴 비교
+ * 1: 연구 리포트 인덱스형 · 추천
+ * 2: 다크 저널형
+ * 3: 2열 카드형
+ * 4: 세로 타임라인형
+ * 5: 중앙 정렬 미니멀형
  */
-export const MOBILE_MENU_VARIANT: MobileMenuVariant = 2;
+export const MOBILE_MENU_VARIANT: MobileMenuVariant = 1;
+
+
+
+export const SCROLL_TOP_VARIANT: ScrollTopVariant = 1;
+

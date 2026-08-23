@@ -1,7 +1,7 @@
 'use client';
 
-import Link from 'next/link';
 import { FormEvent, useEffect, useId, useState } from 'react';
+import { PrivacyModal } from '@/components/lead/privacy-modal';
 import { Icon } from '@/components/ui/icon';
 import { SuccessConfetti } from '@/components/ui/success-confetti';
 
@@ -62,6 +62,7 @@ export function LeadForm({
     const id = useId().replaceAll(':', '');
     const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
     const [errors, setErrors] = useState<Errors>({});
+    const [privacyOpen, setPrivacyOpen] = useState(false);
 
     useEffect(() => {
         saveSource();
@@ -251,9 +252,13 @@ export function LeadForm({
                         />
                         <span className="text-sm font-medium text-slate">개인정보 수집 및 이용에 동의합니다.</span>
                     </label>
-                    <Link href="/privacy" className="ml-auto text-xs font-medium text-brand underline lg:text-muted">
+                    <button
+                        type="button"
+                        onClick={() => setPrivacyOpen(true)}
+                        className="ml-auto text-xs font-medium text-brand underline underline-offset-2 lg:text-muted"
+                    >
                         자세히 보기
-                    </Link>
+                    </button>
                     {errors.privacy && (
                         <small className="field-error" id={errorId('privacy')}>
                             {errors.privacy}
@@ -311,6 +316,7 @@ export function LeadForm({
                     </button>
                 </div>
             )}
+            <PrivacyModal open={privacyOpen} onClose={() => setPrivacyOpen(false)} />
         </div>
     );
 }
