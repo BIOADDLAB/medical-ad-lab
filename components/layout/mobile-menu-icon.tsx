@@ -58,10 +58,7 @@ export function MobileMenuIcon({
     className?: string;
 }) {
     return (
-        <span
-            className={`relative block h-10 ${variant === 5 ? 'w-[58px]' : 'w-10'} ${className}`}
-            aria-hidden
-        >
+        <span className={`relative block h-10 ${variant === 5 ? 'w-[58px]' : 'w-10'} ${className}`} aria-hidden>
             <span
                 className={`absolute inset-0 transition-[opacity,transform] duration-300 ease-[cubic-bezier(.22,1,.36,1)] ${
                     open ? 'scale-75 opacity-0' : 'scale-100 opacity-100'

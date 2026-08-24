@@ -301,7 +301,11 @@ export function AdminDashboard() {
                                         문의는 구글시트에서, 레퍼런스는 이 화면에서 관리합니다.
                                     </p>
                                 </div>
-                                <button className="btn-primary w-full sm:w-auto" type="button" onClick={() => move('create')}>
+                                <button
+                                    className="btn-primary w-full sm:w-auto"
+                                    type="button"
+                                    onClick={() => move('create')}
+                                >
                                     레퍼런스 등록
                                 </button>
                             </div>
@@ -402,7 +406,11 @@ export function AdminDashboard() {
                                         사이트 /insight 페이지에 노출되는 집행 사례입니다.
                                     </p>
                                 </div>
-                                <button className="btn-primary w-full sm:w-auto" type="button" onClick={() => move('create')}>
+                                <button
+                                    className="btn-primary w-full sm:w-auto"
+                                    type="button"
+                                    onClick={() => move('create')}
+                                >
                                     레퍼런스 등록
                                 </button>
                             </div>
@@ -471,7 +479,14 @@ export function AdminDashboard() {
                             )}
                             <div className="grid gap-4 lg:grid-cols-2">
                                 <Panel className="grid gap-5">
-                                    <h2 className="m-0 text-h5">분석 도구</h2>
+                                    <div>
+                                        <h2 className="m-0 text-h5">분석 도구</h2>
+                                        <p className="m-0 mt-2 text-[11px] leading-relaxed text-muted">
+                                            방문자가 어디서 들어와 어느 페이지를 보고 무료진단을 신청했는지 세어 주는
+                                            도구입니다. 넣지 않아도 사이트는 정상 동작하며, 비우면 스크립트를 넣지
+                                            않습니다.
+                                        </p>
+                                    </div>
                                     <label className="grid gap-2 text-xs font-bold text-slate">
                                         <span>GA4 측정 ID</span>
                                         <input
@@ -480,6 +495,11 @@ export function AdminDashboard() {
                                             placeholder="G-XXXXXXXXXX"
                                             className={field}
                                         />
+                                        <span className="font-medium leading-relaxed text-muted">
+                                            구글 애널리틱스(analytics.google.com) 가입 → 속성 만들기 → 웹 → 데이터
+                                            스트림에서 `G-` 로 시작하는 측정 ID를 복사해 넣습니다. 방문자 수와 유입
+                                            경로를 봅니다.
+                                        </span>
                                     </label>
                                     <label className="grid gap-2 text-xs font-bold text-slate">
                                         <span>Meta Pixel ID</span>
@@ -489,10 +509,12 @@ export function AdminDashboard() {
                                             placeholder="000000000000000"
                                             className={field}
                                         />
+                                        <span className="font-medium leading-relaxed text-muted">
+                                            페이스북·인스타그램 광고를 돌릴 때만 필요합니다. 메타 비즈니스
+                                            관리자(business.facebook.com) → 이벤트 관리자에서 픽셀을 만들면 나오는 숫자
+                                            15자리입니다. 광고 계획이 없으면 비워 두세요.
+                                        </span>
                                     </label>
-                                    <p className="m-0 text-[11px] leading-relaxed text-muted">
-                                        값을 넣으면 사이트 전체에 측정 스크립트가 삽입됩니다. 비우면 삽입하지 않습니다.
-                                    </p>
                                 </Panel>
                                 <Panel className="grid gap-5">
                                     <h2 className="m-0 text-h5">연락처</h2>
@@ -534,22 +556,6 @@ export function AdminDashboard() {
                                             )}
                                         </div>
                                     ))}
-                                </Panel>
-                                <Panel>
-                                    <h2 className="m-0 mb-3 text-h5">환경변수 목록</h2>
-                                    <ul className="grid list-disc gap-2 pl-5 text-[11px] text-slate">
-                                        {[
-                                            'GOOGLE_SERVICE_ACCOUNT_EMAIL',
-                                            'GOOGLE_PRIVATE_KEY',
-                                            'GOOGLE_SHEET_ID',
-                                            'RESEND_API_KEY',
-                                            'NOTIFY_EMAILS',
-                                            'ADMIN_EMAILS',
-                                            'NEXT_PUBLIC_FIREBASE_*',
-                                        ].map((key) => (
-                                            <li key={key}>{key}</li>
-                                        ))}
-                                    </ul>
                                 </Panel>
                             </div>
                         </form>

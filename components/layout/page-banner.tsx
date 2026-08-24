@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { motion, useReducedMotion, useScroll, useTransform } from 'motion/react';
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const copy = {
     journal: {
@@ -32,10 +32,22 @@ const copy = {
 export function PageBanner({ variant }: { variant: keyof typeof copy }) {
     const root = useRef<HTMLElement>(null);
     const reduce = useReducedMotion();
+    const [narrow, setNarrow] = useState(false);
     const { scrollYProgress } = useScroll({ target: root, offset: ['start start', 'end start'] });
     const artY = useTransform(scrollYProgress, [0, 1], [0, variant === 'journal' ? 54 : 34]);
     const content = copy[variant];
     const dark = variant === 'journal';
+
+    // 모바일은 글 아래에 그림을 쌓는 구조라 패럴랙스가 들어가면 그림이 잘린다
+    useEffect(() => {
+        const query = window.matchMedia('(max-width: 767px)');
+        const update = () => setNarrow(query.matches);
+        update();
+        query.addEventListener('change', update);
+        return () => query.removeEventListener('change', update);
+    }, []);
+
+    const still = reduce || narrow;
 
     return (
         <section
@@ -46,7 +58,7 @@ export function PageBanner({ variant }: { variant: keyof typeof copy }) {
             <div className="page-banner-frame relative z-10 mx-auto h-full max-w-[1496px]">
                 <motion.div
                     className="page-banner-copy absolute z-20"
-                    initial={reduce ? false : { opacity: 0, y: 22 }}
+                    initial={still ? false : { opacity: 0, y: 22 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
                 >
@@ -68,8 +80,8 @@ export function PageBanner({ variant }: { variant: keyof typeof copy }) {
                 <motion.div
                     aria-hidden
                     className="page-banner-art pointer-events-none absolute z-0"
-                    style={reduce ? undefined : { y: artY }}
-                    initial={reduce ? false : { opacity: 0, x: 32, scale: 0.97 }}
+                    style={still ? undefined : { y: artY }}
+                    initial={still ? false : { opacity: 0, x: 32, scale: 0.97 }}
                     animate={{ opacity: 1, x: 0, scale: 1 }}
                     transition={{ delay: 0.16, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
                 >

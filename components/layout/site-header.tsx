@@ -23,6 +23,12 @@ function isCurrent(pathname: string, href: string) {
     );
 }
 
+/** 밑줄 대신 글자색 농도로 표시한다. 시안은 전부 흰색이라 기본을 /80 까지만 낮춘다 */
+function navTone(isSolid: boolean, current: boolean) {
+    if (isSolid) return current ? 'text-ink' : 'text-ink/60 hover:text-ink';
+    return current ? 'text-white' : 'text-white/80 hover:text-white';
+}
+
 type Props = {
     solid: boolean;
     onDiagnosis: (opener: HTMLElement) => void;
@@ -41,7 +47,17 @@ export function SiteHeader({ solid, onDiagnosis, onMenuToggle, menuOpen }: Props
             }`}
         >
             <div className="site-container flex h-full items-center gap-3 sm:gap-4 xl:gap-5 2xl:gap-[30px]">
-                <Link href="/" className="shrink-0" aria-label="병원광고연구소 홈">
+                {/* 이미 홈이면 이동하지 않고 맨 위로 부드럽게 올린다 */}
+                <Link
+                    href="/"
+                    className="shrink-0"
+                    aria-label="병원광고연구소 홈"
+                    onClick={(event) => {
+                        if (pathname !== '/') return;
+                        event.preventDefault();
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                >
                     <Image
                         src={isSolid ? '/images/logo-blue-02.svg' : '/images/logo.svg'}
                         alt="병원광고연구소"
@@ -54,14 +70,16 @@ export function SiteHeader({ solid, onDiagnosis, onMenuToggle, menuOpen }: Props
                     {/* <span className="block text-[24px] font-black  text-brand">병원광고연구소</span> */}
                 </Link>
 
-                <nav className="hidden flex-1 items-center justify-center gap-6 2xl:gap-11 xl:flex" aria-label="주요 메뉴">
+                {/* 시안 1920 기준 항목 사이 잉크 간격 55px = CSS gap 60px */}
+                <nav
+                    className="hidden flex-1 items-center justify-center gap-7 2xl:gap-[60px] xl:flex"
+                    aria-label="주요 메뉴"
+                >
                     {navItems.map(([label, href]) => (
                         <Link
                             key={href}
                             href={href}
-                            className={`relative whitespace-nowrap py-[28px] text-sm font-semibold after:absolute after:inset-x-0 after:bottom-[20px] after:h-px after:rounded after:bg-current after:transition-transform hover:after:scale-x-100 2xl:py-[30px] 2xl:text-body 2xl:after:bottom-[22px] ${
-                                isCurrent(pathname, href) ? 'after:scale-x-100' : 'after:scale-x-0'
-                            }`}
+                            className={`whitespace-nowrap py-[28px] text-sm font-semibold transition-colors duration-200 2xl:py-[30px] 2xl:text-body ${navTone(isSolid, isCurrent(pathname, href))}`}
                         >
                             {label}
                         </Link>
@@ -72,7 +90,7 @@ export function SiteHeader({ solid, onDiagnosis, onMenuToggle, menuOpen }: Props
                     <button
                         type="button"
                         onClick={(event) => onDiagnosis(event.currentTarget)}
-                        className={`h-9 rounded-lg px-3.5 text-[14px] font-extrabold transition-colors xl:h-12 xl:px-[26px] xl:text-body ${
+                        className={`h-9 rounded-lg px-3.5 text-[14px] font-extrabold transition-colors xl:h-12 xl:px-[34px] xl:text-body 2xl:px-[46px] ${
                             isSolid ? 'bg-brand text-white' : 'bg-white text-brand'
                         }`}
                     >

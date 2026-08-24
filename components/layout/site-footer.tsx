@@ -1,14 +1,15 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { DiagnosisButton } from '@/components/lead/diagnosis-button';
 import { ContactEmail } from '@/components/layout/contact-email';
 
-/** 임시값: 실제 사업자등록증·회사 연락처 확인 후 교체 */
+/** 병원광고연구소는 바이오애드랩(주)의 브랜드다. 사업자정보는 모회사 기준으로 표기한다 */
 const businessInfo = [
-    '상호명 바이오애드랩',
-    '대표자 추후 입력',
-    '사업자등록번호 000-00-00000',
-    '서울특별시 강남구 테헤란로 000',
-    '대표전화 02-0000-0000',
+    '상호 바이오애드랩(주)',
+    '대표자 전해성',
+    '사업자등록번호 216-86-02932',
+    '서울특별시 강남구 학동로3길 27 2층 201호',
+    '전화 02-2038-0088',
 ];
 
 export function SiteFooter() {
@@ -17,8 +18,15 @@ export function SiteFooter() {
             <div className="site-container">
                 <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-start lg:gap-10">
                     <div>
-                        <strong className="block text-[16px] font-extrabold">병원광고연구소</strong>
-                        <p className="mb-0 mt-2.5 text-sm">병원 광고를 더 쉽고, 더 투명하게.</p>
+                        <Image
+                            src="/images/logo-ori.svg"
+                            alt="병원광고연구소"
+                            width={161}
+                            height={25}
+                            unoptimized
+                            className="h-[30px] w-auto"
+                        />
+                        <p className="mb-0 mt-3 text-sm">병원 광고를 더 쉽고, 더 투명하게.</p>
                     </div>
                     <div className="flex gap-5 text-sm font-bold">
                         <Link href="/about">회사소개</Link>
@@ -34,9 +42,11 @@ export function SiteFooter() {
                             <br />
                             {businessInfo.slice(3).join(' · ')}
                         </small>
-                        <ContactEmail />
+                        <ContactEmail fallback="medicaladlab@gmail.com" />
                     </div>
-                    <small className="shrink-0 text-sm tracking-[.02em] text-muted">© 2026 MEDICAL AD LAB</small>
+                    <small className="shrink-0 text-sm tracking-[.02em] text-muted">
+                        Copyright ⓒ bioadd lab. All Rights Reserved.
+                    </small>
                 </div>
             </div>
         </footer>

@@ -13,8 +13,7 @@ type Props = {
 };
 
 const isActive = (pathname: string, href: string) =>
-    (pathname.startsWith('/insight') && href === '/insight') ||
-    (pathname.startsWith('/about') && href === '/about');
+    (pathname.startsWith('/insight') && href === '/insight') || (pathname.startsWith('/about') && href === '/about');
 
 function DiagnosisButton({
     onDiagnosis,
@@ -61,14 +60,19 @@ function IndexPanel({ pathname, items, onClose, onDiagnosis }: Omit<Props, 'vari
                                 {String(index + 1).padStart(2, '0')}
                             </span>
                             <span>
-                                <strong className={`block text-[18px] md:text-[20px] ${active ? 'text-brand' : 'text-ink'}`}>
+                                <strong
+                                    className={`block text-[18px] md:text-[20px] ${active ? 'text-brand' : 'text-ink'}`}
+                                >
                                     {label}
                                 </strong>
                                 <small className="mt-1 block text-[9px] font-bold tracking-[.08em] text-muted">
                                     {section}
                                 </small>
                             </span>
-                            <Icon name="arrow" className="w-5 text-muted transition-transform group-hover:translate-x-1" />
+                            <Icon
+                                name="arrow"
+                                className="w-5 text-muted transition-transform group-hover:translate-x-1"
+                            />
                         </Link>
                     );
                 })}
@@ -88,7 +92,9 @@ function JournalPanel({ pathname, items, onClose, onDiagnosis }: Omit<Props, 'va
     return (
         <div className="flex min-h-full flex-col bg-deep px-gutter pb-7 pt-7 text-white md:pb-10 md:pt-10">
             <div className="mb-5 flex items-center justify-between">
-                <small className="text-[10px] font-extrabold tracking-[.18em] text-brand-light-02">LAB NAVIGATION</small>
+                <small className="text-[10px] font-extrabold tracking-[.18em] text-brand-light-02">
+                    LAB NAVIGATION
+                </small>
                 <span className="h-px w-[72px] bg-white/20" />
             </div>
 
@@ -105,10 +111,15 @@ function JournalPanel({ pathname, items, onClose, onDiagnosis }: Omit<Props, 'va
                             <span className={`text-[11px] font-black ${active ? 'text-mint' : 'text-white/35'}`}>
                                 0{index + 1}
                             </span>
-                            <strong className={`text-[22px] tracking-[-.035em] md:text-[26px] ${active ? 'text-mint' : ''}`}>
+                            <strong
+                                className={`text-[22px] tracking-[-.035em] md:text-[26px] ${active ? 'text-mint' : ''}`}
+                            >
                                 {label}
                             </strong>
-                            <Icon name="arrow" className="w-5 text-white/35 transition-transform group-hover:translate-x-1" />
+                            <Icon
+                                name="arrow"
+                                className="w-5 text-white/35 transition-transform group-hover:translate-x-1"
+                            />
                         </Link>
                     );
                 })}
@@ -148,7 +159,9 @@ function CardPanel({ pathname, items, onClose, onDiagnosis }: Omit<Props, 'varia
                                 0{index + 1}
                             </span>
                             <strong className="mt-auto text-[17px] leading-[1.35] md:text-[20px]">{label}</strong>
-                            <small className={`mt-1 text-[8px] font-bold tracking-[.04em] ${active ? 'text-white/55' : 'text-muted'}`}>
+                            <small
+                                className={`mt-1 text-[8px] font-bold tracking-[.04em] ${active ? 'text-white/55' : 'text-muted'}`}
+                            >
                                 {section}
                             </small>
                         </Link>
@@ -171,7 +184,10 @@ function TimelinePanel({ pathname, items, onClose, onDiagnosis }: Omit<Props, 'v
                 <small className="text-[10px] font-extrabold tracking-[.18em] text-brand">RESEARCH FLOW</small>
             </div>
 
-            <nav className="relative mb-auto pl-8 before:absolute before:bottom-7 before:left-[5px] before:top-7 before:w-px before:bg-line-strong before:content-['']" aria-label="모바일 메뉴">
+            <nav
+                className="relative mb-auto pl-8 before:absolute before:bottom-7 before:left-[5px] before:top-7 before:w-px before:bg-line-strong before:content-['']"
+                aria-label="모바일 메뉴"
+            >
                 {items.map(([label, href, section], index) => {
                     const active = isActive(pathname, href);
                     return (
@@ -190,18 +206,25 @@ function TimelinePanel({ pathname, items, onClose, onDiagnosis }: Omit<Props, 'v
                                 <small className="block text-[9px] font-extrabold tracking-[.08em] text-muted">
                                     STEP 0{index + 1} · {section}
                                 </small>
-                                <strong className={`mt-1 block text-[19px] md:text-[22px] ${active ? 'text-brand' : 'text-ink'}`}>
+                                <strong
+                                    className={`mt-1 block text-[19px] md:text-[22px] ${active ? 'text-brand' : 'text-ink'}`}
+                                >
                                     {label}
                                 </strong>
                             </span>
-                            <Icon name="arrow" className="w-5 text-muted transition-transform group-hover:translate-x-1" />
+                            <Icon
+                                name="arrow"
+                                className="w-5 text-muted transition-transform group-hover:translate-x-1"
+                            />
                         </Link>
                     );
                 })}
             </nav>
 
             <div className="mt-8 rounded-2xl bg-brand-pale p-4 md:p-5">
-                <p className="mb-4 mt-0 text-xs font-bold text-slate">필요한 메뉴를 확인한 뒤 바로 무료진단을 신청할 수 있습니다.</p>
+                <p className="mb-4 mt-0 text-xs font-bold text-slate">
+                    필요한 메뉴를 확인한 뒤 바로 무료진단을 신청할 수 있습니다.
+                </p>
                 <DiagnosisButton onDiagnosis={onDiagnosis} />
             </div>
         </div>
@@ -225,7 +248,9 @@ function MinimalPanel({ pathname, items, onClose, onDiagnosis }: Omit<Props, 'va
                             href={href}
                             onClick={onClose}
                             className={`relative flex min-h-[58px] items-center justify-center text-[22px] font-extrabold tracking-[-.035em] md:min-h-[66px] md:text-[26px] ${
-                                active ? 'text-brand after:absolute after:bottom-2 after:h-0.5 after:w-5 after:bg-brand' : 'text-ink'
+                                active
+                                    ? 'text-brand after:absolute after:bottom-2 after:h-0.5 after:w-5 after:bg-brand'
+                                    : 'text-ink'
                             }`}
                         >
                             {label}

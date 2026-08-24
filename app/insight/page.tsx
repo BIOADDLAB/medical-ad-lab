@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { DiagnosisButton } from '@/components/lead/diagnosis-button';
+import { PageBanner } from '@/components/layout/page-banner';
 import { mediaItems } from '@/data';
 import { getReferences } from '@/lib/references';
 
@@ -29,19 +30,7 @@ export default async function ReferencePage({
 
     return (
         <main className="pt-[60px] lg:pt-0">
-            <section className="bg-soft pb-12 pt-10 lg:pb-[100px] lg:pt-[178px]">
-                <div className="site-container">
-                    <p className="m-0 text-xs font-extrabold tracking-[.12em] text-brand">MEDICAL AD KNOWLEDGE</p>
-                    <h1 className="mt-4 text-h1">
-                        직접 확인한 정보와
-                        <br />
-                        <em className="not-italic text-brand">집행 사례를 전합니다.</em>
-                    </h1>
-                    <p className="mt-4 text-sm text-muted lg:mt-5 lg:text-body">
-                        실무 인사이트부터 실제 옥외광고 사례까지
-                    </p>
-                </div>
-            </section>
+            <PageBanner variant="reference" />
 
             <section className="bg-white py-section">
                 <div className="site-container">

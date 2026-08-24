@@ -35,10 +35,10 @@ export function Process() {
                     {processItems.map(([number, title, description], index) => (
                         <li
                             key={number}
-                            className="process-item relative grid grid-cols-[52px_1fr] items-center gap-x-4 text-left sm:grid-cols-1 sm:justify-items-center sm:text-center"
+                            className="process-item relative grid grid-cols-[52px_1fr] items-start gap-x-4 text-left sm:grid-cols-1 sm:items-center sm:justify-items-center sm:text-center"
                             style={{ '--delay': `${index * 110}ms` } as React.CSSProperties}
                         >
-                            <span className="process-node relative z-10 grid h-12 w-[52px] shrink-0 place-items-center text-white">
+                            <span className="process-node relative z-10 grid h-12 w-[52px] shrink-0 place-items-center bg-white text-white">
                                 <svg
                                     aria-hidden="true"
                                     className="absolute inset-0 h-full w-full"
@@ -51,7 +51,7 @@ export function Process() {
                                 </svg>
                                 <span className="relative z-10 text-sm font-bold">{number}</span>
                             </span>
-                            <div>
+                            <div className="pt-1 sm:pt-0">
                                 <h3 className="m-0 text-[18px] font-extrabold sm:mt-4">{title}</h3>
                                 <p className="mb-0 mt-1 text-sm text-muted sm:mt-1.5">{description}</p>
                             </div>

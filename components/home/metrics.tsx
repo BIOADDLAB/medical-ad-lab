@@ -5,6 +5,8 @@ import { metrics } from '@/data';
 
 /** 활성 숫자 크기 대비 장면 간격. 시안 비율을 유지하며 짝수 108px 기준으로 계산 */
 const STEP_RATIO = 1.35;
+/** 모바일은 화면이 좁아 같은 비율이면 숫자와 라벨이 붙어 보인다 */
+const STEP_RATIO_MOBILE = 1.7;
 /** 좌우 장면 축소율. 시안 58 / 107 */
 const INACTIVE_SCALE = 0.54;
 
@@ -35,7 +37,10 @@ export function Metrics() {
             ScrollTrigger.config({ ignoreMobileResize: true });
 
             // 간격은 글자 크기에 비례해야 화면 폭이 달라져도 시안 비율이 유지된다
-            const step = () => parseFloat(getComputedStyle(scenes[0].querySelector('strong')!).fontSize) * STEP_RATIO;
+            const step = () => {
+                const size = parseFloat(getComputedStyle(scenes[0].querySelector('strong')!).fontSize);
+                return size * (window.innerWidth < 640 ? STEP_RATIO_MOBILE : STEP_RATIO);
+            };
 
             const context = gsap.context(() => {
                 const paint = (position: number) => {
@@ -46,7 +51,8 @@ export function Metrics() {
                         gsap.set(scene, {
                             y: distance * gap,
                             scale: 1 - (1 - INACTIVE_SCALE) * Math.min(abs, 1),
-                            autoAlpha: abs <= 1 ? 1 : Math.max(0, 2 - abs),
+                            // 이웃은 확실히 흐려야 가운데 하나만 읽힌다. 예전엔 거리 1까지 불투명도가 1이라 세 개가 동시에 보였다
+                            autoAlpha: Math.max(0, 1 - abs * 0.78),
                         });
                         scene.classList.toggle('is-active', abs < 0.5);
                     });
@@ -95,7 +101,7 @@ export function Metrics() {
                     aria-hidden
                 />
                 <div className="metric-stage-inner site-container relative z-[2] h-full">
-                    <p className="metric-intro absolute inset-x-0 top-[20%] m-0 -translate-y-1/2 text-center text-h5 font-extrabold text-white lg:text-[38px]">
+                    <p className="metric-intro absolute inset-x-0 top-[26%] m-0 -translate-y-1/2 text-center text-h5 font-extrabold text-white sm:top-[22%] lg:top-[20%] lg:text-[38px]">
                         빠르게 비교하고 있는 <em className="not-italic text-mint">병원광고연구소</em>
                     </p>
                     <div className="metric-scenes absolute inset-0">
@@ -105,7 +111,7 @@ export function Metrics() {
                                 key={metric.label}
                             >
                                 <span className="relative block text-center">
-                                    <strong className="block text-[54px] font-extrabold leading-none tracking-[-.045em] text-white lg:text-[108px]">
+                                    <strong className="block text-[68px] font-extrabold leading-none tracking-[-.045em] text-white sm:text-[86px] lg:text-[108px]">
                                         {metric.value !== null ? (
                                             <>
                                                 {metric.value.toLocaleString('ko-KR')}
@@ -115,7 +121,7 @@ export function Metrics() {
                                             metric.display
                                         )}
                                     </strong>
-                                    <span className="metric-label absolute inset-x-0 top-full block whitespace-nowrap text-xs font-medium leading-[1.35] text-white/70 lg:text-[20px]">
+                                    <span className="metric-label absolute inset-x-0 top-full mt-1.5 block whitespace-nowrap text-sm font-medium leading-[1.35] text-white/70 lg:mt-0 lg:text-[20px]">
                                         {metric.label}
                                     </span>
                                 </span>

@@ -2,18 +2,11 @@
 
 import Image from 'next/image';
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import {
-    collection,
-    deleteDoc,
-    doc,
-    getDocs,
-    serverTimestamp,
-    updateDoc,
-    writeBatch,
-} from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDocs, serverTimestamp, updateDoc, writeBatch } from 'firebase/firestore';
 import { deleteObject, getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { mediaItems } from '@/data';
 import { getFirebase } from '@/lib/firebase';
+import { GOAL_FALLBACK, PLAN_FALLBACK } from '@/lib/references';
 
 type Row = {
     id: string;
@@ -23,11 +16,50 @@ type Row = {
     area: string;
     image: string;
     summary: string;
+    goal: string;
+    plan: string;
     order: number;
 };
 
+const SLUG_GUIDE =
+    '주소는 검색 결과에 그대로 노출됩니다. 지역-매체 순서로 짧게 적으세요. 예) songpa-subway, gangnam-bus. 영문 소문자·숫자·하이픈만 되고 한글과 띄어쓰기는 쓸 수 없습니다. 자동 버튼을 누르면 지역과 카테고리로 만들어 줍니다. 한번 정한 주소는 바꾸지 마세요. 바꾸면 기존 검색 순위가 사라집니다.';
+
+/** 파일을 안 고르면 카테고리에 맞는 기본 이미지를 쓴다 */
+const defaultImageOf = (type: string) => {
+    const media = mediaItems.find((item) => item.title === type) ?? mediaItems[0];
+    return `/images/img-ref-${media.key}.svg`;
+};
+
+/** 영문 URL 자동 제안용. 목록에 없는 지역은 직접 적는다 */
+// prettier-ignore
+const AREA_ROMAN: Record<string, string> = {
+    강남: 'gangnam', 강동: 'gangdong', 강북: 'gangbuk', 강서: 'gangseo', 관악: 'gwanak',
+    광진: 'gwangjin', 구로: 'guro', 금천: 'geumcheon', 노원: 'nowon', 도봉: 'dobong',
+    동대문: 'dongdaemun', 동작: 'dongjak', 마포: 'mapo', 서대문: 'seodaemun', 서초: 'seocho',
+    성동: 'seongdong', 성북: 'seongbuk', 송파: 'songpa', 양천: 'yangcheon', 영등포: 'yeongdeungpo',
+    용산: 'yongsan', 은평: 'eunpyeong', 종로: 'jongno', 중랑: 'jungnang', 중구: 'jung',
+    부산: 'busan', 대구: 'daegu', 인천: 'incheon', 광주: 'gwangju', 대전: 'daejeon',
+    울산: 'ulsan', 세종: 'sejong', 제주: 'jeju', 수원: 'suwon', 성남: 'seongnam',
+    용인: 'yongin', 고양: 'goyang', 화성: 'hwaseong', 부천: 'bucheon', 남양주: 'namyangju',
+    안산: 'ansan', 평택: 'pyeongtaek', 안양: 'anyang', 시흥: 'siheung', 김포: 'gimpo',
+    광명: 'gwangmyeong', 하남: 'hanam', 의정부: 'uijeongbu', 파주: 'paju', 천안: 'cheonan',
+    청주: 'cheongju', 전주: 'jeonju', 창원: 'changwon',
+};
+
+/** 지역 + 카테고리 = 검색엔진이 읽기 좋은 주소. 예) songpa-subway */
+const suggestSlug = (area: string, type: string) => {
+    // 긴 이름부터 찾아야 중구와 중랑구가 섞이지 않는다
+    const matched = Object.keys(AREA_ROMAN)
+        .sort((a, b) => b.length - a.length)
+        .find((name) => area.includes(name));
+    if (!matched) return '';
+    const media = mediaItems.find((item) => item.title === type);
+    return [AREA_ROMAN[matched], media?.key ?? ''].filter(Boolean).join('-');
+};
+
 const panel = 'rounded-2xl border border-line bg-white p-5 shadow-[0_7px_24px_rgba(19,43,80,.035)] lg:p-6';
-const label = 'grid gap-2 text-xs font-bold text-slate';
+/* content-start 가 없으면 옆 칸이 길어질 때 라벨 줄이 늘어나 입력칸이 아래로 밀린다 */
+const label = 'grid content-start gap-2 text-xs font-bold text-slate';
 const input = 'h-11 rounded-[9px] border border-line-strong px-3.5 text-sm outline-none focus:border-brand';
 const textarea = 'rounded-[9px] border border-line-strong p-3 text-sm outline-none focus:border-brand';
 
@@ -43,6 +75,8 @@ const readRows = (snapshot: Awaited<ReturnType<typeof getDocs>>) =>
                 area: String(data.area ?? ''),
                 image: String(data.image ?? ''),
                 summary: String(data.summary ?? ''),
+                goal: String(data.goal ?? ''),
+                plan: String(data.plan ?? ''),
                 order: typeof data.order === 'number' ? data.order : Number.MAX_SAFE_INTEGER,
             } satisfies Row;
         })
@@ -64,14 +98,18 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
     const [filter, setFilter] = useState('all');
     const [editing, setEditing] = useState<Row | null>(null);
     const [draggingId, setDraggingId] = useState<string | null>(null);
-    const [status, setStatus] = useState<'idle' | 'loading' | 'saving' | 'error'>(
-        mode === 'list' ? 'loading' : 'idle',
-    );
+    const [status, setStatus] = useState<'idle' | 'loading' | 'saving' | 'error'>(mode === 'list' ? 'loading' : 'idle');
     const [message, setMessage] = useState('');
     const [reloadKey, setReloadKey] = useState(0);
+    // 등록 폼: 지역·카테고리·주소는 서로 연결돼 있어 state 로 잡는다
+    const [area, setArea] = useState('');
+    const [type, setType] = useState<string>(mediaItems[0].title);
+    const [slug, setSlug] = useState('');
+    const [created, setCreated] = useState<{ title: string; slug: string; type: string; image: string } | null>(null);
 
+    // 등록 화면에서도 목록을 읽는다. 주소 중복을 저장 전에 알려주기 위해서다
     useEffect(() => {
-        if (!firebase || mode !== 'list') return;
+        if (!firebase) return;
 
         let alive = true;
 
@@ -83,8 +121,10 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
             })
             .catch((error: unknown) => {
                 if (!alive) return;
-                setMessage(error instanceof Error ? error.message : '목록을 불러오지 못했습니다.');
-                setStatus('error');
+                if (mode === 'list') {
+                    setMessage(error instanceof Error ? error.message : '목록을 불러오지 못했습니다.');
+                    setStatus('error');
+                }
             });
 
         return () => {
@@ -102,6 +142,32 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
         setReloadKey((key) => key + 1);
     };
 
+    const takenSlugs = useMemo(() => new Set(rows.map((row) => row.slug)), [rows]);
+    const slugTaken = slug.length > 0 && takenSlugs.has(slug);
+
+    /** 이미 쓰는 주소면 뒤에 숫자를 붙여 빈 자리를 찾는다 */
+    const freeSlug = (base: string) => {
+        if (!base) return '';
+        if (!takenSlugs.has(base)) return base;
+        for (let n = 2; n < 50; n += 1) {
+            if (!takenSlugs.has(`${base}-${n}`)) return `${base}-${n}`;
+        }
+        return `${base}-${rows.length + 1}`;
+    };
+
+    /** 지역과 카테고리로 영문 URL을 채워 준다 */
+    const fillSlug = () => {
+        const base = suggestSlug(area, type);
+        if (!base) {
+            setMessage('지역을 먼저 적어 주세요. 목록에 없는 지역은 영문으로 직접 적으시면 됩니다.');
+            setStatus('error');
+            return;
+        }
+        setMessage('');
+        setStatus('idle');
+        setSlug(freeSlug(base));
+    };
+
     const handleCreate = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         if (!firebase) return;
@@ -109,35 +175,35 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
         const form = event.currentTarget;
         const data = new FormData(form);
         const file = data.get('image') as File | null;
-        const slug = String(data.get('slug') ?? '').trim();
-
-        if (!file?.size) {
-            setMessage('대표 이미지를 선택해 주세요.');
-            setStatus('error');
-            return;
-        }
+        const title = String(data.get('title') ?? '').trim();
 
         setStatus('saving');
         setMessage('');
+        setCreated(null);
 
         try {
             const snapshot = await getDocs(collection(firebase.db, 'references'));
             const currentRows = readRows(snapshot);
 
             if (currentRows.some((row) => row.slug === slug)) {
-                throw new Error('이미 사용 중인 영문 URL입니다.');
+                setRows(currentRows);
+                throw new Error(
+                    `이미 쓰고 있는 주소입니다. ${freeSlug(slug)} 처럼 뒤에 숫자를 붙이거나 다른 이름을 적어 주세요.`,
+                );
             }
 
-            const image = await uploadImage(file, slug);
+            const image = file?.size ? await uploadImage(file, slug) : defaultImageOf(type);
             const batch = writeBatch(firebase.db);
             const referenceDoc = doc(collection(firebase.db, 'references'));
 
             batch.set(referenceDoc, {
                 slug,
-                type: String(data.get('type') ?? ''),
-                title: String(data.get('title') ?? '').trim(),
-                area: String(data.get('area') ?? '').trim(),
+                type,
+                title,
+                area: area.trim(),
                 summary: String(data.get('summary') ?? '').trim(),
+                goal: String(data.get('goal') ?? '').trim(),
+                plan: String(data.get('plan') ?? '').trim(),
                 image,
                 order: 0,
                 createdAt: serverTimestamp(),
@@ -150,8 +216,13 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
 
             await batch.commit();
             form.reset();
-            setMessage('등록했습니다. 사이트에는 최대 1분 뒤 반영됩니다.');
+            setCreated({ title, slug, type, image });
+            setArea('');
+            setSlug('');
+            setType(mediaItems[0].title);
+            setMessage('');
             setStatus('idle');
+            refresh();
         } catch (error) {
             setMessage(error instanceof Error ? error.message : '등록에 실패했습니다.');
             setStatus('error');
@@ -182,6 +253,8 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
                 title: String(data.get('title') ?? '').trim(),
                 area: String(data.get('area') ?? '').trim(),
                 summary: String(data.get('summary') ?? '').trim(),
+                goal: String(data.get('goal') ?? '').trim(),
+                plan: String(data.get('plan') ?? '').trim(),
                 image: nextImage,
                 updatedAt: serverTimestamp(),
             });
@@ -256,7 +329,12 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
                     </label>
                     <label className={label}>
                         <span>카테고리</span>
-                        <select name="type" defaultValue={mediaItems[0].title} className={input}>
+                        <select
+                            name="type"
+                            value={type}
+                            onChange={(event) => setType(event.target.value)}
+                            className={input}
+                        >
                             {mediaItems.map((item) => (
                                 <option key={item.key}>{item.title}</option>
                             ))}
@@ -264,11 +342,22 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
                     </label>
                     <label className={label}>
                         <span>지역</span>
-                        <input name="area" required placeholder="예: 서울 송파구" className={input} />
+                        <input
+                            name="area"
+                            required
+                            value={area}
+                            onChange={(event) => setArea(event.target.value)}
+                            placeholder="예: 서울 송파구"
+                            className={input}
+                        />
                     </label>
-                    <label className={label}>
+                    <div className={label}>
                         <span>영문 URL</span>
-                        <div className="flex h-11 items-center overflow-hidden rounded-[9px] border border-line-strong">
+                        <div
+                            className={`flex h-11 items-center overflow-hidden rounded-[9px] border ${
+                                slugTaken ? 'border-red-400' : 'border-line-strong'
+                            }`}
+                        >
                             <b className="flex h-full items-center bg-field px-3 text-[11px] font-semibold text-muted">
                                 /insight/reference/
                             </b>
@@ -276,11 +365,34 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
                                 name="slug"
                                 required
                                 pattern="[a-z0-9-]+"
+                                value={slug}
+                                onChange={(event) => setSlug(event.target.value.toLowerCase())}
                                 placeholder="songpa-subway"
                                 className="min-w-0 flex-1 px-2 text-sm outline-none"
                             />
+                            <button
+                                type="button"
+                                onClick={fillSlug}
+                                className="h-full shrink-0 border-l border-line-strong px-3 text-[11px] font-bold text-brand"
+                            >
+                                자동
+                            </button>
                         </div>
-                    </label>
+                        {slugTaken ? (
+                            <p className="m-0 flex flex-wrap items-center gap-2 font-medium text-red-600">
+                                이미 쓰고 있는 주소입니다.
+                                <button
+                                    type="button"
+                                    onClick={() => setSlug(freeSlug(slug))}
+                                    className="rounded-md bg-red-50 px-2 py-1 font-bold text-red-700"
+                                >
+                                    {freeSlug(slug)} 로 바꾸기
+                                </button>
+                            </p>
+                        ) : (
+                            <p className="m-0 font-medium leading-relaxed text-muted">{SLUG_GUIDE}</p>
+                        )}
+                    </div>
                     <label className={`${label} md:col-span-2`}>
                         <span>요약</span>
                         <textarea
@@ -292,15 +404,28 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
                             className={textarea}
                         />
                     </label>
+                    <label className={label}>
+                        <span>목표</span>
+                        <input name="goal" placeholder={GOAL_FALLBACK} className={input} />
+                    </label>
+                    <label className={label}>
+                        <span>구성</span>
+                        <input name="plan" placeholder={PLAN_FALLBACK} className={input} />
+                    </label>
+                    <p className="m-0 -mt-2 text-[11px] leading-relaxed text-muted md:col-span-2">
+                        목표와 구성은 상세페이지 집행 정보에 표시됩니다. 비우면 기본 문구가 들어갑니다.
+                    </p>
                     <label className={`${label} md:col-span-2`}>
-                        <span>대표 이미지</span>
+                        <span>대표 이미지 · 선택</span>
                         <input
                             name="image"
                             type="file"
                             accept="image/png,image/jpeg,image/webp"
-                            required
                             className="rounded-[10px] border border-dashed border-line-strong bg-soft p-3 text-xs"
                         />
+                        <span className="font-medium text-muted">
+                            올리지 않으면 카테고리에 맞는 기본 이미지가 들어갑니다.
+                        </span>
                     </label>
                     <div className="flex flex-wrap items-center gap-4 md:col-span-2">
                         <button className="btn-primary w-full sm:w-auto" type="submit" disabled={status === 'saving'}>
@@ -317,6 +442,47 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
                         )}
                     </div>
                 </form>
+
+                {/* 안내 문구만으로는 된 건지 알기 어렵다. 등록된 결과를 그대로 보여준다 */}
+                {created && (
+                    <div className="mt-6 rounded-xl border border-success/30 bg-success-pale p-4 sm:p-5">
+                        <p className="m-0 text-xs font-extrabold text-success-deep">등록이 완료됐습니다</p>
+                        <div className="mt-4 grid gap-4 sm:grid-cols-[140px_1fr] sm:items-center">
+                            <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-white">
+                                <Image src={created.image} alt="" fill className="object-cover" sizes="140px" />
+                            </div>
+                            <div>
+                                <span className="rounded-md bg-white px-2 py-1 text-[10px] font-extrabold text-brand">
+                                    {created.type}
+                                </span>
+                                <h3 className="mb-1 mt-2 text-[17px] font-extrabold text-ink">{created.title}</h3>
+                                <p className="m-0 break-all text-[11px] text-success-deep">
+                                    /insight/reference/{created.slug}
+                                </p>
+                                <div className="mt-4 flex flex-wrap gap-2">
+                                    <a
+                                        href={`/insight/reference/${created.slug}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex h-10 items-center rounded-lg bg-brand px-4 text-xs font-bold text-white"
+                                    >
+                                        사이트에서 보기
+                                    </a>
+                                    <button
+                                        type="button"
+                                        onClick={() => setCreated(null)}
+                                        className="inline-flex h-10 items-center rounded-lg border border-line-strong bg-white px-4 text-xs font-bold text-muted"
+                                    >
+                                        하나 더 등록
+                                    </button>
+                                </div>
+                                <p className="m-0 mt-3 text-[11px] leading-relaxed text-muted">
+                                    사이트 목록에는 최대 1분 뒤 반영됩니다. 지금 바로 보이지 않아도 정상입니다.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </article>
         );
     }
@@ -427,7 +593,7 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
                                     <p className="m-0 min-h-10 text-xs leading-5 text-muted">
                                         {row.summary || '등록된 요약이 없습니다.'}
                                     </p>
-                                    <small className="mt-3 block truncate text-[10px] text-subtle">
+                                    <small className="mt-3 block truncate text-[10px] text-muted">
                                         /insight/reference/{row.slug}
                                     </small>
 
@@ -465,7 +631,9 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
                     <section className="admin-scroll max-h-[calc(100dvh-24px)] w-full max-w-[680px] overflow-y-auto rounded-2xl bg-white p-5 shadow-2xl sm:max-h-[92vh] sm:p-6 lg:p-8">
                         <div className="mb-6 flex items-start justify-between gap-4">
                             <div>
-                                <p className="m-0 text-[10px] font-extrabold tracking-[.12em] text-brand">EDIT REFERENCE</p>
+                                <p className="m-0 text-[10px] font-extrabold tracking-[.12em] text-brand">
+                                    EDIT REFERENCE
+                                </p>
                                 <h2 className="mb-0 mt-2 text-h4">레퍼런스 수정</h2>
                             </div>
                             <button
@@ -496,7 +664,7 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
                                 <input name="area" required defaultValue={editing.area} className={input} />
                             </label>
                             <label className={label}>
-                                <span>영문 URL</span>
+                                <span>영문 URL · 바꾸면 기존 검색 순위가 사라집니다</span>
                                 <input
                                     name="slug"
                                     required
@@ -516,13 +684,41 @@ export function ReferenceManager({ mode }: { mode: 'list' | 'create' }) {
                                     className={textarea}
                                 />
                             </label>
+                            <label className={label}>
+                                <span>목표</span>
+                                <input
+                                    name="goal"
+                                    defaultValue={editing.goal}
+                                    placeholder={GOAL_FALLBACK}
+                                    className={input}
+                                />
+                            </label>
+                            <label className={label}>
+                                <span>구성</span>
+                                <input
+                                    name="plan"
+                                    defaultValue={editing.plan}
+                                    placeholder={PLAN_FALLBACK}
+                                    className={input}
+                                />
+                            </label>
                             <label className={`${label} sm:col-span-2`}>
                                 <span>대표 이미지 교체 · 선택하지 않으면 기존 이미지 유지</span>
                                 <div className="grid gap-3 rounded-xl bg-soft p-3 sm:grid-cols-[120px_1fr] sm:items-center">
                                     <div className="relative aspect-[16/10] overflow-hidden rounded-lg">
-                                        <Image src={editing.image} alt="현재 대표 이미지" fill className="object-cover" />
+                                        <Image
+                                            src={editing.image}
+                                            alt="현재 대표 이미지"
+                                            fill
+                                            className="object-cover"
+                                        />
                                     </div>
-                                    <input name="image" type="file" accept="image/png,image/jpeg,image/webp" className="text-xs" />
+                                    <input
+                                        name="image"
+                                        type="file"
+                                        accept="image/png,image/jpeg,image/webp"
+                                        className="text-xs"
+                                    />
                                 </div>
                             </label>
                             <div className="flex justify-end gap-2 sm:col-span-2">

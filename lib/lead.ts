@@ -56,7 +56,3 @@ export const formatKST = (date = new Date()) =>
     }).format(date);
 
 export type LeadRow = ReturnType<typeof rowToLead>;
-
-/** 개인정보는 가려서 내려보낸다. 원본 확인은 시트에서 한다 */
-export const maskPhone = (value: string) => value.replace(/(\d{2,3})-?(\d{3,4})-?(\d{4})/, '$1-****-$3');
-export const maskEmail = (value: string) => value.replace(/^(.{2}).*(@.*)$/, '$1***$2');

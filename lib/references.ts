@@ -7,7 +7,13 @@ export type Reference = {
     area: string;
     image: string;
     summary?: string;
+    goal?: string;
+    plan?: string;
 };
+
+/** 관리자가 목표·구성을 비우면 쓰는 기본 문구 */
+export const GOAL_FALLBACK = '생활권 반복 노출';
+export const PLAN_FALLBACK = '위치·기간·예산 맞춤 제안';
 
 type FirestoreValue = { stringValue?: string; timestampValue?: string; integerValue?: string };
 type FirestoreDoc = { name: string; fields?: Record<string, FirestoreValue> };
@@ -41,6 +47,8 @@ export async function getReferences(): Promise<Reference[]> {
                 area: read(doc.fields, 'area'),
                 image: read(doc.fields, 'image'),
                 summary: read(doc.fields, 'summary'),
+                goal: read(doc.fields, 'goal'),
+                plan: read(doc.fields, 'plan'),
                 order: readNumber(doc.fields, 'order'),
                 createdAt: doc.fields?.createdAt?.timestampValue ?? '',
             }))
@@ -53,6 +61,8 @@ export async function getReferences(): Promise<Reference[]> {
                 area: item.area,
                 image: item.image,
                 summary: item.summary,
+                goal: item.goal,
+                plan: item.plan,
             }));
 
         return items.length ? items : [...fallbackReferences];

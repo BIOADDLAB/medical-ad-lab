@@ -1,11 +1,14 @@
 import { NextResponse } from 'next/server';
 import { verifyAdmin } from '@/lib/admin-auth';
 import { emailReady } from '@/lib/email';
-import { maskEmail, maskPhone, rowToLead } from '@/lib/lead';
+import { rowToLead } from '@/lib/lead';
 import { readLeadRows, sheetsReady, sheetUrl } from '@/lib/sheets';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+
+/** 최근 문의가 위로 오게 뒤집는다 */
+const rows2leads = (rows: string[][]) => rows.map(rowToLead).reverse();
 
 export async function GET(request: Request) {
     if (!(await verifyAdmin(request))) {
@@ -21,14 +24,9 @@ export async function GET(request: Request) {
     }
 
     try {
-        const rows = await readLeadRows();
-        // 연락처·이메일은 가린 채 내려보낸다. 원본은 시트에만 둔다
-        const leads = rows.map(rowToLead).map((lead) => ({
-            ...lead,
-            phone: maskPhone(lead.phone),
-            email: maskEmail(lead.email),
-        }));
-        leads.reverse();
+        // 관리자가 바로 연락해야 하므로 원본 그대로 내려보낸다.
+        // 이 응답은 관리자 인증을 통과해야만 나가고, 서버·브라우저 어디에도 저장하지 않는다
+        const leads = rows2leads(await readLeadRows());
         return NextResponse.json({
             ready: true,
             sheetUrl,

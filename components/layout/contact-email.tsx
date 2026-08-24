@@ -4,14 +4,14 @@ import { useEffect, useState } from 'react';
 import { loadSettings } from '@/lib/admin-store';
 import { firebaseReady } from '@/lib/firebase';
 
-/** 관리자 설정에 대표 이메일이 있으면 푸터에 보여준다. 없으면 아무것도 그리지 않는다 */
-export function ContactEmail() {
-    const [email, setEmail] = useState('');
+/** 관리자 설정에 대표 이메일이 있으면 그걸, 없으면 fallback 을 보여준다 */
+export function ContactEmail({ fallback = '' }: { fallback?: string }) {
+    const [email, setEmail] = useState(fallback);
 
     useEffect(() => {
         if (!firebaseReady) return;
         loadSettings()
-            .then((settings) => setEmail(settings.contactEmail))
+            .then((settings) => settings.contactEmail && setEmail(settings.contactEmail))
             .catch(() => {});
     }, []);
 
