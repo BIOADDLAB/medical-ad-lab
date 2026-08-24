@@ -195,31 +195,29 @@
         pointer-events: none;
     }
     /*
-     * Figma Glass 배지 — 시안 값
-     * fill #D9D9D9 20% / radius 77 / Light -45° 100% / Refraction 100 / Depth 28 / Dispersion 58 / Frost 0
+     * Figma Glass 배지
+     * fill #D9D9D9 20% / radius 77 / Light -45° / Refraction 100 / Depth 28 / Dispersion 58
      *
-     * Frost 0 이라 흐림이 아니라 굴절이다. CSS 에 굴절은 없으므로 세 겹으로 흉내낸다.
-     * 1) backdrop-filter — 유리를 통과한 밝기·채도
-     * 2) ::before 림 — Light -45°(왼쪽 위)에서 들어온 빛. 왼위가 밝고 오른아래가 어둡다
-     * 3) ::after 표면 — 같은 각도로 흐르는 얇은 광택
-     * Dispersion 은 림 색을 한쪽은 차갑게 한쪽은 따뜻하게 밀어 흉내낸다.
+     * Refraction → backdrop-filter
+     * Depth      → 바깥 그림자 + 안쪽 하이라이트/그림자
+     * Light -45° → 135deg 그라데이션 보더 (왼쪽 위가 밝고 오른쪽 아래가 어둡다)
+     * Dispersion → SVG feOffset 으로 R·B 채널을 반대 방향으로 민다. 보더에만 건다
      */
     .figma-glass-pill {
         position: relative;
-        isolation: isolate;
         overflow: hidden;
         border: 0;
+        border-radius: 77px;
         background: rgba(217, 217, 217, 0.2);
-        /* Frost 0 이라 흐림은 유리라는 신호가 될 만큼만. 밝기는 올리지 않는다 */
-        backdrop-filter: blur(3px) saturate(118%);
-        -webkit-backdrop-filter: blur(3px) saturate(118%);
-        box-shadow: none;
+        backdrop-filter: blur(28px) saturate(190%) brightness(1.05);
+        -webkit-backdrop-filter: blur(28px) saturate(190%) brightness(1.05);
+        box-shadow:
+            0 14px 28px rgba(0, 0, 0, 0.45),
+            0 6px 12px rgba(0, 0, 0, 0.3),
+            inset 1.5px 1.5px 0 rgba(255, 255, 255, 0.55),
+            inset -1px -1px 0 rgba(0, 0, 0, 0.18);
     }
-    /*
-     * Light -45° : 왼쪽 위 림이 가장 밝다.
-     * 시안 측정값(배경 37 기준) 위 테두리 147 · 아래 테두리 129 에 맞춘 알파다.
-     * Dispersion 은 밝은 쪽을 차갑게, 어두운 쪽을 따뜻하게 밀어 흉내낸다.
-     */
+    /* Light -45° 그라데이션 보더 */
     .figma-glass-pill::before {
         position: absolute;
         z-index: 1;
@@ -228,34 +226,37 @@
         border-radius: inherit;
         background: linear-gradient(
             135deg,
-            rgba(230, 243, 255, 0.68) 0%,
-            rgba(205, 226, 255, 0.4) 34%,
-            rgba(168, 192, 228, 0.32) 60%,
-            rgba(255, 240, 232, 0.4) 84%,
-            rgba(245, 250, 255, 0.46) 100%
+            rgba(255, 255, 255, 0.7) 0%,
+            rgba(255, 255, 255, 0.15) 40%,
+            rgba(180, 180, 200, 0.08) 70%,
+            rgba(80, 80, 120, 0.12) 100%
         );
         content: '';
         pointer-events: none;
+        /* Dispersion 58 — 보더에만 걸어야 글자가 번지지 않는다 */
+        filter: url('#glass-dispersion');
         -webkit-mask:
             linear-gradient(#fff 0 0) content-box,
             linear-gradient(#fff 0 0);
         mask:
             linear-gradient(#fff 0 0) content-box,
             linear-gradient(#fff 0 0);
-        -webkit-mask-composite: xor;
+        -webkit-mask-composite: destination-out;
         mask-composite: exclude;
     }
-    /*
-     * 굴절된 렌즈 안쪽. 밝은 림 바로 아래가 살짝 가라앉는다.
-     * 시안 측정값 안쪽 위 59 · 안쪽 아래 71 을 만든다.
-     */
+    /* 유리 표면 sheen */
     .figma-glass-pill::after {
         position: absolute;
         z-index: 1;
         inset: 0;
         display: block;
         border-radius: inherit;
-        background: linear-gradient(180deg, rgba(7, 17, 37, 0.17) 0%, rgba(7, 17, 37, 0) 62%);
+        background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.18) 0%,
+            rgba(255, 255, 255, 0.04) 45%,
+            transparent 55%
+        );
         content: '';
         pointer-events: none;
     }

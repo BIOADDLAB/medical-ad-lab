@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { DiagnosisButton } from '@/components/lead/diagnosis-button';
+import { BottomCta } from '@/components/home/bottom-cta';
 import { PageBanner } from '@/components/layout/page-banner';
 import { mediaItems } from '@/data';
 import { getReferences } from '@/lib/references';
@@ -85,15 +85,7 @@ export default async function ReferencePage({
                 </div>
             </section>
 
-            <section className="bg-deep py-section text-center text-white">
-                <div className="site-container">
-                    <h2 className="section-title">우리 병원에 맞는 기준이 필요하다면</h2>
-                    <p className="mb-8 mt-4 text-sm text-white/70 lg:mb-10">
-                        매체와 견적이 없어도 무료진단부터 시작할 수 있습니다.
-                    </p>
-                    <DiagnosisButton className="btn-primary">무료진단 신청하기</DiagnosisButton>
-                </div>
-            </section>
+            <BottomCta />
         </main>
     );
 }

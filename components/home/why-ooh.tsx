@@ -22,11 +22,7 @@ export function WhyOoh() {
                             variant="card"
                         >
                             {/* 모바일은 전부 가운데 정렬. 좌우 분할은 lg 부터 */}
-                            <div
-                                className={`story-copy grid justify-items-center lg:block lg:w-[340px] ${
-                                    index % 2 ? 'lg:order-2' : 'lg:order-1'
-                                }`}
-                            >
+                            <div className={`story-copy lg:w-[340px] ${index % 2 ? 'lg:order-2' : 'lg:order-1'}`}>
                                 <span className="inline-flex h-9 items-center rounded-full border border-brand px-5 text-xs font-black text-brand lg:h-10 lg:px-[22px] lg:text-[16px]">
                                     {item.number}&#160; &#160;{item.keyword}
                                 </span>
@@ -34,7 +30,7 @@ export function WhyOoh() {
                                     {item.title}
                                 </h3>
                                 {/* 모바일에서는 시안 줄바꿈을 무시하고 화면 폭에 맞춰 흘린다 */}
-                                <p className="m-0 max-w-[320px] whitespace-normal text-body font-extrabold text-muted lg:max-w-[300px] lg:whitespace-pre-line">
+                                <p className="m-0 mx-auto max-w-[320px] whitespace-normal text-body font-extrabold text-muted lg:mx-0 lg:max-w-[300px] lg:whitespace-pre-line">
                                     {item.description}
                                 </p>
                             </div>

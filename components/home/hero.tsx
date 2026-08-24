@@ -50,6 +50,35 @@ export function Hero() {
                         <br />
                         병원 옥외광고 전문팀이 같은 조건으로 비교해드립니다.
                     </p>
+                    {/* Dispersion 58 — R·B 채널을 반대로 밀어 유리 가장자리 색분산을 만든다. 보더에만 건다 */}
+                    <svg width="0" height="0" aria-hidden className="absolute">
+                        <defs>
+                            <filter id="glass-dispersion" x="-20%" y="-20%" width="140%" height="140%">
+                                <feColorMatrix
+                                    in="SourceGraphic"
+                                    type="matrix"
+                                    values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
+                                    result="r"
+                                />
+                                <feColorMatrix
+                                    in="SourceGraphic"
+                                    type="matrix"
+                                    values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"
+                                    result="g"
+                                />
+                                <feColorMatrix
+                                    in="SourceGraphic"
+                                    type="matrix"
+                                    values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"
+                                    result="b"
+                                />
+                                <feOffset in="r" dx="-0.7" dy="0.7" result="r2" />
+                                <feOffset in="b" dx="0.7" dy="-0.7" result="b2" />
+                                <feBlend in="r2" in2="g" mode="screen" result="rg" />
+                                <feBlend in="rg" in2="b2" mode="screen" />
+                            </filter>
+                        </defs>
+                    </svg>
                     <div className="mt-7 flex flex-wrap gap-2.5 xl:mt-10 xl:gap-3 2xl:mt-[52px] 2xl:gap-4">
                         {badges.map((text) => (
                             <span

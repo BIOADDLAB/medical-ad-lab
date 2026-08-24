@@ -41,9 +41,7 @@ function IndexPanel({ pathname, items, onClose, onDiagnosis }: Omit<Props, 'vari
             <div className="flex items-end justify-between border-b border-ink pb-5">
                 <div>
                     <small className="text-[10px] font-extrabold tracking-[.18em] text-brand">MEDICAL AD LAB</small>
-                    <p className="m-0 mt-2 text-sm font-bold text-ink">병원 광고 판단을 위한 메뉴</p>
                 </div>
-                <span className="text-[10px] font-extrabold tracking-[.12em] text-muted">INDEX 01—06</span>
             </div>
 
             <nav className="mb-auto" aria-label="모바일 메뉴">
@@ -267,10 +265,160 @@ function MinimalPanel({ pathname, items, onClose, onDiagnosis }: Omit<Props, 'va
     );
 }
 
+/** 6: 큰 글씨 스택형. 메뉴명만 왼쪽에 크게 쌓고 번호는 오른쪽 끝에 작게 */
+function StackPanel({ pathname, items, onClose, onDiagnosis }: Omit<Props, 'variant'>) {
+    return (
+        <div className="flex min-h-full flex-col px-gutter pb-7 pt-10 md:pb-10 md:pt-14">
+            <nav className="mb-auto grid gap-1" aria-label="모바일 메뉴">
+                {items.map(([label, href], index) => {
+                    const active = isActive(pathname, href);
+                    return (
+                        <Link
+                            key={href}
+                            href={href}
+                            onClick={onClose}
+                            className="group flex items-baseline justify-between gap-4 py-2.5"
+                        >
+                            <strong
+                                className={`text-[30px] leading-[1.25] tracking-[-.04em] transition-colors md:text-[36px] ${
+                                    active ? 'text-brand' : 'text-ink/35 group-hover:text-ink'
+                                }`}
+                            >
+                                {label}
+                            </strong>
+                            <span className="shrink-0 text-[10px] font-extrabold text-muted">
+                                {String(index + 1).padStart(2, '0')}
+                            </span>
+                        </Link>
+                    );
+                })}
+            </nav>
+
+            <div className="mt-10">
+                <DiagnosisButton onDiagnosis={onDiagnosis} />
+            </div>
+        </div>
+    );
+}
+
+/** 7: 무료진단을 맨 위에 크게 놓고 메뉴는 그 아래 조용히 */
+function CtaFirstPanel({ pathname, items, onClose, onDiagnosis }: Omit<Props, 'variant'>) {
+    return (
+        <div className="flex min-h-full flex-col px-gutter pb-7 pt-6 md:pb-10 md:pt-8">
+            <div className="rounded-2xl bg-brand p-6 text-white">
+                <p className="m-0 text-[20px] font-black leading-[1.4]">
+                    우리 병원 옥외광고,
+                    <br />
+                    24시간 안에 비교해 드립니다.
+                </p>
+                <p className="m-0 mb-5 mt-2 text-xs text-white/70">견적이 없어도 신청할 수 있습니다.</p>
+                <DiagnosisButton onDiagnosis={onDiagnosis} dark />
+            </div>
+
+            <nav className="mb-auto mt-7 grid" aria-label="모바일 메뉴">
+                {items.map(([label, href, section]) => {
+                    const active = isActive(pathname, href);
+                    return (
+                        <Link
+                            key={href}
+                            href={href}
+                            onClick={onClose}
+                            className="group flex min-h-[62px] items-center justify-between gap-4 border-b border-line"
+                        >
+                            <span className={`text-[17px] font-extrabold ${active ? 'text-brand' : 'text-ink'}`}>
+                                {label}
+                            </span>
+                            <span className="text-[9px] font-bold tracking-[.08em] text-muted">{section}</span>
+                        </Link>
+                    );
+                })}
+            </nav>
+        </div>
+    );
+}
+
+/** 8: 아이콘 없는 2단 목록. 왼쪽에 얇은 브랜드 바가 붙는다 */
+function RailPanel({ pathname, items, onClose, onDiagnosis }: Omit<Props, 'variant'>) {
+    return (
+        <div className="flex min-h-full flex-col bg-soft px-gutter pb-7 pt-7 md:pb-10 md:pt-9">
+            <nav className="mb-auto grid gap-2.5" aria-label="모바일 메뉴">
+                {items.map(([label, href, section]) => {
+                    const active = isActive(pathname, href);
+                    return (
+                        <Link
+                            key={href}
+                            href={href}
+                            onClick={onClose}
+                            className={`grid min-h-[72px] grid-cols-[4px_1fr] items-center gap-4 overflow-hidden rounded-xl bg-white pr-5 transition-colors ${
+                                active ? 'shadow-[0_6px_18px_rgba(36,104,240,.12)]' : ''
+                            }`}
+                        >
+                            <span className={`h-full w-1 ${active ? 'bg-brand' : 'bg-line-strong'}`} />
+                            <span className="py-4">
+                                <strong
+                                    className={`block text-[17px] leading-tight ${active ? 'text-brand' : 'text-ink'}`}
+                                >
+                                    {label}
+                                </strong>
+                                <small className="mt-1 block text-[9px] font-bold tracking-[.08em] text-muted">
+                                    {section}
+                                </small>
+                            </span>
+                        </Link>
+                    );
+                })}
+            </nav>
+
+            <div className="mt-7">
+                <DiagnosisButton onDiagnosis={onDiagnosis} />
+            </div>
+        </div>
+    );
+}
+
+/** 9: 브랜드 컬러 전면. 흰 글씨 목록 */
+function BrandPanel({ pathname, items, onClose, onDiagnosis }: Omit<Props, 'variant'>) {
+    return (
+        <div className="flex min-h-full flex-col bg-brand px-gutter pb-7 pt-8 text-white md:pb-10 md:pt-10">
+            <small className="text-[10px] font-extrabold tracking-[.2em] text-white/60">MEDICAL AD LAB</small>
+
+            <nav className="mb-auto mt-6 grid" aria-label="모바일 메뉴">
+                {items.map(([label, href], index) => {
+                    const active = isActive(pathname, href);
+                    return (
+                        <Link
+                            key={href}
+                            href={href}
+                            onClick={onClose}
+                            className="grid min-h-[64px] grid-cols-[34px_1fr] items-center border-b border-white/15"
+                        >
+                            <span className="text-[11px] font-black text-white/45">
+                                {String(index + 1).padStart(2, '0')}
+                            </span>
+                            <strong className={`text-[20px] tracking-[-.03em] ${active ? 'text-mint' : 'text-white'}`}>
+                                {label}
+                            </strong>
+                        </Link>
+                    );
+                })}
+            </nav>
+
+            <div className="mt-8">
+                <DiagnosisButton onDiagnosis={onDiagnosis} dark />
+                <p className="mb-0 mt-3 text-center text-[11px] text-white/60">견적 없이 신청 가능 · 계약 의무 없음</p>
+            </div>
+        </div>
+    );
+}
+
 export function MobileNavPanel(props: Props) {
     if (props.variant === 2) return <JournalPanel {...props} />;
     if (props.variant === 3) return <CardPanel {...props} />;
     if (props.variant === 4) return <TimelinePanel {...props} />;
     if (props.variant === 5) return <MinimalPanel {...props} />;
+    if (props.variant === 6) return <StackPanel {...props} />;
+    if (props.variant === 7) return <CtaFirstPanel {...props} />;
+    if (props.variant === 8) return <RailPanel {...props} />;
+    if (props.variant === 9) return <BrandPanel {...props} />;
     return <IndexPanel {...props} />;
 }
