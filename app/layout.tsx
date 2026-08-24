@@ -5,7 +5,7 @@ import { SiteShell } from '@/components/layout/site-shell';
 import { Analytics } from '@/components/layout/analytics';
 
 export const metadata: Metadata = {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://medicaladlab.example.com'),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://medicaladlab.example.com'),
     title: {
         default: '병원광고연구소 | MEDICAL AD LAB',
         template: '%s | 병원광고연구소',
@@ -36,7 +36,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         '@type': 'Organization',
         name: '병원광고연구소',
         alternateName: 'MEDICAL AD LAB',
-        url: process.env.NEXT_PUBLIC_SITE_URL ?? 'https://medicaladlab.example.com',
+        url: process.env.NEXT_PUBLIC_SITE_URL || 'https://medicaladlab.example.com',
     };
     return (
         <html lang="ko" data-scroll-behavior="smooth">

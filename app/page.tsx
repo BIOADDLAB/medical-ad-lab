@@ -14,7 +14,7 @@ import { MOTION_PRESET } from '@/lib/motion-config';
 import { faqs } from '@/data';
 
 export default function Home() {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://medicaladlab.example.com';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://medicaladlab.example.com';
     const structuredData = {
         '@context': 'https://schema.org',
         '@graph': [

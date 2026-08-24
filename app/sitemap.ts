@@ -3,7 +3,7 @@ import { insightPosts } from '@/data';
 import { getReferences } from '@/lib/references';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://example.com';
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
     const references = await getReferences();
     const fixed = ['', '/insight', '/about', '/privacy'];
     const journals = insightPosts.map((post) => `/about/${post.slug}`);
