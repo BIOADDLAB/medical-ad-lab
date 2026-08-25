@@ -10,13 +10,13 @@ import { ReferenceManager } from '@/components/admin/reference-manager';
 import { fetchLeads, LeadTable, type LeadPayload } from '@/components/admin/lead-table';
 import { TaskList } from '@/components/admin/task-list';
 
-type View = 'dashboard' | 'inquiries' | 'references' | 'create' | 'settings';
+type View = 'dashboard' | 'inquiries' | 'references' | 'spots' | 'settings';
 
 const nav: { id: View; label: string; caption: string }[] = [
     { id: 'dashboard', label: '대시보드', caption: '요약' },
     { id: 'inquiries', label: '무료진단 문의', caption: '리드' },
     { id: 'references', label: '옥외레퍼런스', caption: '콘텐츠' },
-    { id: 'create', label: '레퍼런스 등록', caption: '업로드' },
+    { id: 'spots', label: '광고 장소', caption: '콘텐츠' },
     { id: 'settings', label: '사이트 설정', caption: '연동' },
 ];
 
@@ -298,16 +298,9 @@ export function AdminDashboard() {
                                     <Badge tone="green">TODAY</Badge>
                                     <h1 className="mb-2 mt-3.5 text-h2">운영 현황을 확인하세요.</h1>
                                     <p className="m-0 text-xs text-muted">
-                                        문의는 구글시트에서, 레퍼런스는 이 화면에서 관리합니다.
+                                        문의는 구글시트에서, 콘텐츠는 왼쪽 메뉴에서 관리합니다.
                                     </p>
                                 </div>
-                                <button
-                                    className="btn-primary w-full sm:w-auto"
-                                    type="button"
-                                    onClick={() => move('create')}
-                                >
-                                    레퍼런스 등록
-                                </button>
                             </div>
                             <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                                 {stats.map(([label, value, note]) => (
@@ -406,16 +399,9 @@ export function AdminDashboard() {
                                         사이트 /insight 페이지에 노출되는 집행 사례입니다.
                                     </p>
                                 </div>
-                                <button
-                                    className="btn-primary w-full sm:w-auto"
-                                    type="button"
-                                    onClick={() => move('create')}
-                                >
-                                    레퍼런스 등록
-                                </button>
                             </div>
                             {firebaseReady ? (
-                                <ReferenceManager mode="list" />
+                                <ReferenceManager />
                             ) : (
                                 <Panel>
                                     <p className="m-0 rounded-lg bg-soft p-3 text-[11px] leading-relaxed text-muted">
@@ -427,22 +413,23 @@ export function AdminDashboard() {
                         </>
                     )}
 
-                    {view === 'create' && (
+                    {view === 'spots' && (
                         <>
-                            <div className="mb-8">
-                                <Badge>UPLOAD</Badge>
-                                <h1 className="mb-2 mt-3.5 text-h2">레퍼런스 등록</h1>
-                                <p className="m-0 text-xs text-muted">
-                                    이미지는 Storage, 정보는 Firestore에 저장됩니다.
-                                </p>
+                            <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+                                <div>
+                                    <Badge>CONTENT</Badge>
+                                    <h1 className="mb-2 mt-3.5 text-h2">광고 장소</h1>
+                                    <p className="m-0 text-xs text-muted">
+                                        사이트 /insight 페이지 맨 위에 노출되는 집행 가능한 광고 자리입니다.
+                                    </p>
+                                </div>
                             </div>
                             {firebaseReady ? (
-                                <ReferenceManager mode="create" />
+                                <ReferenceManager kind="spots" />
                             ) : (
                                 <Panel>
                                     <p className="m-0 rounded-lg bg-soft p-3 text-[11px] leading-relaxed text-muted">
-                                        Firebase 환경변수를 넣어야 업로드할 수 있습니다. docs/SETUP.md의 Firebase 순서를
-                                        따라 주세요.
+                                        Firebase 환경변수를 넣으면 실제 목록이 표시됩니다.
                                     </p>
                                 </Panel>
                             )}

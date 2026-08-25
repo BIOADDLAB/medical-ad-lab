@@ -1,5 +1,5 @@
 import { faqs, insightPosts, mediaItems, processItems } from '@/data';
-import { getReferences } from '@/lib/references';
+import { getReferences, getSpots } from '@/lib/references';
 
 export const revalidate = 3600;
 
@@ -9,7 +9,7 @@ export const revalidate = 3600;
  */
 export async function GET() {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://medicaladlab.example.com';
-    const references = await getReferences();
+    const [references, spots] = await Promise.all([getReferences(), getSpots()]);
 
     const text = [
         '# 병원광고연구소 (MEDICAL AD LAB)',
@@ -28,6 +28,9 @@ export async function GET() {
         ...references.map(
             (item) => `- [${item.title} (${item.area} ${item.type})](${baseUrl}/insight/reference/${item.slug})`,
         ),
+        '',
+        '## 집행 가능한 광고 자리',
+        ...spots.map((item) => `- [${item.title} (${item.area} ${item.type})](${baseUrl}/insight/spot/${item.slug})`),
         '',
         '## 칼럼',
         ...insightPosts.map((post) => `- [${post.title}](${baseUrl}/about/${post.slug}) — ${post.excerpt}`),

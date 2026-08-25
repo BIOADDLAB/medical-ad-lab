@@ -2,64 +2,115 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { BottomCta } from '@/components/home/bottom-cta';
 import { PageBanner } from '@/components/layout/page-banner';
-import { mediaItems } from '@/data';
-import { getReferences } from '@/lib/references';
+import { getCategories } from '@/lib/categories';
+import { getReferences, getSpots, type Reference } from '@/lib/references';
 
 export const metadata = {
-    title: '병원집행 옥외레퍼런스',
-    description: '병원광고연구소가 실제로 집행한 지하철·버스·아파트·전광판 옥외광고 레퍼런스를 확인하세요.',
+    title: '옥외광고 자리와 집행 레퍼런스',
+    description:
+        '지금 집행할 수 있는 병원 옥외광고 자리와, 병원광고연구소가 실제로 집행한 지하철·버스·아파트·전광판 레퍼런스를 확인하세요.',
     alternates: { canonical: '/insight' },
 };
 
-export default async function ReferencePage({
+const TABS = [
+    { id: 'spot', label: '광고 자리 알아보기', caption: '지금 집행할 수 있는 자리' },
+    { id: 'reference', label: '옥외레퍼런스 보기', caption: '실제로 집행한 사례' },
+] as const;
+
+export default async function InsightPage({
     searchParams,
 }: {
     searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
     const params = await searchParams;
-    const activeType = typeof params.type === 'string' ? params.type : 'all';
-    const references = await getReferences();
-    const activeTitle = mediaItems.find((media) => media.key === activeType)?.title;
-    const visibleReferences =
-        activeType === 'all' ? references : references.filter((item) => item.type === activeTitle);
+    const tab = params.tab === 'reference' ? 'reference' : 'spot';
+    const isSpot = tab === 'spot';
+    const activeKey = typeof params.type === 'string' ? params.type : 'all';
 
-    const chip = (active: boolean) =>
-        `inline-flex h-9 items-center rounded-full px-4 text-xs font-bold transition-colors lg:h-[38px] ${
-            active ? 'bg-brand text-white' : 'border border-line bg-white text-muted'
-        }`;
+    // 탭마다 목록도 카테고리도 다르다. 보고 있는 탭만 읽는다
+    const [items, categories] = await Promise.all([
+        isSpot ? getSpots() : getReferences(),
+        getCategories(isSpot ? 'spots' : 'references'),
+    ]);
+
+    const activeTitle = categories.find((item) => item.key === activeKey)?.title;
+    const visible: Reference[] = activeKey === 'all' ? items : items.filter((item) => item.type === activeTitle);
+    const detailPath = isSpot ? 'spot' : 'reference';
+
+    const href = (next: Record<string, string>) => {
+        const query = new URLSearchParams({ tab, ...next });
+        if (query.get('type') === 'all') query.delete('type');
+        return `/insight?${query.toString()}`;
+    };
 
     return (
         <main className="pt-[60px] lg:pt-0">
             <PageBanner variant="reference" />
 
-            <section className="bg-white py-section">
+            {/* 탭. 서버 렌더라 링크로 바꾼다. 탭을 옮기면 필터는 전체로 돌아간다 */}
+            <nav className="border-b border-line bg-white" aria-label="옥외광고 보기 방식">
+                <div className="site-container flex gap-1 sm:gap-2">
+                    {TABS.map((item) => {
+                        const on = item.id === tab;
+                        return (
+                            <Link
+                                key={item.id}
+                                href={`/insight?tab=${item.id}`}
+                                aria-current={on ? 'page' : undefined}
+                                className={`relative grid min-h-[62px] flex-1 place-items-center px-3 py-3 text-center transition-colors sm:flex-none sm:px-8 lg:min-h-[76px] ${
+                                    on ? 'text-brand' : 'text-muted hover:text-ink'
+                                }`}
+                            >
+                                <span>
+                                    <strong className="block text-sm lg:text-[17px]">{item.label}</strong>
+                                    <small className="mt-1 hidden text-[11px] font-medium text-muted sm:block">
+                                        {item.caption}
+                                    </small>
+                                </span>
+                                {on && <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t bg-brand" />}
+                            </Link>
+                        );
+                    })}
+                </div>
+            </nav>
+
+            <section className={`py-section ${isSpot ? 'bg-soft' : 'bg-white'}`}>
                 <div className="site-container">
-                    <h2 className="m-0 text-h4 lg:text-h2">최근 집행된 옥외광고</h2>
-                    <p className="mb-6 mt-2 text-sm text-muted lg:mb-9">필터를 선택해 사례를 확인하세요.</p>
+                    <h2 className="m-0 text-h4 lg:text-h2">
+                        {isSpot ? '지금 집행할 수 있는 광고 자리' : '최근 집행된 옥외광고'}
+                    </h2>
+                    <p className="mb-6 mt-2 text-sm text-muted lg:mb-9">
+                        {isSpot
+                            ? '필터를 선택해 매체별로 확인하세요. 자리마다 규격과 조건이 다릅니다.'
+                            : '필터를 선택해 사례를 확인하세요.'}
+                    </p>
 
                     <div className="mb-6 flex flex-wrap gap-2 lg:mb-9" aria-label="매체 필터">
-                        <Link href="/insight" className={chip(activeType === 'all')}>
-                            전체
-                        </Link>
-                        {mediaItems.map((item) => (
-                            <Link
-                                key={item.key}
-                                href={`/insight?type=${item.key}`}
-                                className={chip(activeType === item.key)}
-                            >
-                                {item.title.replace(' 광고', '')}
-                            </Link>
-                        ))}
+                        {[{ key: 'all', title: '전체' }, ...categories].map((item) => {
+                            const on = item.key === activeKey;
+                            return (
+                                <Link
+                                    key={item.key}
+                                    href={href({ type: item.key })}
+                                    scroll={false}
+                                    className={`inline-flex h-9 items-center rounded-full px-4 text-xs font-bold transition-colors lg:h-[38px] ${
+                                        on ? 'bg-brand text-white' : 'border border-line bg-white text-muted'
+                                    }`}
+                                >
+                                    {item.title.replace(' 광고', '')}
+                                </Link>
+                            );
+                        })}
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
-                        {visibleReferences.map((item) => (
+                        {visible.map((item) => (
                             <article className="card-base overflow-hidden" key={item.slug}>
-                                <Link href={`/insight/reference/${item.slug}`}>
+                                <Link href={`/insight/${detailPath}/${item.slug}`}>
                                     <div className="relative aspect-[16/10] bg-brand-tint">
                                         <Image
                                             src={item.image}
-                                            alt={`${item.title} 예시`}
+                                            alt={item.title}
                                             fill
                                             className="object-cover"
                                             sizes="(max-width: 680px) 100vw, (max-width: 1100px) 50vw, 25vw"
@@ -77,9 +128,13 @@ export default async function ReferencePage({
                         ))}
                     </div>
 
-                    {visibleReferences.length === 0 && (
+                    {visible.length === 0 && (
                         <p className="py-16 text-center text-sm text-muted">
-                            해당 매체의 레퍼런스를 준비하고 있습니다.
+                            {items.length === 0
+                                ? isSpot
+                                    ? '집행 가능한 광고 자리를 정리하고 있습니다.'
+                                    : '집행 레퍼런스를 정리하고 있습니다.'
+                                : '해당 매체의 자료를 준비하고 있습니다.'}
                         </p>
                     )}
                 </div>

@@ -11,9 +11,15 @@ export type Reference = {
     plan?: string;
 };
 
-/** 관리자가 목표·구성을 비우면 쓰는 기본 문구 */
+/**
+ * goal·plan 은 두 종류가 같은 칸을 나눠 쓴다. 라벨만 다르다
+ * references: 목표 / 구성
+ * spots:      규격 / 집행 조건
+ */
 export const GOAL_FALLBACK = '생활권 반복 노출';
 export const PLAN_FALLBACK = '위치·기간·예산 맞춤 제안';
+export const SPOT_GOAL_FALLBACK = '매체 규격 확인 후 안내';
+export const SPOT_PLAN_FALLBACK = '집행 시기·기간 협의';
 
 type FirestoreValue = { stringValue?: string; timestampValue?: string; integerValue?: string };
 type FirestoreDoc = { name: string; fields?: Record<string, FirestoreValue> };
@@ -27,16 +33,18 @@ const readNumber = (fields: Record<string, FirestoreValue> | undefined, key: str
     return Number.isFinite(value) ? value : Number.MAX_SAFE_INTEGER;
 };
 
-/** Firestore 연결 전에는 data.ts 샘플을 그대로 사용한다. */
-export async function getReferences(): Promise<Reference[]> {
-    if (!projectId || !apiKey) return [...fallbackReferences];
+/** references = 집행한 사례, spots = 집행 가능한 광고 장소. 저장 구조가 같아 한 함수로 읽는다 */
+export type Kind = 'references' | 'spots';
+
+async function getItems(kind: Kind, fallback: readonly Reference[]): Promise<Reference[]> {
+    if (!projectId || !apiKey) return [...fallback];
 
     try {
         const response = await fetch(
-            `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/references?key=${apiKey}&pageSize=200`,
+            `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${kind}?key=${apiKey}&pageSize=200`,
             { next: { revalidate: 60 } },
         );
-        if (!response.ok) return [...fallbackReferences];
+        if (!response.ok) return [...fallback];
 
         const payload = (await response.json()) as { documents?: FirestoreDoc[] };
         const items = (payload.documents ?? [])
@@ -65,13 +73,24 @@ export async function getReferences(): Promise<Reference[]> {
                 plan: item.plan,
             }));
 
-        return items.length ? items : [...fallbackReferences];
+        return items.length ? items : [...fallback];
     } catch {
-        return [...fallbackReferences];
+        return [...fallback];
     }
 }
 
+/** Firestore 연결 전에는 data.ts 샘플을 그대로 쓴다 */
+export const getReferences = () => getItems('references', fallbackReferences);
+
+/** 광고 장소는 샘플이 없다. 관리자가 올리기 전에는 비어 있다 */
+export const getSpots = () => getItems('spots', []);
+
 export async function getReference(slug: string) {
     const items = await getReferences();
+    return items.find((item) => item.slug === slug);
+}
+
+export async function getSpot(slug: string) {
+    const items = await getSpots();
     return items.find((item) => item.slug === slug);
 }

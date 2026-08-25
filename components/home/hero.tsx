@@ -3,7 +3,18 @@
 import { useEffect, useRef } from 'react';
 import { LeadForm } from '@/components/lead/lead-form';
 
-const badges = ['견적 없어도 신청 가능', '계약 의무 없음', '24시간 내 1차 안내'];
+/**
+ * 세 칩에 글래스 세 가지를 하나씩 넣었다. 보고 마음에 드는 하나를 골라
+ * 아래 style 값을 셋 다 같은 이름으로 바꾸면 된다.
+ * pure     — 깨끗한 반투명 유리
+ * sunset   — 노을빛 그라데이션 유리
+ * floating — 떠 있는 듯한 입체 유리
+ */
+const badges = [
+    { text: '견적 없어도 신청 가능', style: 'glass-pure' },
+    { text: '계약 의무 없음', style: 'glass-floating' },
+    { text: '24시간 내 1차 안내', style: 'glass-floating' },
+] as const;
 
 export function Hero() {
     const cardRef = useRef<HTMLDivElement>(null);
@@ -50,42 +61,13 @@ export function Hero() {
                         <br />
                         병원 옥외광고 전문팀이 같은 조건으로 비교해드립니다.
                     </p>
-                    {/* Dispersion 58 — R·B 채널을 반대로 밀어 유리 가장자리 색분산을 만든다. 보더에만 건다 */}
-                    <svg width="0" height="0" aria-hidden className="absolute">
-                        <defs>
-                            <filter id="glass-dispersion" x="-20%" y="-20%" width="140%" height="140%">
-                                <feColorMatrix
-                                    in="SourceGraphic"
-                                    type="matrix"
-                                    values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0"
-                                    result="r"
-                                />
-                                <feColorMatrix
-                                    in="SourceGraphic"
-                                    type="matrix"
-                                    values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0"
-                                    result="g"
-                                />
-                                <feColorMatrix
-                                    in="SourceGraphic"
-                                    type="matrix"
-                                    values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0"
-                                    result="b"
-                                />
-                                <feOffset in="r" dx="-0.7" dy="0.7" result="r2" />
-                                <feOffset in="b" dx="0.7" dy="-0.7" result="b2" />
-                                <feBlend in="r2" in2="g" mode="screen" result="rg" />
-                                <feBlend in="rg" in2="b2" mode="screen" />
-                            </filter>
-                        </defs>
-                    </svg>
                     <div className="mt-7 flex flex-wrap gap-2.5 xl:mt-10 xl:gap-3 2xl:mt-[52px] 2xl:gap-4">
-                        {badges.map((text) => (
+                        {badges.map((badge) => (
                             <span
-                                key={text}
-                                className="hero-badge figma-glass-pill inline-flex min-h-11 items-center justify-center rounded-full px-[18px] text-xs font-extrabold whitespace-nowrap xl:min-h-12 xl:w-[174px] xl:px-4 xl:text-[14px] 2xl:min-h-[54px] 2xl:w-[191px] 2xl:px-4 2xl:text-[18px]"
+                                key={badge.text}
+                                className={`hero-badge ${badge.style} inline-flex min-h-11 items-center justify-center rounded-full px-[18px] text-xs font-extrabold whitespace-nowrap xl:min-h-12 xl:w-[174px] xl:px-4 xl:text-[14px] 2xl:min-h-[54px] 2xl:w-[191px] 2xl:px-4 2xl:text-[18px]`}
                             >
-                                <span className="figma-glass-pill-text">{text}</span>
+                                <span className="figma-glass-pill-text">{badge.text}</span>
                             </span>
                         ))}
                     </div>

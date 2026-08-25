@@ -1,14 +1,15 @@
 import type { MetadataRoute } from 'next';
 import { insightPosts } from '@/data';
-import { getReferences } from '@/lib/references';
+import { getReferences, getSpots } from '@/lib/references';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
-    const references = await getReferences();
+    const [references, spots] = await Promise.all([getReferences(), getSpots()]);
     const fixed = ['', '/insight', '/about', '/privacy'];
     const journals = insightPosts.map((post) => `/about/${post.slug}`);
     const referencePages = references.map((item) => `/insight/reference/${item.slug}`);
-    return [...fixed, ...journals, ...referencePages].map((path) => ({
+    const spotPages = spots.map((item) => `/insight/spot/${item.slug}`);
+    return [...fixed, ...journals, ...referencePages, ...spotPages].map((path) => ({
         url: `${baseUrl}${path}`,
         lastModified: new Date(),
         changeFrequency: path === '' ? 'weekly' : 'monthly',
