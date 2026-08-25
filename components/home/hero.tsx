@@ -3,19 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { LeadForm } from '@/components/lead/lead-form';
 
-/**
- * 세 칩에 글래스 세 가지를 하나씩 넣었다. 보고 마음에 드는 하나를 골라
- * 아래 style 값을 셋 다 같은 이름으로 바꾸면 된다.
- * recreated — 시안 값을 그대로 옮긴 것
- * pure     — 깨끗한 반투명 유리
- * sunset   — 노을빛 그라데이션 유리
- * floating — 떠 있는 듯한 입체 유리
- */
-const badges = [
-    { text: '견적 없어도 신청 가능', style: 'glass-recreated' },
-    { text: '계약 의무 없음', style: 'glass-recreated' },
-    { text: '24시간 내 1차 안내', style: 'glass-recreated' },
-] as const;
+const badges = ['견적 없어도 신청 가능', '계약 의무 없음', '24시간 내 1차 안내'] as const;
 
 export function Hero() {
     const cardRef = useRef<HTMLDivElement>(null);
@@ -65,10 +53,10 @@ export function Hero() {
                     <div className="mt-7 flex flex-wrap gap-2.5 xl:mt-10 xl:gap-3 2xl:mt-[52px] 2xl:gap-4">
                         {badges.map((badge) => (
                             <span
-                                key={badge.text}
-                                className={`hero-badge ${badge.style} inline-flex min-h-11 items-center justify-center rounded-full px-[18px] text-xs font-extrabold whitespace-nowrap xl:min-h-12 xl:w-[174px] xl:px-4 xl:text-[14px] 2xl:min-h-[54px] 2xl:w-[191px] 2xl:px-4 2xl:text-[18px]`}
+                                key={badge}
+                                className="hero-badge glass-figma inline-flex min-h-11 items-center justify-center rounded-full px-[18px] text-xs font-extrabold whitespace-nowrap xl:min-h-12 xl:w-[174px] xl:px-4 xl:text-[14px] 2xl:min-h-[54px] 2xl:w-[191px] 2xl:px-4 2xl:text-[18px]"
                             >
-                                <span className="figma-glass-pill-text">{badge.text}</span>
+                                <span className="figma-glass-pill-text">{badge}</span>
                             </span>
                         ))}
                     </div>
