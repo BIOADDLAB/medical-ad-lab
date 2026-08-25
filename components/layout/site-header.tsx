@@ -12,15 +12,14 @@ export const navItems = [
     ['무료진단 안내', '/#diagnosis', 'SECTION 04'],
     ['광고매체', '/#media', 'SECTION 05'],
     ['진행 방식', '/#process', 'SECTION 08'],
-    ['옥외레퍼런스', '/insight', 'REFERENCE PAGE'],
+    ['병원광고 자리', '/insight?tab=spot', 'AVAILABLE SPOTS'],
+    ['옥외레퍼런스', '/insight?tab=reference', 'REFERENCE PAGE'],
     ['병원광고연구소', '/about', 'LAB JOURNAL'],
 ] as const;
 
 /** 현재 경로가 그 메뉴에 속하는지 */
 function isCurrent(pathname: string, href: string) {
-    return (
-        (pathname.startsWith('/insight') && href === '/insight') || (pathname.startsWith('/about') && href === '/about')
-    );
+    return pathname.startsWith('/about') && href === '/about';
 }
 
 /** 밑줄 대신 글자색 농도로 표시한다. 시안은 전부 흰색이라 기본을 /80 까지만 낮춘다 */
@@ -65,21 +64,21 @@ export function SiteHeader({ solid, onDiagnosis, onMenuToggle, menuOpen }: Props
                         height={25}
                         priority
                         unoptimized
-                        className="h-[18px] w-auto xl:h-[25px]"
+                        className="h-[18px] w-auto xl:h-[22px] 2xl:h-[25px]"
                     />
                     {/* <span className="block text-[24px] font-black  text-brand">병원광고연구소</span> */}
                 </Link>
 
                 {/* 시안 1920 기준 항목 사이 잉크 간격 55px = CSS gap 60px */}
                 <nav
-                    className="hidden flex-1 items-center justify-center gap-7 2xl:gap-[60px] xl:flex"
+                    className="hidden flex-1 items-center justify-center gap-4 2xl:gap-9 xl:flex"
                     aria-label="주요 메뉴"
                 >
                     {navItems.map(([label, href]) => (
                         <Link
                             key={href}
                             href={href}
-                            className={`whitespace-nowrap py-[28px] text-sm font-semibold transition-colors duration-200 2xl:py-[30px] 2xl:text-body ${navTone(isSolid, isCurrent(pathname, href))}`}
+                            className={`whitespace-nowrap py-[28px] text-[13px] font-semibold transition-colors duration-200 2xl:py-[30px] 2xl:text-[15px] ${navTone(isSolid, isCurrent(pathname, href))}`}
                         >
                             {label}
                         </Link>
@@ -90,7 +89,7 @@ export function SiteHeader({ solid, onDiagnosis, onMenuToggle, menuOpen }: Props
                     <button
                         type="button"
                         onClick={(event) => onDiagnosis(event.currentTarget)}
-                        className={`h-9 rounded-lg px-3.5 text-[14px] font-extrabold transition-colors xl:h-12 xl:px-[34px] xl:text-body 2xl:px-[46px] ${
+                        className={`h-9 rounded-lg px-3.5 text-[14px] font-extrabold transition-colors xl:h-12 xl:px-5 xl:text-[14px] 2xl:px-8 2xl:text-body ${
                             isSolid ? 'bg-brand text-white' : 'bg-white text-brand'
                         }`}
                     >

@@ -165,7 +165,7 @@ export function LeadForm({
                             onBlur={(event) => validate('area', event.target.value)}
                         >
                             <option value="" disabled>
-                                시·구 선택
+                                지역 선택
                             </option>
                             {areas.map((area) => (
                                 <option key={area}>{area}</option>

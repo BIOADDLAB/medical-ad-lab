@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useRef, useState } from 'react';
 import { processItems } from '@/data';
 
@@ -35,20 +36,18 @@ export function Process() {
                     {processItems.map(([number, title, description], index) => (
                         <li
                             key={number}
-                            className="process-item relative grid grid-cols-[52px_1fr] items-start gap-x-4 text-left sm:grid-cols-1 sm:items-center sm:justify-items-center sm:text-center"
+                            className="process-item relative grid grid-cols-[54px_1fr] items-start gap-x-4 text-left sm:grid-cols-1 sm:items-center sm:justify-items-center sm:text-center"
                             style={{ '--delay': `${index * 110}ms` } as React.CSSProperties}
                         >
-                            <span className="process-node relative z-10 grid h-12 w-[52px] shrink-0 place-items-center bg-white text-white">
-                                <svg
-                                    aria-hidden="true"
+                            <span className="process-node relative z-10 grid h-[51px] w-[54px] shrink-0 place-items-center bg-white text-white">
+                                <Image
+                                    src="/images/img-rounded.png"
+                                    alt=""
+                                    width={169}
+                                    height={161}
                                     className="absolute inset-0 h-full w-full"
-                                    viewBox="0 0 96.058 89.48"
-                                >
-                                    <path
-                                        d="M12.49 71.52C24.954 88.06 50.969 89.48 70.597 74.69C90.225 59.9 96.032 34.5 83.568 17.96C71.104 1.42 45.089 0 25.461 14.79C5.833 29.58 0.026 54.98 12.49 71.52Z"
-                                        fill="#2468F0"
-                                    />
-                                </svg>
+                                    sizes="54px"
+                                />
                                 <span className="relative z-10 text-sm font-bold">{number}</span>
                             </span>
                             <div className="pt-1 sm:pt-0">

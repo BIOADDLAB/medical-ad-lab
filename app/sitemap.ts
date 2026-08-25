@@ -6,7 +6,7 @@ import { SITE_URL } from '@/lib/site';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = SITE_URL;
     const [references, spots] = await Promise.all([getReferences(), getSpots()]);
-    const fixed = ['', '/insight', '/about', '/privacy'];
+    const fixed = ['', '/insight?tab=spot', '/insight?tab=reference', '/about', '/privacy'];
     const journals = insightPosts.map((post) => `/about/${post.slug}`);
     const referencePages = references.map((item) => `/insight/reference/${item.slug}`);
     const spotPages = spots.map((item) => `/insight/spot/${item.slug}`);

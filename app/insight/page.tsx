@@ -1,27 +1,39 @@
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { BottomCta } from '@/components/home/bottom-cta';
 import { PageBanner } from '@/components/layout/page-banner';
 import { getCategories } from '@/lib/categories';
 import { getReferences, getSpots, type Reference } from '@/lib/references';
+import { SITE_URL } from '@/lib/site';
 
-export const metadata = {
-    title: '옥외광고 자리와 집행 레퍼런스',
-    description:
-        '지금 집행할 수 있는 병원 옥외광고 자리와, 병원광고연구소가 실제로 집행한 지하철·버스·아파트·전광판 레퍼런스를 확인하세요.',
-    alternates: { canonical: '/insight' },
+type InsightPageProps = {
+    searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
+
+export async function generateMetadata({ searchParams }: InsightPageProps): Promise<Metadata> {
+    const params = await searchParams;
+    const reference = params.tab === 'reference';
+    const canonical = reference ? '/insight?tab=reference' : '/insight?tab=spot';
+    const title = reference ? '병원집행 옥외레퍼런스' : '병원광고 자리';
+    const description = reference
+        ? '병원광고연구소가 실제로 집행한 지하철·버스·아파트·전광판 옥외광고 사례를 확인하세요.'
+        : '지역과 매체별로 지금 집행할 수 있는 병원 옥외광고 자리를 확인하세요.';
+
+    return {
+        title,
+        description,
+        alternates: { canonical },
+        openGraph: { title, description, url: canonical, type: 'website' },
+    };
+}
 
 const TABS = [
     { id: 'spot', label: '병원광고 자리' },
     { id: 'reference', label: '병원집행 옥외레퍼런스' },
 ] as const;
 
-export default async function InsightPage({
-    searchParams,
-}: {
-    searchParams: Promise<Record<string, string | string[] | undefined>>;
-}) {
+export default async function InsightPage({ searchParams }: InsightPageProps) {
     const params = await searchParams;
     const tab = params.tab === 'reference' ? 'reference' : 'spot';
     const isSpot = tab === 'spot';
@@ -36,6 +48,17 @@ export default async function InsightPage({
     const activeTitle = categories.find((item) => item.key === activeKey)?.title;
     const visible: Reference[] = activeKey === 'all' ? items : items.filter((item) => item.type === activeTitle);
     const detailPath = isSpot ? 'spot' : 'reference';
+    const itemList = {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: isSpot ? '병원광고 자리 목록' : '병원집행 옥외레퍼런스 목록',
+        itemListElement: visible.map((item, index) => ({
+            '@type': 'ListItem',
+            position: index + 1,
+            name: item.title,
+            url: `${SITE_URL}/insight/${detailPath}/${item.slug}`,
+        })),
+    };
 
     const href = (next: Record<string, string>) => {
         const query = new URLSearchParams({ tab, ...next });
@@ -44,13 +67,17 @@ export default async function InsightPage({
     };
 
     return (
-        <main className="pt-[60px] lg:pt-0">
+        <main className="pt-[60px] md:pt-[72px] xl:pt-0">
             <PageBanner variant="reference" />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList).replace(/</g, '\\u003c') }}
+            />
 
             {/* 탭. 서버 렌더라 링크로 바꾼다. 탭을 옮기면 필터는 전체로 돌아간다 */}
-            <nav className="bg-white pt-10 lg:pt-16" aria-label="옥외광고 보기 방식">
+            <nav className="bg-white pt-8 sm:pt-10 lg:pt-12" aria-label="옥외광고 보기 방식">
                 <div className="site-container">
-                    <div className="tab-scroll flex gap-7 overflow-x-auto border-b border-line lg:gap-16">
+                    <div className="tab-scroll flex gap-8 overflow-x-auto border-b border-line sm:gap-12 lg:gap-16">
                         {TABS.map((item) => {
                             const on = item.id === tab;
                             return (
@@ -58,12 +85,12 @@ export default async function InsightPage({
                                     key={item.id}
                                     href={`/insight?tab=${item.id}`}
                                     aria-current={on ? 'page' : undefined}
-                                    className={`relative -mb-px whitespace-nowrap pb-4 text-[17px] font-extrabold tracking-[-0.035em] transition-colors sm:text-[24px] lg:pb-6 lg:text-h3 ${
+                                    className={`relative -mb-px shrink-0 whitespace-nowrap pb-4 text-left text-[18px] font-extrabold leading-[1.4] tracking-[-0.035em] transition-colors sm:pb-5 sm:text-[22px] lg:pb-6 lg:text-[24px] ${
                                         on ? 'text-brand' : 'text-ink hover:text-brand'
                                     }`}
                                 >
                                     {item.label}
-                                    {on && <span className="absolute -inset-x-2 bottom-0 h-1 bg-brand" />}
+                                    {on && <span className="absolute inset-x-0 bottom-0 h-[3px] bg-brand" />}
                                 </Link>
                             );
                         })}
@@ -80,7 +107,10 @@ export default async function InsightPage({
                             : '매체와 업종별 실제 사례를 확인하세요.'}
                     </p>
 
-                    <div className="mb-6 flex flex-wrap gap-2 lg:mb-9" aria-label="매체 필터">
+                    <div
+                        className="tab-scroll -mx-gutter mb-6 flex flex-nowrap gap-2 overflow-x-auto px-gutter pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 lg:mb-9"
+                        aria-label="매체 필터"
+                    >
                         {[{ key: 'all', title: '전체' }, ...categories].map((item) => {
                             const on = item.key === activeKey;
                             return (
@@ -88,7 +118,7 @@ export default async function InsightPage({
                                     key={item.key}
                                     href={href({ type: item.key })}
                                     scroll={false}
-                                    className={`inline-flex h-9 items-center rounded-full px-4 text-xs font-bold transition-colors lg:h-[38px] ${
+                                    className={`inline-flex h-9 shrink-0 items-center rounded-full px-4 text-xs font-bold transition-colors lg:h-[38px] ${
                                         on ? 'bg-brand text-white' : 'border border-line bg-white text-muted'
                                     }`}
                                 >

@@ -14,9 +14,9 @@ const businessInfo = [
 
 export function SiteFooter() {
     return (
-        <footer className="border-t border-line bg-white py-14 lg:py-[70px]">
+        <footer className="border-t border-line bg-white py-12 sm:py-14 lg:py-[70px]">
             <div className="site-container">
-                <div className="flex flex-col justify-between gap-8 lg:flex-row lg:items-start lg:gap-10">
+                <div className="grid gap-8 border-b border-line pb-8 sm:grid-cols-[1fr_auto] sm:items-start lg:pb-10">
                     <div>
                         <Image
                             src="/images/logo-ori.svg"
@@ -24,27 +24,41 @@ export function SiteFooter() {
                             width={161}
                             height={25}
                             unoptimized
-                            className="h-[30px] w-auto"
+                            className="h-[24px] w-auto sm:h-[26px]"
                         />
-                        <p className="mb-0 mt-3 text-sm">병원 광고를 더 쉽고, 더 투명하게.</p>
+                        <p className="mb-0 mt-3 text-sm font-semibold text-slate">병원 광고를 더 쉽고, 더 투명하게.</p>
                     </div>
-                    <div className="flex gap-5 text-sm font-bold">
-                        <Link href="/about">회사소개</Link>
-                        <Link href="/privacy">개인정보처리방침</Link>
-                        <DiagnosisButton>문의하기</DiagnosisButton>
-                    </div>
+                    <nav
+                        className="grid grid-cols-2 gap-x-6 gap-y-4 text-sm font-bold sm:flex sm:items-center sm:justify-end sm:gap-6"
+                        aria-label="푸터 메뉴"
+                    >
+                        <Link className="whitespace-nowrap" href="/about">
+                            회사소개
+                        </Link>
+                        <Link className="whitespace-nowrap" href="/privacy">
+                            개인정보처리방침
+                        </Link>
+                        <DiagnosisButton className="col-span-2 w-fit whitespace-nowrap text-brand sm:col-auto">
+                            문의하기
+                        </DiagnosisButton>
+                    </nav>
                 </div>
 
-                <div className="mt-9 flex flex-col gap-5 border-t border-line pt-6 lg:mt-11 lg:flex-row lg:items-end lg:justify-between">
-                    <div>
-                        <small className="block max-w-[760px] text-sm leading-[1.9] text-muted">
-                            {businessInfo.slice(0, 3).join(' · ')}
-                            <br />
-                            {businessInfo.slice(3).join(' · ')}
-                        </small>
+                <div className="grid gap-7 pt-7 lg:grid-cols-[1fr_auto] lg:items-end lg:pt-9">
+                    <div className="min-w-0">
+                        <address className="m-0 grid gap-1.5 text-[13px] not-italic leading-[1.7] text-muted sm:flex sm:max-w-[900px] sm:flex-wrap sm:gap-x-2 sm:gap-y-1">
+                            {businessInfo.map((item) => (
+                                <span
+                                    key={item}
+                                    className="sm:after:ml-2 sm:after:content-['·'] last:sm:after:content-none"
+                                >
+                                    {item}
+                                </span>
+                            ))}
+                        </address>
                         <ContactEmail fallback="medicaladlab@gmail.com" />
                     </div>
-                    <small className="shrink-0 text-sm tracking-[.02em] text-muted">
+                    <small className="shrink-0 text-xs tracking-[.02em] text-muted sm:text-sm">
                         Copyright ⓒ bioadd lab. All Rights Reserved.
                     </small>
                 </div>

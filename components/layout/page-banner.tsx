@@ -21,8 +21,7 @@ const copy = {
         title: (
             <>
                 병원 광고를 더 잘 판단할 수 있도록
-                <br />
-                <em className="not-italic text-brand">직접 확인한 정보와 사례를 전합니다.</em>
+                <br /> <em className="not-italic text-brand">직접 확인한 정보와 사례를 전합니다.</em>
             </>
         ),
         description: '실무 인사이트부터 실제 옥외광고 집행 사례까지 한곳에서 확인하세요.',
@@ -89,10 +88,10 @@ export function PageBanner({ variant }: { variant: keyof typeof copy }) {
                         <Image
                             src="/images/img-banner-01.png"
                             alt=""
-                            width={456}
-                            height={458}
+                            width={912}
+                            height={760}
                             priority
-                            className="banner-art-primary h-[458px] w-[456px]"
+                            className="banner-art-primary h-auto w-full"
                         />
                     ) : (
                         <Image
@@ -101,7 +100,7 @@ export function PageBanner({ variant }: { variant: keyof typeof copy }) {
                             width={650}
                             height={430}
                             priority
-                            className="banner-art-primary h-[430px] w-[650px]"
+                            className="banner-art-primary h-auto w-full"
                         />
                     )}
                 </motion.div>

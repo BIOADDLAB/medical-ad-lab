@@ -281,15 +281,19 @@
 }
 .page-banner[data-variant='journal'] .page-banner-art {
     right: -13px;
-    top: 30px;
+    bottom: 0;
     width: 650px;
     height: 430px;
 }
 .page-banner[data-variant='reference'] .page-banner-art {
     right: 66px;
-    top: -11px;
+    bottom: 0;
     width: 456px;
-    height: 458px;
+    height: 380px;
+}
+.page-banner .banner-art-primary {
+    object-fit: contain;
+    object-position: center bottom;
 }
 .metrics-bg {
     background: var(--color-night) url('/images/bg-s5.jpg') center bottom / cover no-repeat;
@@ -360,14 +364,11 @@
 }
 .process-item {
     opacity: 0;
-    transform: translateY(16px);
-    transition:
-        opacity 0.5s ease var(--delay),
-        transform 0.5s ease var(--delay);
+    transition: opacity 0.5s ease var(--delay);
 }
 .process-track::before {
     position: absolute;
-    top: 24px;
+    top: 25px;
     right: 10%;
     left: 10%;
     height: 1px;
@@ -382,15 +383,10 @@
 }
 .is-played .process-item {
     opacity: 1;
-    transform: none;
 }
-.process-node svg {
-    transform: rotate(-8deg) scale(0.94);
-    transform-origin: center;
-    transition: transform 0.72s cubic-bezier(0.22, 1, 0.36, 1) var(--delay);
-}
-.is-played .process-node svg {
-    transform: rotate(0) scale(1);
+.process-node img {
+    backface-visibility: hidden;
+    transform: translateZ(0);
 }
 .success-confetti {
     position: absolute;
@@ -470,18 +466,21 @@
     }
     .page-banner-copy {
         left: 0;
-        max-width: 62%;
+        max-width: 60%;
     }
     .page-banner[data-variant='journal'] .page-banner-art {
-        right: -220px;
+        right: -170px;
+        bottom: 0;
+        width: 560px;
+        height: auto;
         opacity: 0.72;
     }
     .page-banner[data-variant='reference'] .page-banner-art {
-        right: -120px;
+        right: -70px;
+        bottom: 0;
+        width: 420px;
+        height: auto;
         opacity: 0.82;
-    }
-    .page-banner-title br {
-        display: none;
     }
     .page-banner-description {
         max-width: 540px;
@@ -490,22 +489,23 @@
 
 @media (min-width: 768px) and (max-width: 900px) {
     .page-banner-copy {
-        max-width: calc(100% - 80px);
+        max-width: 68%;
     }
     .page-banner .page-banner-art,
     .page-banner[data-variant='journal'] .page-banner-art,
     .page-banner[data-variant='reference'] .page-banner-art {
-        right: -80px;
+        right: -120px;
         top: auto;
-        bottom: -205px;
-        width: 390px;
-        height: 390px;
-        opacity: 0.3;
+        bottom: 0;
+        width: 360px;
+        height: auto;
+        opacity: 0.42;
     }
     .page-banner .banner-art-primary {
-        width: 390px;
-        height: 390px;
+        width: 100%;
+        height: auto;
         object-fit: contain;
+        object-position: center bottom;
     }
 }
 
@@ -527,12 +527,12 @@
         height: 84px;
     }
     /*
-     * 모바일은 고정 높이·절대배치를 풀고 글 → 그림 순으로 쌓는다.
-     * 높이를 360px 로 묶어두면 제목이 넉 줄이 될 때 그림 위로 넘친다.
+     * 모바일은 글 → 그림 순으로 쌓고 그림의 실제 캔버스를 섹션 바닥에 붙인다.
+     * 하단 패딩을 두지 않아 화면 폭과 관계없이 이미지가 뜨지 않는다.
      */
     .page-banner {
         height: auto;
-        padding: 32px 0 28px;
+        padding: 32px 0 0;
     }
     .page-banner-frame {
         width: calc(100% - 40px);
@@ -565,38 +565,44 @@
     .page-banner[data-variant='reference'] .page-banner-art {
         position: static;
         display: block;
-        width: 220px;
-        height: 220px;
-        margin: 20px auto 0;
+        height: auto;
+        margin: 22px auto 0;
+        opacity: 1;
+    }
+    .page-banner[data-variant='reference'] .page-banner-art {
+        width: min(240px, 72vw);
+    }
+    .page-banner[data-variant='journal'] .page-banner-art {
+        width: min(300px, 84vw);
     }
     .page-banner .banner-art-primary {
-        width: 220px;
-        height: 220px;
+        width: 100%;
+        height: auto;
         object-fit: contain;
+        object-position: center bottom;
     }
     .process-track {
         gap: 0;
+    }
+    .process-track::before {
+        display: block;
+        top: 25px;
+        right: auto;
+        bottom: 25px;
+        left: 26.5px;
+        width: 1px;
+        height: auto;
+        transform: scaleY(0);
+        transform-origin: center top;
+    }
+    .is-played .process-track::before {
+        transform: scaleY(1);
     }
     .process-item {
         padding-bottom: 32px;
     }
     .process-item:last-child {
         padding-bottom: 0;
-    }
-    /*
-     * 선은 줄의 위끝에서 아래끝까지 통째로 긋는다.
-     * 표식이 흰 배경 + z-10 이라 자기가 덮는 만큼만 선을 가린다.
-     * 표식 높이를 계산해 top 을 맞추면 글꼴이 바뀔 때마다 어긋난다.
-     */
-    .process-item:not(:last-child)::after {
-        position: absolute;
-        top: 0;
-        bottom: -1px;
-        left: 25px;
-        z-index: 0;
-        width: 2px;
-        background: var(--color-line-strong);
-        content: '';
     }
 }
 
