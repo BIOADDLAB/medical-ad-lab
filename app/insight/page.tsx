@@ -13,7 +13,7 @@ export const metadata = {
 };
 
 const TABS = [
-    { id: 'spot', label: '병원광고 인사이트' },
+    { id: 'spot', label: '병원광고 자리' },
     { id: 'reference', label: '병원집행 옥외레퍼런스' },
 ] as const;
 
@@ -71,12 +71,10 @@ export default async function InsightPage({
                 </div>
             </nav>
 
-            <section className={`pb-section pt-10 lg:pt-14 ${isSpot ? 'bg-soft' : 'bg-white'}`}>
+            <section className="bg-white pb-section pt-10 lg:pt-12">
                 <div className="site-container">
-                    <h2 className="m-0 text-h4 lg:text-h2">
-                        {isSpot ? '지금 집행할 수 있는 광고 자리' : '최근 집행된 옥외광고'}
-                    </h2>
-                    <p className="mb-6 mt-2 text-sm text-muted lg:mb-9">
+                    <h2 className="m-0 text-h3">{isSpot ? '지금 집행할 수 있는 광고 자리' : '최근 집행된 옥외광고'}</h2>
+                    <p className="mb-6 mt-2 text-[15px] text-slate lg:mb-9 lg:text-[17px]">
                         {isSpot
                             ? '매체와 지역별로 지금 잡을 수 있는 자리를 확인하세요.'
                             : '매체와 업종별 실제 사례를 확인하세요.'}

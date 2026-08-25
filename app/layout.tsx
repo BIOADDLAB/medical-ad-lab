@@ -3,9 +3,10 @@ import '@sun-typeface/suit/fonts/variable/woff2/SUIT-Variable.css';
 import './globals.css';
 import { SiteShell } from '@/components/layout/site-shell';
 import { Analytics } from '@/components/layout/analytics';
+import { SITE_URL, SITE_VERIFICATION } from '@/lib/site';
 
 export const metadata: Metadata = {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://medicaladlab.example.com'),
+    metadataBase: new URL(SITE_URL),
     title: {
         default: '병원광고연구소 | MEDICAL AD LAB',
         template: '%s | 병원광고연구소',
@@ -28,6 +29,10 @@ export const metadata: Metadata = {
     },
     icons: { icon: '/favicon.ico', shortcut: '/favicon.ico', apple: '/og-image.jpg' },
     alternates: { canonical: '/' },
+    verification: {
+        google: SITE_VERIFICATION.google || undefined,
+        other: SITE_VERIFICATION.naver ? { 'naver-site-verification': SITE_VERIFICATION.naver } : {},
+    },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -36,7 +41,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         '@type': 'Organization',
         name: '병원광고연구소',
         alternateName: 'MEDICAL AD LAB',
-        url: process.env.NEXT_PUBLIC_SITE_URL || 'https://medicaladlab.example.com',
+        url: SITE_URL,
     };
     return (
         <html lang="ko" data-scroll-behavior="smooth">

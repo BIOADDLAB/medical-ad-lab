@@ -1,5 +1,6 @@
 import { faqs, insightPosts, mediaItems, processItems } from '@/data';
 import { getReferences, getSpots } from '@/lib/references';
+import { SITE_URL } from '@/lib/site';
 
 export const revalidate = 3600;
 
@@ -8,7 +9,7 @@ export const revalidate = 3600;
  * HTML을 헤매지 않고 무엇을 하는 회사인지 바로 알 수 있게 평문으로 둔다.
  */
 export async function GET() {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://medicaladlab.example.com';
+    const baseUrl = SITE_URL;
     const [references, spots] = await Promise.all([getReferences(), getSpots()]);
 
     const text = [

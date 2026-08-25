@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { DiagnosisButton } from '@/components/lead/diagnosis-button';
 import { getSpot, getSpots, SPOT_GOAL_FALLBACK, SPOT_PLAN_FALLBACK } from '@/lib/references';
+import { SITE_URL } from '@/lib/site';
 
 export async function generateStaticParams() {
     const spots = await getSpots();
@@ -29,7 +30,7 @@ export default async function SpotDetail({ params }: { params: Promise<{ slug: s
     const item = await getSpot(slug);
     if (!item) notFound();
 
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://medicaladlab.example.com';
+    const baseUrl = SITE_URL;
     // 집행 가능한 자리이므로 사례(CreativeWork)가 아니라 판매 중인 상품으로 표시한다
     const structuredData = {
         '@context': 'https://schema.org',

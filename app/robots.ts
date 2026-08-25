@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { SITE_URL } from '@/lib/site';
 
 /**
  * AI 답변 엔진에 인용되려면 검색용 크롤러를 열어 둬야 한다.
@@ -18,7 +19,7 @@ const AI_CRAWLERS = [
 ];
 
 export default function robots(): MetadataRoute.Robots {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com';
+    const baseUrl = SITE_URL;
     return {
         rules: [
             { userAgent: '*', allow: '/', disallow: ['/admin', '/api/'] },

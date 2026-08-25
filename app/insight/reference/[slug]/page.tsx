@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { DiagnosisButton } from '@/components/lead/diagnosis-button';
 import { GOAL_FALLBACK, getReference, getReferences, PLAN_FALLBACK } from '@/lib/references';
+import { SITE_URL } from '@/lib/site';
 
 export async function generateStaticParams() {
     const references = await getReferences();
@@ -30,7 +31,7 @@ export default async function ReferenceDetail({ params }: { params: Promise<{ sl
     const item = await getReference(slug);
     if (!item) notFound();
 
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://medicaladlab.example.com';
+    const baseUrl = SITE_URL;
     // AI 답변 엔진이 매체·지역·집행 내용을 그대로 읽을 수 있게 남긴다
     const structuredData = {
         '@context': 'https://schema.org',

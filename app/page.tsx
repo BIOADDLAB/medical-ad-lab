@@ -12,9 +12,10 @@ import { BottomCta } from '@/components/home/bottom-cta';
 import { LegacyHomeMotion } from '@/components/home/home-motion-legacy';
 import { MOTION_PRESET } from '@/lib/motion-config';
 import { faqs } from '@/data';
+import { SITE_URL } from '@/lib/site';
 
 export default function Home() {
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://medicaladlab.example.com';
+    const baseUrl = SITE_URL;
     const structuredData = {
         '@context': 'https://schema.org',
         '@graph': [
