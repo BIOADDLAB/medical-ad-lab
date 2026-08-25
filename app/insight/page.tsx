@@ -13,8 +13,8 @@ export const metadata = {
 };
 
 const TABS = [
-    { id: 'spot', label: '광고 자리 알아보기', caption: '지금 집행할 수 있는 자리' },
-    { id: 'reference', label: '옥외레퍼런스 보기', caption: '실제로 집행한 사례' },
+    { id: 'spot', label: '병원광고 인사이트' },
+    { id: 'reference', label: '병원집행 옥외레퍼런스' },
 ] as const;
 
 export default async function InsightPage({
@@ -48,41 +48,38 @@ export default async function InsightPage({
             <PageBanner variant="reference" />
 
             {/* 탭. 서버 렌더라 링크로 바꾼다. 탭을 옮기면 필터는 전체로 돌아간다 */}
-            <nav className="border-b border-line bg-white" aria-label="옥외광고 보기 방식">
-                <div className="site-container flex gap-1 sm:gap-2">
-                    {TABS.map((item) => {
-                        const on = item.id === tab;
-                        return (
-                            <Link
-                                key={item.id}
-                                href={`/insight?tab=${item.id}`}
-                                aria-current={on ? 'page' : undefined}
-                                className={`relative grid min-h-[62px] flex-1 place-items-center px-3 py-3 text-center transition-colors sm:flex-none sm:px-8 lg:min-h-[76px] ${
-                                    on ? 'text-brand' : 'text-muted hover:text-ink'
-                                }`}
-                            >
-                                <span>
-                                    <strong className="block text-sm lg:text-[17px]">{item.label}</strong>
-                                    <small className="mt-1 hidden text-[11px] font-medium text-muted sm:block">
-                                        {item.caption}
-                                    </small>
-                                </span>
-                                {on && <span className="absolute inset-x-0 bottom-0 h-[3px] rounded-t bg-brand" />}
-                            </Link>
-                        );
-                    })}
+            <nav className="bg-white pt-10 lg:pt-16" aria-label="옥외광고 보기 방식">
+                <div className="site-container">
+                    <div className="tab-scroll flex gap-7 overflow-x-auto border-b border-line lg:gap-16">
+                        {TABS.map((item) => {
+                            const on = item.id === tab;
+                            return (
+                                <Link
+                                    key={item.id}
+                                    href={`/insight?tab=${item.id}`}
+                                    aria-current={on ? 'page' : undefined}
+                                    className={`relative -mb-px whitespace-nowrap pb-4 text-[17px] font-extrabold tracking-[-0.035em] transition-colors sm:text-[24px] lg:pb-6 lg:text-h3 ${
+                                        on ? 'text-brand' : 'text-ink hover:text-brand'
+                                    }`}
+                                >
+                                    {item.label}
+                                    {on && <span className="absolute -inset-x-2 bottom-0 h-1 bg-brand" />}
+                                </Link>
+                            );
+                        })}
+                    </div>
                 </div>
             </nav>
 
-            <section className={`py-section ${isSpot ? 'bg-soft' : 'bg-white'}`}>
+            <section className={`pb-section pt-10 lg:pt-14 ${isSpot ? 'bg-soft' : 'bg-white'}`}>
                 <div className="site-container">
                     <h2 className="m-0 text-h4 lg:text-h2">
                         {isSpot ? '지금 집행할 수 있는 광고 자리' : '최근 집행된 옥외광고'}
                     </h2>
                     <p className="mb-6 mt-2 text-sm text-muted lg:mb-9">
                         {isSpot
-                            ? '필터를 선택해 매체별로 확인하세요. 자리마다 규격과 조건이 다릅니다.'
-                            : '필터를 선택해 사례를 확인하세요.'}
+                            ? '매체와 지역별로 지금 잡을 수 있는 자리를 확인하세요.'
+                            : '매체와 업종별 실제 사례를 확인하세요.'}
                     </p>
 
                     <div className="mb-6 flex flex-wrap gap-2 lg:mb-9" aria-label="매체 필터">
