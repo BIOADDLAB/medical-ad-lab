@@ -194,7 +194,6 @@
         content: '';
         pointer-events: none;
     }
-    /* 피그마 Glass 이펙트: Fill D9D9D9 / Light -45° / Refraction / Dispersion / Frost 0 */
     .glass-figma {
         position: relative;
         isolation: isolate;
