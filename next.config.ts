@@ -7,6 +7,13 @@ const nextConfig: NextConfig = {
         dangerouslyAllowSVG: true,
         contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     },
+    /** 임시 저널(/about)을 CMS 블로그로 넘긴다. 이미 색인된 주소라 301 로 보낸다 */
+    async redirects() {
+        return [
+            { source: '/about', destination: '/blog', permanent: true },
+            { source: '/about/:slug', destination: '/blog', permanent: true },
+        ];
+    },
 };
 
 export default nextConfig;

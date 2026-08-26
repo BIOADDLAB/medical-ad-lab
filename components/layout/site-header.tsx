@@ -14,12 +14,12 @@ export const navItems = [
     ['진행 방식', '/#process', 'SECTION 08'],
     ['병원광고 자리', '/insight?tab=spot', 'AVAILABLE SPOTS'],
     ['옥외레퍼런스', '/insight?tab=reference', 'REFERENCE PAGE'],
-    ['병원광고연구소', '/about', 'LAB JOURNAL'],
+    ['병원광고연구소', '/blog', 'LAB JOURNAL'],
 ] as const;
 
 /** 현재 경로가 그 메뉴에 속하는지 */
 function isCurrent(pathname: string, href: string) {
-    return pathname.startsWith('/about') && href === '/about';
+    return pathname.startsWith('/blog') && href === '/blog';
 }
 
 /** 밑줄 대신 글자색 농도로 표시한다. 시안은 전부 흰색이라 기본을 /80 까지만 낮춘다 */

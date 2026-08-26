@@ -32,7 +32,7 @@ export function SiteFooter() {
                         className="grid grid-cols-2 gap-x-6 gap-y-4 text-sm font-bold sm:flex sm:items-center sm:justify-end sm:gap-6"
                         aria-label="푸터 메뉴"
                     >
-                        <Link className="whitespace-nowrap" href="/about">
+                        <Link className="whitespace-nowrap" href="/blog">
                             회사소개
                         </Link>
                         <Link className="whitespace-nowrap" href="/privacy">

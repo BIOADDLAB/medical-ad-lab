@@ -28,7 +28,7 @@ export const metadata: Metadata = {
         description: '병원에 맞는 옥외광고, 데이터로 먼저 진단하세요.',
         images: ['/og-image.jpg'],
     },
-    icons: { icon: '/favicon.ico', shortcut: '/favicon.ico', apple: '/og-image.jpg' },
+    icons: { icon: '/favicon.ico', shortcut: '/favicon.ico', apple: '/apple-touch-icon.png' },
     alternates: { canonical: '/' },
     /* 검색 결과에 큰 썸네일과 긴 설명을 허용한다. 넣지 않으면 구글이 작은 이미지만 쓴다 */
     robots: {

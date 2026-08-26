@@ -1,4 +1,4 @@
-import { faqs, insightPosts, mediaItems, processItems } from '@/data';
+import { faqs, mediaItems, processItems } from '@/data';
 import { getReferences, getSpots } from '@/lib/references';
 import { SITE_URL } from '@/lib/site';
 
@@ -34,7 +34,6 @@ export async function GET() {
         ...spots.map((item) => `- [${item.title} (${item.area} ${item.type})](${baseUrl}/insight/spot/${item.slug})`),
         '',
         '## 칼럼',
-        ...insightPosts.map((post) => `- [${post.title}](${baseUrl}/about/${post.slug}) — ${post.excerpt}`),
         '',
         '## 문의',
         `- 무료진단 신청: ${baseUrl}/#apply`,

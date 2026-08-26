@@ -1,16 +1,15 @@
 import type { MetadataRoute } from 'next';
-import { insightPosts } from '@/data';
 import { getReferences, getSpots } from '@/lib/references';
 import { SITE_URL } from '@/lib/site';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = SITE_URL;
     const [references, spots] = await Promise.all([getReferences(), getSpots()]);
-    const fixed = ['', '/insight?tab=spot', '/insight?tab=reference', '/about', '/privacy'];
-    const journals = insightPosts.map((post) => `/about/${post.slug}`);
+    // 블로그는 /blog/sitemap.xml 이 따로 담당한다. 여기에는 넣지 않는다
+    const fixed = ['', '/insight?tab=spot', '/insight?tab=reference', '/privacy'];
     const referencePages = references.map((item) => `/insight/reference/${item.slug}`);
     const spotPages = spots.map((item) => `/insight/spot/${item.slug}`);
-    return [...fixed, ...journals, ...referencePages, ...spotPages].map((path) => ({
+    return [...fixed, ...referencePages, ...spotPages].map((path) => ({
         url: `${baseUrl}${path}`,
         lastModified: new Date(),
         changeFrequency: path === '' ? 'weekly' : 'monthly',
