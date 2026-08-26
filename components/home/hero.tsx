@@ -5,6 +5,8 @@ import { LeadForm } from '@/components/lead/lead-form';
 
 const badges = ['견적 없어도 신청 가능', '계약 의무 없음', '24시간 내 1차 안내'] as const;
 
+const GLASS = 'glass-on';
+
 export function Hero() {
     const cardRef = useRef<HTMLDivElement>(null);
 
@@ -54,7 +56,7 @@ export function Hero() {
                         {badges.map((badge) => (
                             <span
                                 key={badge}
-                                className="hero-badge glass-figma inline-flex min-h-11 items-center justify-center rounded-full px-[18px] text-xs font-extrabold whitespace-nowrap xl:min-h-12 xl:w-[174px] xl:px-4 xl:text-[14px] 2xl:min-h-[54px] 2xl:w-[191px] 2xl:px-4 2xl:text-[18px]"
+                                className={`hero-badge ${GLASS} inline-flex min-h-11 items-center justify-center rounded-full px-[18px] text-xs font-extrabold whitespace-nowrap xl:min-h-12 xl:w-[174px] xl:px-4 xl:text-[14px] 2xl:min-h-[54px] 2xl:w-[191px] 2xl:px-4 2xl:text-[18px]`}
                             >
                                 <span className="figma-glass-pill-text">{badge}</span>
                             </span>

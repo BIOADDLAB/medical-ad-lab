@@ -194,20 +194,72 @@
         content: '';
         pointer-events: none;
     }
-    .glass-figma {
+    /* 피그마 Glass 이펙트: Fill D9D9D9 / Light -45° / Refraction / Dispersion / Frost 0 */
+    /* 히어로 칩 글래스 2종. hero.tsx 의 GLASS 상수만 바꿔서 비교한다 */
+
+    .glass-figma-1,
+    .glass-on {
         position: relative;
         isolation: isolate;
+        transition: background-color 0.2s ease;
+    }
+    .glass-figma-1::before,
+    .glass-on::before,
+    .glass-figma-1::after,
+    .glass-on::after {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        content: '';
+        pointer-events: none;
+    }
+    .glass-figma-1::before,
+    .glass-on::before {
+        mask:
+            linear-gradient(#000 0 0) content-box,
+            linear-gradient(#000 0 0);
+        mask-composite: exclude;
+        -webkit-mask:
+            linear-gradient(#000 0 0) content-box,
+            linear-gradient(#000 0 0);
+        -webkit-mask-composite: xor;
+    }
+
+    /* 1번 · 강함 — Fill 20% / Depth 28 / Dispersion 58 */
+    .glass-figma-1 {
+        background: rgba(217, 217, 217, 0.2);
+        box-shadow:
+            inset 3px 5px 8px -3px rgba(255, 255, 255, 0.55),
+            inset -3px -5px 8px -3px rgba(255, 255, 255, 0.3),
+            0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+    .glass-figma-1::before {
+        padding: 1.5px;
+        background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.95) 0%,
+            rgba(170, 220, 255, 0.35) 28%,
+            rgba(255, 255, 255, 0.06) 48%,
+            rgba(255, 185, 230, 0.22) 72%,
+            rgba(255, 255, 255, 0.6) 100%
+        );
+    }
+    .glass-figma-1::after {
+        background: radial-gradient(80% 120% at 12% -10%, rgba(255, 255, 255, 0.28), transparent 55%);
+    }
+    .glass-figma-1:hover {
+        background: rgba(217, 217, 217, 0.28);
+    }
+
+    /* 2번 · 약함 — Fill 10% */
+    .glass-on {
         background: rgba(217, 217, 217, 0.1);
         box-shadow:
             inset 1.5px 2.5px 4px -1.5px rgba(255, 255, 255, 0.28),
             inset -1.5px -2.5px 4px -1.5px rgba(255, 255, 255, 0.14),
             0 8px 24px rgba(0, 0, 0, 0.22);
-        transition: background-color 0.2s ease;
     }
-    .glass-figma::before {
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
+    .glass-on::before {
         padding: 1px;
         background: linear-gradient(
             135deg,
@@ -217,26 +269,11 @@
             rgba(255, 185, 230, 0.12) 72%,
             rgba(255, 255, 255, 0.32) 100%
         );
-        mask:
-            linear-gradient(#000 0 0) content-box,
-            linear-gradient(#000 0 0);
-        mask-composite: exclude;
-        -webkit-mask:
-            linear-gradient(#000 0 0) content-box,
-            linear-gradient(#000 0 0);
-        -webkit-mask-composite: xor;
-        content: '';
-        pointer-events: none;
     }
-    .glass-figma::after {
-        position: absolute;
-        inset: 0;
-        border-radius: inherit;
+    .glass-on::after {
         background: radial-gradient(80% 120% at 12% -10%, rgba(255, 255, 255, 0.1), transparent 55%);
-        content: '';
-        pointer-events: none;
     }
-    .glass-figma:hover {
+    .glass-on:hover {
         background: rgba(217, 217, 217, 0.16);
     }
     .figma-glass-pill-text {
