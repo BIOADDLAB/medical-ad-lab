@@ -55,4 +55,19 @@ export const formatKST = (date = new Date()) =>
         hour12: false,
     }).format(date);
 
+/**
+ * 접수일시 앞부분("2026. 08.")과 글자까지 같은 문자열.
+ * Intl 로 연·월만 뽑으면 "2026. 8." 이 나와 0이 빠지므로 직접 맞춘다
+ */
+export const monthPrefixKST = (date = new Date()) => {
+    const [year, month] = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Asia/Seoul',
+        year: 'numeric',
+        month: '2-digit',
+    })
+        .format(date)
+        .split('-');
+    return `${year}. ${month}.`;
+};
+
 export type LeadRow = ReturnType<typeof rowToLead>;

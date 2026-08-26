@@ -6,6 +6,7 @@ import { onAuthStateChanged, signInWithEmailAndPassword, signOut, type User } fr
 import { firebaseReady, getFirebase } from '@/lib/firebase';
 import { loadSettings, saveSettings, type SiteSettings } from '@/lib/admin-store';
 import { getReferences } from '@/lib/references';
+import { monthPrefixKST } from '@/lib/lead';
 import { ReferenceManager } from '@/components/admin/reference-manager';
 import { fetchLeads, LeadTable, type LeadPayload } from '@/components/admin/lead-table';
 import { TaskList } from '@/components/admin/task-list';
@@ -174,12 +175,8 @@ export function AdminDashboard() {
     if (checking) return <main className="grid min-h-screen place-items-center bg-ink text-white">확인 중...</main>;
     if (firebaseReady && !user) return <LoginScreen />;
 
-    // 이번 달 접수 건수. 시트 접수일시가 "2026. 08. 19. 14:30" 형태다
-    const monthPrefix = new Intl.DateTimeFormat('ko-KR', {
-        timeZone: 'Asia/Seoul',
-        year: 'numeric',
-        month: '2-digit',
-    }).format(new Date());
+    // 이번 달 접수 건수. 시트 접수일시가 "2026. 08. 19. 14:30" 형태라 앞부분만 비교한다
+    const monthPrefix = monthPrefixKST();
     const thisMonth = (leads?.leads ?? []).filter((lead) => lead.createdAt.startsWith(monthPrefix)).length;
     const newCount = (leads?.leads ?? []).filter((lead) => lead.status === '신규').length;
 

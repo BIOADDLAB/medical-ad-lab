@@ -18,7 +18,26 @@ const messages: Record<FieldName, string> = {
     privacy: '개인정보 수집 및 이용 동의가 필요합니다.',
 };
 
-const areas = ['서울', '경기', '인천', '부산', '대구', '대전', '광주', '기타'];
+/** 17개 시·도 전부. 문의가 많은 수도권을 앞에 두고 나머지는 행정구역 순서 */
+const areas = [
+    '서울',
+    '경기',
+    '인천',
+    '부산',
+    '대구',
+    '광주',
+    '대전',
+    '울산',
+    '세종',
+    '강원',
+    '충북',
+    '충남',
+    '전북',
+    '전남',
+    '경북',
+    '경남',
+    '제주',
+];
 
 const detectSource = () => {
     const params = new URLSearchParams(window.location.search);
