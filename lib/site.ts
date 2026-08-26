@@ -4,13 +4,7 @@
  */
 export const SITE_URL = 'https://www.medicaladlab.com';
 
-/**
- * 검색엔진 소유확인 코드. 콘솔이 주는 content 값만 따옴표 안에 넣으면 된다.
- * 비워 두면 해당 meta 태그를 아예 안 넣는다. 비밀값이 아니라 어차피 HTML 에 노출된다
- */
 export const SITE_VERIFICATION = {
-    /** 구글 서치콘솔 · HTML 태그 방식의 content 값 */
     google: 'AXPcBDYwU84aF3-4OBmzGuwwduwkMu3Ztt0IVv4q4yg',
-    /** 네이버 서치어드바이저 · 사이트 소유확인의 content 값 */
-    naver: '',
+    naver: '8e05c54cb28b8c938036800b49d851af9890a423',
 };
