@@ -2,17 +2,17 @@ export const painPoints = [
     {
         number: '01',
         title: '받은 견적이 적정한지\n모르겠어요',
-        description: '같은 위치라도 업체와 조건에 따라 가격이 달라집니다.',
+        description: '같은 위치라도 업체와 조건에 따라 \n가격이 달라집니다.',
     },
     {
         number: '02',
         title: '어디에 광고해야 할지\n모르겠어요',
-        description: '유명한 매체보다 실제 환자 동선이 중요합니다.',
+        description: '유명한 매체보다 \n실제 환자 동선이 중요합니다.',
     },
     {
         number: '03',
         title: '지금 광고를 계속해야\n할지 고민이에요',
-        description: '집행 전 비용과 효과를 같은 기준으로 점검해야 합니다.',
+        description: '집행 전 비용과 효과를 \n같은 기준으로 점검해야 합니다.',
     },
 ] as const;
 
@@ -66,21 +66,21 @@ export const whyOoh = [
         number: '01',
         keyword: 'PATIENT FLOW',
         title: '환자 동선보다 팔고 싶은 매체를\n추천하는 경우가 있습니다.',
-        description: '특정 매체를 먼저 정하지 않고 병원 위치와 진료권부터 확인해야 합니다.',
+        description: '특정 매체를 먼저 정하지 않고 병원 위치와 \n진료권부터 확인해야 합니다.',
         image: '/images/img-s2-01.png',
     },
     {
         number: '02',
         keyword: 'HIDDEN COST',
         title: '처음 견적에 없던 비용이\n집행 직전에 추가됩니다.',
-        description: '제작·설치·의료광고 심의 비용까지 총집행비용으로 비교합니다.',
+        description: '제작·설치·의료광고 심의 비용까지 \n총집행비용으로 비교합니다.',
         image: '/images/img-s2-02.png',
     },
     {
         number: '03',
         keyword: 'SAME CONDITION',
         title: '비교 기준이 다르면 적정 가격을\n판단할 수 없습니다.',
-        description: '위치·기간·규격과 제작 조건을 동일하게 맞춰 비교합니다.',
+        description: '위치·기간·규격과 제작 조건을 \n동일하게 맞춰 비교합니다.',
         image: '/images/img-s2-03.png',
     },
 ] as const;
@@ -105,14 +105,14 @@ export const whyLabItems = [
         number: '01',
         keyword: 'SAME STANDARD',
         title: '같은 조건으로 비교해야\n가격이 보입니다.',
-        description: '위치·기간·규격과 제작 조건을 맞춰 총집행 \n비용을 비교합니다.',
+        description: '위치·기간·규격과 제작 조건을 맞춰 \n총집행 비용을 비교합니다.',
         image: '/images/img-s6-01.png',
     },
     {
         number: '02',
         keyword: 'PATIENT FIRST',
         title: '팔고 싶은 매체보다\n환자가 움직이는 곳을 찾습니다.',
-        description: '특정 매체를 먼저 정하지 않고 병원 위치와 \n환자 동선부터 분석합니다.',
+        description: '특정 매체를 먼저 정하지 않고 \n병원 위치와 환자 동선부터 분석합니다.',
         image: '/images/img-s6-02.png',
     },
     {

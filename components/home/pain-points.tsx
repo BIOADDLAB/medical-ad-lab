@@ -20,7 +20,7 @@ export function PainPoints() {
                                 {item.number}
                             </span>
                             <h3 className="m-0 mb-3.25  whitespace-pre-line text-h4">{item.title}</h3>
-                            <p className="m-0 whitespace-pre-line text-body font-bold wrap-break-word text-muted">
+                            <p className="m-0 whitespace-pre-line text-body font-bold wrap-break-word text-muted lg:whitespace-normal">
                                 {item.description}
                             </p>
                         </Reveal>

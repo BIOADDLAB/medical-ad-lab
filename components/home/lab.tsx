@@ -48,7 +48,9 @@ export function Lab() {
                                     {item.title}
                                 </h3>
                                 {/* 모바일에서는 시안 줄바꿈을 무시하고 화면 폭에 맞춰 흘린다 */}
-                                <p className="m-0 mx-auto max-w-[330px] whitespace-normal text-body leading-[1.6] text-muted lg:mx-0 lg:max-w-[310px] lg:whitespace-pre-line lg:leading-[1.4]">
+                                <p
+                                    className="m-0 mx-auto max-w-[330px] text-body leading-[1.6] text-muted lg:mx-0 lg:max-w-[310px] whitespace-pre-line lg:leading-[1.4]"
+                                >
                                     {item.description}
                                 </p>
                             </div>
