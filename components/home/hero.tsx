@@ -48,7 +48,8 @@ export function Hero() {
                         </span>
                     </h1>
                     <p className="hero-support mt-6 text-lead font-semibold text-white/90 xl:mt-8 2xl:mt-[38px]">
-                        업체마다 다른 매체비부터 제작·설치·의료광고 심의 비용까지.
+                        업체마다 다른 매체비부터 <br className="block md:hidden" />
+                        제작·설치·의료광고 심의 비용까지.
                         <br />
                         병원 옥외광고 전문팀이 같은 조건으로 비교해드립니다.
                     </p>

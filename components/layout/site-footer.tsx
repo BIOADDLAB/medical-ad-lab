@@ -3,10 +3,8 @@ import Link from 'next/link';
 import { DiagnosisButton } from '@/components/lead/diagnosis-button';
 import { ContactEmail } from '@/components/layout/contact-email';
 
-/** 병원광고연구소는 바이오애드랩(주)의 브랜드다. 사업자정보는 모회사 기준으로 표기한다 */
 const businessInfo = [
-    '상호 바이오애드랩(주)',
-    '대표자 전해성',
+    '상호 바이오애드랩',
     '사업자등록번호 216-86-02932',
     '서울특별시 강남구 학동로3길 27 2층 201호',
     '전화 02-2038-0088',
@@ -32,9 +30,6 @@ export function SiteFooter() {
                         className="grid grid-cols-2 gap-x-6 gap-y-4 text-sm font-bold sm:flex sm:items-center sm:justify-end sm:gap-6"
                         aria-label="푸터 메뉴"
                     >
-                        <Link className="whitespace-nowrap" href="/blog">
-                            회사소개
-                        </Link>
                         <Link className="whitespace-nowrap" href="/privacy">
                             개인정보처리방침
                         </Link>

@@ -302,7 +302,7 @@
     width: calc(100% - 80px);
 }
 .page-banner[data-variant='journal'] .page-banner-copy {
-    top: 106px;
+    top: 130px;
 }
 /* 고정 헤더가 80px 이라 그 아래에서 시작해야 라벨이 가려지지 않는다 */
 .page-banner[data-variant='reference'] .page-banner-copy {

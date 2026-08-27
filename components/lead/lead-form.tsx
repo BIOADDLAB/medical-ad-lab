@@ -269,7 +269,9 @@ export function LeadForm({
                             aria-describedby={errorId('privacy')}
                             onBlur={(event) => validate('privacy', event.target.checked)}
                         />
-                        <span className="text-sm font-medium text-slate">개인정보 수집 및 이용에 동의합니다.</span>
+                        <span className="text-[12px] lg:text-sm font-medium text-slate">
+                            개인정보 수집 및 이용에 동의합니다.
+                        </span>
                     </label>
                     <button
                         type="button"
