@@ -96,8 +96,10 @@ export function blogPostUrl(slug: string) {
 
 export async function getPublishedArticles(): Promise<Article[]> {
   const fromCms = await fetchPublishedFromCms();
-  if (fromCms) return fromCms;
-  return fetchPublishedFromFirestore();
+  if (fromCms && fromCms.length > 0) return fromCms;
+  const fromFs = await fetchPublishedFromFirestore();
+  if (fromFs.length > 0) return fromFs;
+  return fromCms ?? fromFs;
 }
 
 export async function getPublishedArticleBySlug(slug: string): Promise<Article | null> {
@@ -116,7 +118,7 @@ async function fetchPublishedFromCms(): Promise<Article[] | null> {
   try {
     const response = await fetch(
       `${CMS_URL}/api/public/articles?hospitalId=${encodeURIComponent(HOSPITAL.id)}`,
-      { next: { revalidate: 60 } },
+      { cache: "no-store" },
     );
     if (!response.ok) return null;
     const data = (await response.json()) as Article[];
@@ -140,36 +142,22 @@ async function fetchPublishedFromFirestore(): Promise<Article[]> {
           structuredQuery: {
             from: [{ collectionId: "articles" }],
             where: {
-              compositeFilter: {
-                op: "AND",
-                filters: [
-                  {
-                    fieldFilter: {
-                      field: { fieldPath: "hospitalId" },
-                      op: "EQUAL",
-                      value: { stringValue: HOSPITAL.id },
-                    },
-                  },
-                  {
-                    fieldFilter: {
-                      field: { fieldPath: "status" },
-                      op: "EQUAL",
-                      value: { stringValue: "published" },
-                    },
-                  },
-                ],
+              fieldFilter: {
+                field: { fieldPath: "hospitalId" },
+                op: "EQUAL",
+                value: { stringValue: HOSPITAL.id },
               },
             },
           },
         }),
-        next: { revalidate: 60 },
+        cache: "no-store",
       },
     );
     if (!response.ok) return [];
     const rows = (await response.json()) as { document?: { name?: string; fields?: Record<string, RestField> } }[];
     return rows
       .map((row) => (row.document ? restDocumentToArticle(row.document) : null))
-      .filter((item): item is Article => Boolean(item))
+      .filter((item): item is Article => !!item && item.status === "published")
       .sort((a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt));
   } catch {
     return [];
