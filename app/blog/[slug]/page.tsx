@@ -10,14 +10,9 @@ import {
     getRelatedArticles,
 } from '@/bioadd-blog/kit';
 
-export const revalidate = 60;
-export const dynamicParams = true;
+export const dynamic = 'force-dynamic';
 
 type PageProps = { params: Promise<{ slug: string }> };
-
-export async function generateStaticParams() {
-    return [];
-}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { slug } = await params;
