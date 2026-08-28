@@ -3,7 +3,8 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Icon } from '@/components/ui/icon';
-import { privacyEffectiveDate, privacySections } from '@/lib/privacy-policy';
+import { PolicyBody } from '@/components/legal/policy-body';
+import { privacyConsentNote, privacyEffectiveDate, privacyIntro, privacySections } from '@/lib/privacy-policy';
 
 export function PrivacyModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     const dialogRef = useRef<HTMLElement>(null);
@@ -84,16 +85,21 @@ export function PrivacyModal({ open, onClose }: { open: boolean; onClose: () => 
                 </header>
 
                 <div className="admin-scroll min-h-0 flex-1 overflow-y-auto px-6 py-2 md:px-8">
-                    <p className="mb-2 mt-5 text-sm leading-7 text-muted">
-                        병원광고연구소는 무료진단 신청을 위해 필요한 최소한의 개인정보만 수집합니다.
-                    </p>
-                    {privacySections.map(([title, body]) => (
-                        <div className="border-t border-line py-5" key={title}>
-                            <h3 className="m-0 mb-2 text-[16px] font-extrabold">{title}</h3>
-                            <p className="m-0 text-sm leading-7 text-muted">{body}</p>
+                    <div className="mb-2 mt-5 grid gap-2">
+                        {privacyIntro.map((line) => (
+                            <p className="m-0 text-sm leading-7 text-muted" key={line}>
+                                {line}
+                            </p>
+                        ))}
+                    </div>
+                    {privacySections.map((section) => (
+                        <div className="border-t border-line py-5" key={section.title}>
+                            <h3 className="m-0 mb-3 text-[16px] font-extrabold">{section.title}</h3>
+                            <PolicyBody blocks={section.blocks} compact />
                         </div>
                     ))}
-                    <p className="mb-6 mt-1 text-[12px] text-muted">시행일자: {privacyEffectiveDate}</p>
+                    <p className="mt-1 text-[12px] font-bold text-slate">시행일자: {privacyEffectiveDate}</p>
+                    <p className="mb-6 mt-2 text-[12px] text-muted">{privacyConsentNote}</p>
                 </div>
 
                 <footer className="shrink-0 border-t border-line bg-white p-4 md:px-8 md:py-5">
