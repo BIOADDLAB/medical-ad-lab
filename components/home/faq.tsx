@@ -48,7 +48,7 @@ export function Faq() {
                                     aria-hidden={!expanded}
                                 >
                                     <p
-                                        className={`m-0 overflow-hidden text-sm leading-[1.65] text-muted ${expanded ? 'pb-5 lg:pb-[30px]' : ''}`}
+                                        className={`m-0 overflow-hidden text-body leading-[1.65] whitespace-pre-line text-ink ${expanded ? 'pb-5 lg:pb-[30px]' : ''}`}
                                     >
                                         {answer}
                                     </p>
