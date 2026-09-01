@@ -71,8 +71,11 @@ export function formatDate(iso: string) {
   return new Intl.DateTimeFormat("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(iso));
 }
 
-export function slugify(value: string) {
-  return normalizeSlug(value).replace(/['"]/g, "").replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "").slice(0, 80);
+/** 발행 URL은 영문 소문자와 하이픈만 쓴다. CMS 입력 단계에서 지켜야 하는 규칙이다 */
+export const SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+export function isValidSlug(value: string) {
+  return SLUG_PATTERN.test(value);
 }
 
 export function normalizeSlug(value: string) {
@@ -118,7 +121,7 @@ async function fetchPublishedFromCms(): Promise<Article[] | null> {
   try {
     const response = await fetch(
       `${CMS_URL}/api/public/articles?hospitalId=${encodeURIComponent(HOSPITAL.id)}`,
-      { cache: "no-store" },
+      { next: { revalidate: 60 } },
     );
     if (!response.ok) return null;
     const data = (await response.json()) as Article[];
@@ -150,7 +153,7 @@ async function fetchPublishedFromFirestore(): Promise<Article[]> {
             },
           },
         }),
-        cache: "no-store",
+        next: { revalidate: 60 },
       },
     );
     if (!response.ok) return [];
@@ -207,31 +210,10 @@ export function stripHtml(html: string) {
   return html.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
 }
 
-export function prepareArticleHtml(html: string) {
-  const demoted = html.replaceAll("<h1", "<h2").replaceAll("</h1>", "</h2>");
-  let index = 0;
-  return demoted.replace(/<(h[23])(\s[^>]*)?>([\s\S]*?)<\/\1>/gi, (full, tag: string, attrs = "", inner: string) => {
-    if (/\sid\s*=/i.test(attrs)) return full;
-    index += 1;
-    return `<${tag}${attrs} id="s-${index}">${inner}</${tag}>`;
-  });
-}
-
-export function extractToc(html: string) {
-  const items: { id: string; text: string }[] = [];
-  const pattern = /<h2\b([^>]*)>([\s\S]*?)<\/h2>/gi;
-  let match: RegExpExecArray | null;
-  while ((match = pattern.exec(html))) {
-    const text = stripHtml(match[2] ?? "");
-    if (!text || text === "자주 묻는 질문") continue;
-    const id = /id=["']([^"']+)["']/.exec(match[1] ?? "")?.[1];
-    if (id) items.push({ id, text });
-  }
-  return items;
-}
-
+/** FAQ는 2개 이상 등록됐을 때만 화면과 FAQPage JSON-LD에 함께 노출한다 */
 export function resolveFaqs(article: Article): FaqItem[] {
-  return (article.faq ?? []).filter((item) => item.question.trim() && item.answer.trim());
+  const items = (article.faq ?? []).filter((item) => item.question.trim() && item.answer.trim());
+  return items.length >= 2 ? items : [];
 }
 
 export function isoDate(iso: string) {
@@ -247,15 +229,20 @@ export function hospitalSeoTitle() {
   return raw.includes(name) ? raw : `${name} 블로그`;
 }
 
+/** title은 60자 이내. 넘치면 브랜드는 남기고 제목을 줄인다 */
 export function articleDocumentTitle(article: Article) {
   const title = article.title.trim();
   const name = HOSPITAL.name.trim();
-  if (!name || title.includes(name)) return title;
-  return `${title} | ${name}`;
+  if (!name || title.includes(name)) return title.slice(0, 60);
+  const suffix = ` | ${name}`;
+  const room = 60 - suffix.length;
+  return `${title.length > room ? `${title.slice(0, room - 1)}…` : title}${suffix}`;
 }
 
+/** meta description은 HTML을 걷어내고 155자에서 자른다 */
 export function articleMetaDescription(article: Article) {
-  return `${article.excerpt.trim() || article.title} | ${HOSPITAL.name}`;
+  const text = stripHtml(article.excerpt || article.title);
+  return text.length > 155 ? `${text.slice(0, 155)}…` : text;
 }
 
 export function articleAuthorName() {
@@ -265,11 +252,6 @@ export function articleAuthorName() {
 
 export function articleKeywords(article: Article) {
   return [HOSPITAL.name, ...HOSPITAL.alternateNames, ...HOSPITAL.knowsAbout, article.category, ...article.tags].filter(Boolean);
-}
-
-export function hospitalBrandLabel() {
-  const seo = HOSPITAL.seoTitle?.trim();
-  return seo ? `${HOSPITAL.name} | ${seo}` : hospitalSeoTitle();
 }
 
 function organizationNode() {
@@ -336,6 +318,19 @@ function publisherNode() {
   };
 }
 
+/** 화면 브레드크럼과 표시 내용이 1:1로 같아야 한다 */
+function breadcrumbNode(trail: { name: string; item: string }[]) {
+  return {
+    "@type": "BreadcrumbList",
+    itemListElement: trail.map((step, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: step.name,
+      item: step.item,
+    })),
+  };
+}
+
 export function blogIndexJsonLd(articles: Article[] = []) {
   const url = absoluteUrl("/blog");
   return {
@@ -345,14 +340,27 @@ export function blogIndexJsonLd(articles: Article[] = []) {
       { "@type": "WebSite", "@id": `${SITE_URL}#website`, url: SITE_URL, name: HOSPITAL.name, inLanguage: "ko-KR", publisher: { "@id": `${SITE_URL}#organization` } },
       blogNode(url),
       {
-        "@type": "ItemList",
-        itemListElement: articles.slice(0, 20).map((article, index) => ({
-          "@type": "ListItem",
-          position: index + 1,
-          url: blogPostUrl(article.slug),
-          name: article.title,
-        })),
+        "@type": "CollectionPage",
+        "@id": `${url}#collection`,
+        name: hospitalSeoTitle(),
+        description: HOSPITAL.description || `${HOSPITAL.name} 공식 블로그입니다.`,
+        url,
+        inLanguage: "ko-KR",
+        isPartOf: { "@id": `${SITE_URL}#website` },
+        mainEntity: {
+          "@type": "ItemList",
+          itemListElement: articles.slice(0, 20).map((article, index) => ({
+            "@type": "ListItem",
+            position: index + 1,
+            url: blogPostUrl(article.slug),
+            name: article.title,
+          })),
+        },
       },
+      breadcrumbNode([
+        { name: "홈", item: SITE_URL },
+        { name: hospitalSeoTitle(), item: url },
+      ]),
     ],
   };
 }
@@ -409,26 +417,30 @@ export function articleJsonLd(article: Article) {
 export function breadcrumbJsonLd(article: Article) {
   return {
     "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      { "@type": "ListItem", position: 1, name: "홈", item: SITE_URL },
-      { "@type": "ListItem", position: 2, name: "블로그", item: absoluteUrl("/blog") },
-      { "@type": "ListItem", position: 3, name: article.title, item: blogPostUrl(article.slug) },
-    ],
+    ...breadcrumbNode([
+      { name: "홈", item: SITE_URL },
+      { name: hospitalSeoTitle(), item: absoluteUrl("/blog") },
+      { name: article.title, item: blogPostUrl(article.slug) },
+    ]),
   };
 }
 
-export function blogIndexMetadata(): Metadata {
-  const title = hospitalSeoTitle();
+/** og:image는 항상 절대 URL로 하나는 나가야 한다 */
+const FALLBACK_OG_IMAGE = { url: "/og-image.jpg", width: 1200, height: 630, alt: HOSPITAL.name };
+
+export function blogIndexMetadata(category?: string): Metadata {
+  const base = hospitalSeoTitle();
+  const title = category ? `${category} | ${base}` : base;
   const description = HOSPITAL.description || `${HOSPITAL.name} 공식 블로그입니다.`;
-  const url = absoluteUrl("/blog");
+  // canonical은 필터를 포함한 자기 자신을 가리킨다
+  const url = category ? `${absoluteUrl("/blog")}?category=${encodeURIComponent(category)}` : absoluteUrl("/blog");
   return {
     title: { absolute: title },
     description,
     robots: { index: true, follow: true },
     alternates: { canonical: url, types: { "application/rss+xml": absoluteUrl("/blog/feed.xml") } },
-    openGraph: { type: "website", locale: "ko_KR", siteName: HOSPITAL.name, title, description, url },
-    twitter: { card: "summary_large_image", title, description },
+    openGraph: { type: "website", locale: "ko_KR", siteName: HOSPITAL.name, title, description, url, images: [FALLBACK_OG_IMAGE] },
+    twitter: { card: "summary_large_image", title, description, images: [FALLBACK_OG_IMAGE.url] },
   };
 }
 
@@ -455,15 +467,17 @@ export function articlePageMetadata(article: Article): Metadata {
       modifiedTime: article.updatedAt,
       authors: [author],
       tags: article.tags,
-      images: article.coverImage
-        ? [{ url: article.coverImage, alt: article.coverImageAlt || article.title, width: 1200, height: 630 }]
-        : undefined,
+      images: [
+        article.coverImage
+          ? { url: article.coverImage, alt: article.coverImageAlt || article.title, width: 1200, height: 630 }
+          : FALLBACK_OG_IMAGE,
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: article.title,
       description,
-      images: article.coverImage ? [article.coverImage] : undefined,
+      images: [article.coverImage || FALLBACK_OG_IMAGE.url],
     },
     other: {
       author,

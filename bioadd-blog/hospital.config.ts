@@ -5,7 +5,7 @@ export const HOSPITAL = {
   "color": "#ec4899",
   "monthlyPublishGoal": 8,
   "seoTitle": "병원광고연구소 블로그",
-  "description": "",
+  "description": "병원 옥외광고를 직접 집행하며 확인한 매체별 단가, 심의 기준, 효과 측정 방법을 기록합니다. 검색만으로는 알기 어려운 판단 기준을 병원광고연구소가 정리해 드립니다.",
   "alternateNames": [],
   "knowsAbout": [],
   "telephone": "",
@@ -22,7 +22,7 @@ export const HOSPITAL = {
   "areaServed": [],
   "about": [],
   "cmsUrl": "https://bioaddlabgeo.web.app",
-  "siteUrl": "",
+  "siteUrl": "https://www.medicaladlab.com",
   "schemaProfile": "business",
   "firebaseApiKey": "AIzaSyBPa4_gNO-BCG5yGhl3atBBtKkMGroX6nc",
   "firebaseProjectId": "bioaddlabgeo"

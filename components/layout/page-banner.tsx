@@ -66,9 +66,10 @@ export function PageBanner({ variant }: { variant: keyof typeof copy }) {
                     >
                         {content.label}
                     </p>
-                    <h1 className="page-banner-title text-[32px] font-black leading-[1.42] tracking-[-.04em] sm:text-[38px] lg:text-[48px]">
+                    {/* 배너 슬로건은 제목이 아니다. 페이지 h1은 각 페이지 본문이 하나만 갖는다 */}
+                    <p className="page-banner-title text-[32px] font-black leading-[1.42] tracking-[-.04em] sm:text-[38px] lg:text-[48px]">
                         {content.title}
-                    </h1>
+                    </p>
                     <p
                         className={`page-banner-description text-sm font-semibold lg:text-[18px] ${dark ? 'text-white/58' : 'text-muted'}`}
                     >

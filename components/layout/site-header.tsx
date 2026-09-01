@@ -70,15 +70,16 @@ export function SiteHeader({ solid, onDiagnosis, onMenuToggle, menuOpen }: Props
                 </Link>
 
                 {/* 시안 1920 기준 항목 사이 잉크 간격 55px = CSS gap 60px */}
+                {/* 랩탑(1280~1536)에서 13px·gap-4는 너무 빽빽했다. 2xl 값에 가깝게 올린다 */}
                 <nav
-                    className="hidden flex-1 items-center justify-center gap-4 2xl:gap-9 xl:flex"
+                    className="hidden flex-1 items-center justify-center gap-7 2xl:gap-9 xl:flex"
                     aria-label="주요 메뉴"
                 >
                     {navItems.map(([label, href]) => (
                         <Link
                             key={href}
                             href={href}
-                            className={`whitespace-nowrap py-[28px] text-[13px] font-semibold transition-colors duration-200 2xl:py-[30px] 2xl:text-[15px] ${navTone(isSolid, isCurrent(pathname, href))}`}
+                            className={`whitespace-nowrap py-[28px] text-[15px] font-semibold transition-colors duration-200 2xl:py-[30px] ${navTone(isSolid, isCurrent(pathname, href))}`}
                         >
                             {label}
                         </Link>

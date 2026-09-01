@@ -43,19 +43,57 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+    /* 사업자 정보는 푸터 표기·네이버 플레이스와 같은 값이어야 한다 */
     const organization = {
         '@context': 'https://schema.org',
-        '@type': 'Organization',
-        name: '병원광고연구소',
-        alternateName: 'MEDICAL AD LAB',
-        url: SITE_URL,
+        '@graph': [
+            {
+                '@type': ['Organization', 'LocalBusiness'],
+                '@id': `${SITE_URL}#organization`,
+                name: '병원광고연구소',
+                alternateName: ['MEDICAL AD LAB', '바이오애드랩'],
+                description: '병원 위치와 진료과에 맞는 옥외광고 매체·지역·비용을 비교하고 실행 플랜을 제안합니다.',
+                url: SITE_URL,
+                logo: { '@type': 'ImageObject', url: `${SITE_URL}/images/logo-ori.svg` },
+                image: `${SITE_URL}/og-image.jpg`,
+                telephone: '+82-2-2038-0088',
+                email: 'medicaladlab@gmail.com',
+                address: {
+                    '@type': 'PostalAddress',
+                    streetAddress: '학동로3길 27 2층 201호',
+                    addressLocality: '강남구',
+                    addressRegion: '서울특별시',
+                    addressCountry: 'KR',
+                },
+                areaServed: { '@type': 'Country', name: '대한민국' },
+                knowsAbout: [
+                    '병원 옥외광고',
+                    '지하철 광고',
+                    '버스 광고',
+                    '아파트 광고',
+                    '전광판 광고',
+                    '의료광고 심의',
+                ],
+            },
+            {
+                '@type': 'WebSite',
+                '@id': `${SITE_URL}#website`,
+                url: SITE_URL,
+                name: '병원광고연구소',
+                inLanguage: 'ko-KR',
+                publisher: { '@id': `${SITE_URL}#organization` },
+            },
+        ],
     };
     return (
         <html lang="ko" data-scroll-behavior="smooth">
             <body>
                 <SiteShell>{children}</SiteShell>
                 <Analytics />
-                <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organization) }} />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{ __html: JSON.stringify(organization).replace(/</g, '\\u003c') }}
+                />
             </body>
         </html>
     );

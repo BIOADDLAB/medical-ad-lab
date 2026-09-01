@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { BottomCta } from '@/components/home/bottom-cta';
+import { Breadcrumb, breadcrumbJsonLd, type Crumb } from '@/components/layout/breadcrumb';
 import { PageBanner } from '@/components/layout/page-banner';
 import { getCategories } from '@/lib/categories';
 import { getReferences, getSpots, type Reference } from '@/lib/references';
@@ -24,7 +25,16 @@ export async function generateMetadata({ searchParams }: InsightPageProps): Prom
         title,
         description,
         alternates: { canonical },
-        openGraph: { title, description, url: canonical, type: 'website' },
+        openGraph: {
+            title,
+            description,
+            url: canonical,
+            type: 'website',
+            siteName: '병원광고연구소',
+            locale: 'ko_KR',
+            images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: '병원광고연구소 MEDICAL AD LAB' }],
+        },
+        twitter: { card: 'summary_large_image', title, description, images: ['/og-image.jpg'] },
     };
 }
 
@@ -48,16 +58,33 @@ export default async function InsightPage({ searchParams }: InsightPageProps) {
     const activeTitle = categories.find((item) => item.key === activeKey)?.title;
     const visible: Reference[] = activeKey === 'all' ? items : items.filter((item) => item.type === activeTitle);
     const detailPath = isSpot ? 'spot' : 'reference';
-    const itemList = {
+    const listName = isSpot ? '병원광고 자리' : '병원집행 옥외레퍼런스';
+    const listPath = `/insight?tab=${tab}`;
+    const trail: Crumb[] = [
+        { name: '홈', href: '/' },
+        { name: listName, href: listPath },
+    ];
+    const structuredData = {
         '@context': 'https://schema.org',
-        '@type': 'ItemList',
-        name: isSpot ? '병원광고 자리 목록' : '병원집행 옥외레퍼런스 목록',
-        itemListElement: visible.map((item, index) => ({
-            '@type': 'ListItem',
-            position: index + 1,
-            name: item.title,
-            url: `${SITE_URL}/insight/${detailPath}/${item.slug}`,
-        })),
+        '@graph': [
+            {
+                '@type': 'CollectionPage',
+                name: listName,
+                url: `${SITE_URL}${listPath}`,
+                inLanguage: 'ko-KR',
+                mainEntity: {
+                    '@type': 'ItemList',
+                    name: `${listName} 목록`,
+                    itemListElement: visible.map((item, index) => ({
+                        '@type': 'ListItem',
+                        position: index + 1,
+                        name: item.title,
+                        url: `${SITE_URL}/insight/${detailPath}/${item.slug}`,
+                    })),
+                },
+            },
+            breadcrumbJsonLd(trail),
+        ],
     };
 
     const href = (next: Record<string, string>) => {
@@ -71,7 +98,7 @@ export default async function InsightPage({ searchParams }: InsightPageProps) {
             <PageBanner variant="reference" />
             <script
                 type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList).replace(/</g, '\\u003c') }}
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, '\\u003c') }}
             />
 
             {/* 탭. 서버 렌더라 링크로 바꾼다. 탭을 옮기면 필터는 전체로 돌아간다 */}
@@ -100,12 +127,16 @@ export default async function InsightPage({ searchParams }: InsightPageProps) {
 
             <section className="bg-white pb-section pt-10 lg:pt-12">
                 <div className="site-container">
-                    <h2 className="m-0 text-h3">{isSpot ? '지금 집행할 수 있는 광고 자리' : '최근 집행된 옥외광고'}</h2>
-                    <p className="mb-6 mt-2 text-[15px] text-slate lg:mb-9 lg:text-[17px]">
+                    <Breadcrumb trail={trail} />
+                    <h1 className="m-0 mt-4 text-h3">
+                        {isSpot ? '지금 집행할 수 있는 광고 자리' : '최근 집행된 옥외광고'}
+                    </h1>
+                    <p className="mt-2 text-[15px] text-slate lg:text-[17px]">
                         {isSpot
                             ? '매체와 지역별로 지금 잡을 수 있는 자리를 확인하세요.'
                             : '매체와 업종별 실제 사례를 확인하세요.'}
                     </p>
+                    <p className="mb-6 mt-4 text-xs text-muted lg:mb-9">전체 {visible.length}개</p>
 
                     <div
                         className="tab-scroll -mx-gutter mb-6 flex flex-nowrap gap-2 overflow-x-auto px-gutter pb-1 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0 lg:mb-9"
@@ -129,26 +160,33 @@ export default async function InsightPage({ searchParams }: InsightPageProps) {
                     </div>
 
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
-                        {visible.map((item) => (
+                        {visible.map((item, index) => (
                             <article className="card-base overflow-hidden" key={item.slug}>
-                                <Link href={`/insight/${detailPath}/${item.slug}`}>
-                                    <div className="relative aspect-[16/10] bg-brand-tint">
-                                        <Image
-                                            src={item.image}
-                                            alt={item.title}
-                                            fill
-                                            className="object-cover"
-                                            sizes="(max-width: 680px) 100vw, (max-width: 1100px) 50vw, 25vw"
-                                        />
-                                    </div>
-                                    <div className="p-5">
-                                        <span className="inline-flex rounded-md bg-line px-2 py-1 text-[10px] font-extrabold text-brand">
-                                            {item.type}
-                                        </span>
-                                        <h3 className="mb-2 mt-3 text-h5">{item.title}</h3>
-                                        <p className="m-0 text-xs text-muted">{item.area}</p>
-                                    </div>
+                                {/* 앵커 텍스트가 제목이 되도록 링크는 제목에만 건다. 썸네일은 보조 링크다 */}
+                                <Link
+                                    href={`/insight/${detailPath}/${item.slug}`}
+                                    tabIndex={-1}
+                                    aria-hidden="true"
+                                    className="relative block aspect-[16/10] bg-brand-tint"
+                                >
+                                    <Image
+                                        src={item.image}
+                                        alt={`${item.title} ${item.type}`}
+                                        fill
+                                        className="object-cover"
+                                        sizes="(max-width: 680px) 100vw, (max-width: 1100px) 50vw, 25vw"
+                                        priority={index === 0}
+                                    />
                                 </Link>
+                                <div className="p-5">
+                                    <span className="inline-flex rounded-md bg-line px-2 py-1 text-[10px] font-extrabold text-brand">
+                                        {item.type}
+                                    </span>
+                                    <h2 className="mb-2 mt-3 text-h5">
+                                        <Link href={`/insight/${detailPath}/${item.slug}`}>{item.title}</Link>
+                                    </h2>
+                                    <p className="m-0 text-xs text-muted">{item.area}</p>
+                                </div>
                             </article>
                         ))}
                     </div>

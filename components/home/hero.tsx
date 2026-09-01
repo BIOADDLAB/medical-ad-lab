@@ -31,6 +31,8 @@ export function Hero() {
             className="hero-bg relative overflow-hidden pb-16 pt-[104px] text-white md:pb-28 md:pt-[136px] xl:flex xl:min-h-svh xl:items-center xl:py-[clamp(112px,10vh,150px)]"
             id="apply"
         >
+            {/* CSS 배경이라 브라우저가 늦게 발견한다. LCP 요소이므로 미리 받는다 */}
+            <link rel="preload" as="image" href="/images/bg-main.webp" type="image/webp" fetchPriority="high" />
             <div className="hero-inner site-container grid items-center gap-12 md:gap-14 xl:grid-cols-[minmax(0,1fr)_minmax(460px,520px)] xl:gap-12 2xl:grid-cols-[minmax(0,1fr)_580px] 2xl:gap-20">
                 <div className="hero-copy max-w-[760px]">
                     <p className="hero-eyebrow m-0 mb-8 text-sm font-extrabold text-mint md:mb-10 xl:mb-0 xl:text-[18px] 2xl:text-[24px]">

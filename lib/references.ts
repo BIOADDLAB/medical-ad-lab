@@ -94,3 +94,19 @@ export async function getSpot(slug: string) {
     const items = await getSpots();
     return items.find((item) => item.slug === slug);
 }
+
+/** 같은 매체를 먼저 채우고 모자라면 나머지로 채운다 */
+function pickRelated(items: Reference[], current: Reference, limit = 3) {
+    const others = items.filter((item) => item.slug !== current.slug);
+    const same = others.filter((item) => item.type === current.type);
+    const rest = others.filter((item) => item.type !== current.type);
+    return [...same, ...rest].slice(0, limit);
+}
+
+export async function getRelatedReferences(current: Reference) {
+    return pickRelated(await getReferences(), current);
+}
+
+export async function getRelatedSpots(current: Reference) {
+    return pickRelated(await getSpots(), current);
+}

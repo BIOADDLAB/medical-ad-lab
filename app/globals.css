@@ -288,9 +288,14 @@
 }
 
 /* =============== GSAP·모션이 직접 제어하거나, 유틸리티로 표현할 수 없는 것만 남긴다 =============== */
+/* 히어로 배경이 홈의 LCP 요소다. webp 를 우선 쓰고 jpg 는 폴백으로만 남긴다 (809KB → 22KB) */
 .hero-bg {
     background-color: var(--color-deep);
     background-image: url('/images/bg-main.jpg');
+    background-image: image-set(
+        url('/images/bg-main.webp') type('image/webp'),
+        url('/images/bg-main.jpg') type('image/jpeg')
+    );
     background-repeat: no-repeat;
     background-position: 46% center;
     background-size: cover;
@@ -335,6 +340,10 @@
 }
 .metrics-bg {
     background: var(--color-night) url('/images/bg-s5.jpg') center bottom / cover no-repeat;
+    background-image: image-set(
+        url('/images/bg-s5.webp') type('image/webp'),
+        url('/images/bg-s5.jpg') type('image/jpeg')
+    );
 }
 
 .results-bg {
