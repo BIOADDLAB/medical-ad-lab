@@ -34,7 +34,7 @@ export function SiteFooter() {
                             회사소개
                         </Link>
                         <Link className="whitespace-nowrap" href="/media">
-                            광고매체 찾기
+                            광고자리 찾기
                         </Link>
                         <Link className="whitespace-nowrap" href="/cases">
                             병원광고 사례

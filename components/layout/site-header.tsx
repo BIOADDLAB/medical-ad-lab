@@ -13,7 +13,7 @@ export const navItems = [
     ['무료진단 안내', '/#diagnosis', 'SECTION 04'],
     ['매체 소개', '/#media', 'SECTION 05'],
     ['진행 방식', '/#process', 'SECTION 08'],
-    ['광고매체 찾기', '/media', 'MEDIA & RATES'],
+    ['광고자리 찾기', '/media', 'MEDIA & RATES'],
     ['병원광고 사례', '/cases', 'CASE STUDIES'],
     ['병원광고 가이드', '/blog', 'GUIDE'],
 ] as const;

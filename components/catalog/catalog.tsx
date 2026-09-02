@@ -13,7 +13,7 @@ export type CatalogKind = 'media' | 'cases';
 export const CATALOG = {
     media: {
         path: '/media',
-        label: '광고매체 찾기',
+        label: '광고자리 찾기',
         heading: '지금 집행할 수 있는 광고매체',
         lead: '매체와 지역별로 지금 잡을 수 있는 자리와 조건을 확인하세요.',
         description:
