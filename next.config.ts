@@ -11,11 +11,21 @@ const nextConfig: NextConfig = {
         dangerouslyAllowSVG: true,
         contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     },
-    /** 임시 저널(/about)을 CMS 블로그로 넘긴다. 이미 색인된 주소라 301 로 보낸다 */
+    /** 이미 색인된 옛 주소들. 전부 영구 리다이렉트로 새 주소에 연결한다 */
     async redirects() {
         return [
             { source: '/about', destination: '/blog', permanent: true },
             { source: '/about/:slug', destination: '/blog', permanent: true },
+            // 한 주소를 탭으로 나눠 쓰던 /insight 를 주제별 주소로 분리했다
+            {
+                source: '/insight',
+                has: [{ type: 'query', key: 'tab', value: 'reference' }],
+                destination: '/cases',
+                permanent: true,
+            },
+            { source: '/insight', destination: '/media', permanent: true },
+            { source: '/insight/reference/:slug', destination: '/cases/:slug', permanent: true },
+            { source: '/insight/spot/:slug', destination: '/media/:slug', permanent: true },
         ];
     },
 };

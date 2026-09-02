@@ -30,6 +30,18 @@ export function SiteFooter() {
                         className="grid grid-cols-2 gap-x-6 gap-y-4 text-sm font-bold sm:flex sm:items-center sm:justify-end sm:gap-6"
                         aria-label="푸터 메뉴"
                     >
+                        <Link className="whitespace-nowrap" href="/company">
+                            회사소개
+                        </Link>
+                        <Link className="whitespace-nowrap" href="/media">
+                            광고매체 단가
+                        </Link>
+                        <Link className="whitespace-nowrap" href="/cases">
+                            병원광고 사례
+                        </Link>
+                        <Link className="whitespace-nowrap" href="/blog">
+                            병원광고 가이드
+                        </Link>
                         <Link className="whitespace-nowrap" href="/privacy">
                             개인정보처리방침
                         </Link>

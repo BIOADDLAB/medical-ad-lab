@@ -7,19 +7,23 @@ import { MobileMenuIcon } from '@/components/layout/mobile-menu-icon';
 import { MobileNavPanel } from '@/components/layout/mobile-nav-panel';
 import { MOBILE_MENU_VARIANT } from '@/lib/ui-config';
 
+/** 메뉴 이름이 곧 내부링크 앵커 텍스트다. 업계 용어 대신 검색하는 말로 둔다 */
 export const navItems = [
     ['서비스 소개', '/#service', 'SECTION 02'],
     ['무료진단 안내', '/#diagnosis', 'SECTION 04'],
-    ['광고매체', '/#media', 'SECTION 05'],
+    ['매체 소개', '/#media', 'SECTION 05'],
     ['진행 방식', '/#process', 'SECTION 08'],
-    ['병원광고 자리', '/insight?tab=spot', 'AVAILABLE SPOTS'],
-    ['옥외레퍼런스', '/insight?tab=reference', 'REFERENCE PAGE'],
-    ['병원광고연구소', '/blog', 'LAB JOURNAL'],
+    ['광고매체 단가', '/media', 'MEDIA & RATES'],
+    ['병원광고 사례', '/cases', 'CASE STUDIES'],
+    ['병원광고 가이드', '/blog', 'GUIDE'],
 ] as const;
 
 /** 현재 경로가 그 메뉴에 속하는지 */
 function isCurrent(pathname: string, href: string) {
-    return pathname.startsWith('/blog') && href === '/blog';
+    if (href === '/blog') return pathname.startsWith('/blog');
+    if (href === '/media') return pathname.startsWith('/media');
+    if (href === '/cases') return pathname.startsWith('/cases');
+    return false;
 }
 
 /** 밑줄 대신 글자색 농도로 표시한다. 시안은 전부 흰색이라 기본을 /80 까지만 낮춘다 */
@@ -70,7 +74,7 @@ export function SiteHeader({ solid, onDiagnosis, onMenuToggle, menuOpen }: Props
                 </Link>
 
                 {/* 시안 1920 기준 항목 사이 잉크 간격 55px = CSS gap 60px */}
-                {/* 랩탑(1280~1536)에서 13px·gap-4는 너무 빽빽했다. 2xl 값에 가깝게 올린다 */}
+                {/* 랩탑(1280~1536)에서 13px·gap-4는 너무 빽빽했다. 2xl 값에 가깝게 올린다. 회사소개는 푸터에 둔다 */}
                 <nav
                     className="hidden flex-1 items-center justify-center gap-7 2xl:gap-9 xl:flex"
                     aria-label="주요 메뉴"

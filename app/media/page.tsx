@@ -1,0 +1,60 @@
+import type { Metadata } from 'next';
+
+import { BottomCta } from '@/components/home/bottom-cta';
+import { CATALOG, CatalogList, listJsonLd } from '@/components/catalog/catalog';
+import { PageBanner } from '@/components/layout/page-banner';
+import { getCategories } from '@/lib/categories';
+import { getSpots, type Reference } from '@/lib/references';
+
+type PageProps = { searchParams: Promise<{ type?: string }> };
+
+const META = CATALOG.media;
+
+export const metadata: Metadata = {
+    title: META.label,
+    description: META.description,
+    keywords: ['병원 옥외광고 매체', '옥외광고 단가', '지하철 광고 자리', '버스 광고 단가', '전광판 광고 비용'],
+    alternates: { canonical: META.path },
+    openGraph: {
+        title: META.label,
+        description: META.description,
+        url: META.path,
+        type: 'website',
+        siteName: '병원광고연구소',
+        locale: 'ko_KR',
+        images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: '병원광고연구소 MEDICAL AD LAB' }],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: META.label,
+        description: META.description,
+        images: ['/og-image.jpg'],
+    },
+};
+
+export default async function MediaPage({ searchParams }: PageProps) {
+    const [{ type }, items, categories] = await Promise.all([searchParams, getSpots(), getCategories('spots')]);
+    const activeKey = type ?? 'all';
+    const activeTitle = categories.find((item) => item.key === activeKey)?.title;
+    const visible: Reference[] = activeKey === 'all' ? items : items.filter((item) => item.type === activeTitle);
+
+    return (
+        <main className="pt-[60px] md:pt-[72px] xl:pt-0">
+            <PageBanner variant="reference" />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify(listJsonLd('media', visible)).replace(/</g, '\\u003c'),
+                }}
+            />
+            <CatalogList
+                kind="media"
+                items={visible}
+                categories={categories}
+                activeKey={activeKey}
+                total={items.length}
+            />
+            <BottomCta />
+        </main>
+    );
+}

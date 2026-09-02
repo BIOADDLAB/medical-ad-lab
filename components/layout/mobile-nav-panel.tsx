@@ -13,7 +13,7 @@ type Props = {
 };
 
 const isActive = (pathname: string, href: string) =>
-    (pathname.startsWith('/insight') && href === '/insight') || (pathname.startsWith('/blog') && href === '/blog');
+    (href.startsWith('/') && href.length > 1 && pathname.startsWith(href)) || false;
 
 function DiagnosisButton({
     onDiagnosis,

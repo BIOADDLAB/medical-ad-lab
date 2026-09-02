@@ -29,7 +29,7 @@ export function Media() {
                                     {item.description}
                                 </p>
                                 <Link
-                                    href={`/insight?tab=reference&type=${item.key}`}
+                                    href={`/cases?type=${item.key}`}
                                     className="btn-outline"
                                     aria-label={`${item.title} 레퍼런스 보기`}
                                 >

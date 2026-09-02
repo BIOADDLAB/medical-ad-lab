@@ -91,7 +91,8 @@ export function ReferenceManager({ kind = 'references' }: { kind?: Kind }) {
     const firebase = getFirebase();
     const isSpot = kind === 'spots';
     const noun = isSpot ? '광고 장소' : '레퍼런스';
-    const detailPath = isSpot ? 'spot' : 'reference';
+    // 사용자 페이지 경로. spots -> /media, references -> /cases
+    const detailPath = isSpot ? 'media' : 'cases';
     const goalHint = isSpot ? SPOT_GOAL_FALLBACK : GOAL_FALLBACK;
     const planHint = isSpot ? SPOT_PLAN_FALLBACK : PLAN_FALLBACK;
     const [rows, setRows] = useState<Row[]>([]);
@@ -399,7 +400,7 @@ export function ReferenceManager({ kind = 'references' }: { kind?: Kind }) {
                         }`}
                     >
                         <b className="flex h-full items-center bg-field px-3 text-[11px] font-semibold text-muted">
-                            /insight/{isSpot ? 'spot' : 'reference'}/
+                            /{isSpot ? 'media' : 'cases'}/
                         </b>
                         <input
                             name="slug"
@@ -501,11 +502,11 @@ export function ReferenceManager({ kind = 'references' }: { kind?: Kind }) {
                             </span>
                             <h3 className="mb-1 mt-2 text-[17px] font-extrabold text-ink">{created.title}</h3>
                             <p className="m-0 break-all text-[11px] text-success-deep">
-                                /insight/{detailPath}/{created.slug}
+                                /{detailPath}/{created.slug}
                             </p>
                             <div className="mt-4 flex flex-wrap gap-2">
                                 <a
-                                    href={`/insight/${detailPath}/${created.slug}`}
+                                    href={`/${detailPath}/${created.slug}`}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="inline-flex h-10 items-center rounded-lg bg-brand px-4 text-xs font-bold text-white"
@@ -703,7 +704,7 @@ export function ReferenceManager({ kind = 'references' }: { kind?: Kind }) {
                                         {row.summary || '등록된 요약이 없습니다.'}
                                     </p>
                                     <small className="mt-3 block truncate text-[10px] text-muted">
-                                        /insight/{detailPath}/{row.slug}
+                                        /{detailPath}/{row.slug}
                                     </small>
 
                                     <div className="mt-5 grid grid-cols-2 gap-2 border-t border-line pt-4">

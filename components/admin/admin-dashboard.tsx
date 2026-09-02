@@ -393,7 +393,7 @@ export function AdminDashboard() {
                                     <Badge>CONTENT</Badge>
                                     <h1 className="mb-2 mt-3.5 text-h2">옥외레퍼런스</h1>
                                     <p className="m-0 text-xs text-muted">
-                                        사이트 /insight 페이지에 노출되는 집행 사례입니다.
+                                        사이트 /cases 페이지에 노출되는 집행 사례입니다.
                                     </p>
                                 </div>
                             </div>
@@ -417,7 +417,7 @@ export function AdminDashboard() {
                                     <Badge>CONTENT</Badge>
                                     <h1 className="mb-2 mt-3.5 text-h2">광고 장소</h1>
                                     <p className="m-0 text-xs text-muted">
-                                        사이트 /insight 페이지 맨 위에 노출되는 집행 가능한 광고 자리입니다.
+                                        사이트 /media 페이지에 노출되는 집행 가능한 광고매체입니다.
                                     </p>
                                 </div>
                             </div>

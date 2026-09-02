@@ -6,9 +6,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = SITE_URL;
     const [references, spots] = await Promise.all([getReferences(), getSpots()]);
     // 블로그는 /blog/sitemap.xml 이 따로 담당한다. 여기에는 넣지 않는다
-    const fixed = ['', '/insight?tab=spot', '/insight?tab=reference', '/privacy'];
-    const referencePages = references.map((item) => `/insight/reference/${item.slug}`);
-    const spotPages = spots.map((item) => `/insight/spot/${item.slug}`);
+    const fixed = ['', '/company', '/media', '/cases', '/privacy'];
+    const referencePages = references.map((item) => `/cases/${item.slug}`);
+    const spotPages = spots.map((item) => `/media/${item.slug}`);
     return [...fixed, ...referencePages, ...spotPages].map((path) => ({
         url: `${baseUrl}${path}`,
         lastModified: new Date(),
