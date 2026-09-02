@@ -76,7 +76,7 @@ export default function CompanyPage() {
 
     return (
         <main className="pb-section pt-[100px] lg:pt-[170px]">
-            <article className="site-container max-w-[900px]">
+            <article className="site-container mb-16 max-w-[900px] lg:mb-24">
                 <Breadcrumb trail={trail} />
                 <p className="m-0 mt-6 text-xs font-extrabold tracking-[.14em] text-brand">ABOUT MEDICAL AD LAB</p>
                 <h1 className="mt-4 text-h1">병원광고연구소 소개</h1>
@@ -210,9 +210,10 @@ export default function CompanyPage() {
                     </dl>
                 </section>
 
-                <div className="mt-12 flex flex-wrap gap-3">
+                {/* btn-outline 은 h-12(48px), btn-primary 는 min-h 52/56px 이라 그냥 두면 높이가 어긋난다 */}
+                <div className="mt-12 flex flex-wrap items-center gap-3">
                     <DiagnosisButton className="btn-primary">무료진단 신청하기</DiagnosisButton>
-                    <Link href="/cases" className="btn-outline">
+                    <Link href="/cases" className="btn-outline min-h-[52px] rounded-xl lg:min-h-[56px]">
                         병원광고 사례 보기
                     </Link>
                 </div>
