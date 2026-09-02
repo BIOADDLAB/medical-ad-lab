@@ -7,17 +7,13 @@ import type { Category } from '@/lib/categories';
 import type { Reference } from '@/lib/references';
 import { SITE_URL } from '@/lib/site';
 
-/**
- * 광고매체 단가(/media)와 병원광고 사례(/cases)는 화면이 같고 데이터만 다르다.
- * 예전에는 /insight 한 주소를 탭으로 나눠 썼는데, 주제가 둘이라 주소도 둘로 나눴다.
- */
 
 export type CatalogKind = 'media' | 'cases';
 
 export const CATALOG = {
     media: {
         path: '/media',
-        label: '광고매체 단가',
+        label: '광고매체 찾기',
         heading: '지금 집행할 수 있는 광고매체',
         lead: '매체와 지역별로 지금 잡을 수 있는 자리와 조건을 확인하세요.',
         description:
