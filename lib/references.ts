@@ -28,6 +28,8 @@ const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
 const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 
 const read = (fields: Record<string, FirestoreValue> | undefined, key: string) => fields?.[key]?.stringValue ?? '';
+/** 주소에 쓰는 값이다. 공백이 섞이면 사이트맵 주소가 404 가 되므로 여기서 한 번 걸러 낸다 */
+const slugify = (value: string) => value.trim().toLowerCase().replace(/\s+/g, '-');
 const readNumber = (fields: Record<string, FirestoreValue> | undefined, key: string) => {
     const value = Number(fields?.[key]?.integerValue);
     return Number.isFinite(value) ? value : Number.MAX_SAFE_INTEGER;
@@ -49,7 +51,7 @@ async function getItems(kind: Kind, fallback: readonly Reference[]): Promise<Ref
         const payload = (await response.json()) as { documents?: FirestoreDoc[] };
         const items = (payload.documents ?? [])
             .map((doc) => ({
-                slug: read(doc.fields, 'slug') || doc.name.split('/').pop() || '',
+                slug: slugify(read(doc.fields, 'slug') || doc.name.split('/').pop() || ''),
                 type: read(doc.fields, 'type'),
                 title: read(doc.fields, 'title'),
                 area: read(doc.fields, 'area'),

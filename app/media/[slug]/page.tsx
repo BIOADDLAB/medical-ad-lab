@@ -44,19 +44,19 @@ export default async function MediaDetail({ params }: PageProps) {
     if (!item) notFound();
     const related = await getRelatedSpots(item);
 
-    // 집행 가능한 자리이므로 사례(CreativeWork)가 아니라 판매 중인 상품으로 표시한다
+    // 가격을 공개하지 않는 집행 자리다. Product 는 offers 가 없으면 리치 결과 오류가 나므로 Service 로 둔다
     const structuredData = {
         '@context': 'https://schema.org',
         '@graph': [
             {
-                '@type': 'Product',
+                '@type': 'Service',
                 name: item.title,
-                category: item.type,
+                serviceType: item.type,
                 description: item.summary || `${item.area} ${item.type} 집행 가능한 광고 자리입니다.`,
                 image: item.image,
                 inLanguage: 'ko-KR',
                 url: `${SITE_URL}${META.path}/${item.slug}`,
-                brand: { '@id': `${SITE_URL}#organization` },
+                provider: { '@id': `${SITE_URL}#organization` },
                 areaServed: { '@type': 'Place', name: item.area },
             },
             breadcrumbJsonLd(detailTrail('media', item)),
