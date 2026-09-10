@@ -7,7 +7,6 @@ import type { Category } from '@/lib/categories';
 import type { Reference } from '@/lib/references';
 import { SITE_URL } from '@/lib/site';
 
-
 export type CatalogKind = 'media' | 'cases';
 
 export const CATALOG = {
@@ -203,6 +202,59 @@ export function CatalogList({
     );
 }
 
+/** 관리자에서 쓴 본문. 빈 줄이 문단, `## ` 로 시작하는 줄이 소제목이다 */
+function DetailBody({ text }: { text: string }) {
+    /* 줄 단위로 읽는다. # 로 시작하면 소제목, 빈 줄이면 문단이 끊긴다.
+       `##제목` 처럼 공백을 빠뜨리거나 소제목 다음에 빈 줄을 안 넣어도 그대로 동작한다 */
+    const nodes: { tag: 'h' | 'p'; text: string }[] = [];
+    let paragraph: string[] = [];
+
+    const flush = () => {
+        const joined = paragraph.join('\n').trim();
+        if (joined) nodes.push({ tag: 'p', text: joined });
+        paragraph = [];
+    };
+
+    text.split('\n').forEach((line) => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+            flush();
+            return;
+        }
+        if (trimmed.startsWith('#')) {
+            flush();
+            const heading = trimmed.replace(/^#+\s*/, '').trim();
+            if (heading) nodes.push({ tag: 'h', text: heading });
+            return;
+        }
+        paragraph.push(trimmed);
+    });
+    flush();
+
+    if (!nodes.length) return null;
+
+    return (
+        <div className="site-container mt-12 lg:mt-16">
+            <div className="max-w-[820px]">
+                {nodes.map((node, index) =>
+                    node.tag === 'h' ? (
+                        <h2 className="m-0 mb-3 mt-10 text-h4 first:mt-0" key={index}>
+                            {node.text}
+                        </h2>
+                    ) : (
+                        <p
+                            className="m-0 mt-3 whitespace-pre-line text-[15px] leading-8 text-slate lg:text-base"
+                            key={index}
+                        >
+                            {node.text}
+                        </p>
+                    ),
+                )}
+            </div>
+        </div>
+    );
+}
+
 export function CatalogDetail({
     kind,
     item,
@@ -260,6 +312,8 @@ export function CatalogDetail({
                         </Link>
                     </aside>
                 </div>
+
+                {item.body && <DetailBody text={item.body} />}
 
                 {related.length > 0 && (
                     <nav aria-label={meta.relatedHeading} className="site-container mt-12 lg:mt-16">

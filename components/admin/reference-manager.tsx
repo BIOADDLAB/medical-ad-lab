@@ -19,8 +19,20 @@ type Row = {
     summary: string;
     goal: string;
     plan: string;
+    body: string;
     order: number;
 };
+
+const BODY_GUIDE =
+    '상세 페이지 아래에 그대로 나옵니다. 빈 줄로 문단을 나누고, 소제목은 줄 맨 앞에 ## 를 붙이세요. 800~1500자 정도가 적당합니다. 문단마다 숫자를 하나씩 넣으면 검색에 훨씬 잘 잡힙니다.';
+
+const BODY_PLACEHOLDER = `## 지하철 스크린도어 광고 비용
+
+월 매체비는 위치와 규격에 따라 370만 원에서 660만 원 사이입니다.
+
+## 제작·설치·심의까지 드는 총비용
+
+제작·시공비가 기당 30만~50만 원, 의료광고 심의비가 건당 약 10만 원 추가됩니다.`;
 
 const SLUG_GUIDE =
     '주소는 검색 결과에 그대로 노출됩니다. 지역-매체 순서로 짧게 적으세요. 예) songpa-subway, gangnam-bus. 영문 소문자·숫자·하이픈만 되고 한글과 띄어쓰기는 쓸 수 없습니다. 자동 버튼을 누르면 지역과 카테고리로 만들어 줍니다. 한번 정한 주소는 바꾸지 마세요. 바꾸면 기존 검색 순위가 사라집니다.';
@@ -72,6 +84,7 @@ const readRows = (snapshot: Awaited<ReturnType<typeof getDocs>>) =>
                 summary: String(data.summary ?? ''),
                 goal: String(data.goal ?? ''),
                 plan: String(data.plan ?? ''),
+                body: String(data.body ?? ''),
                 order: typeof data.order === 'number' ? data.order : Number.MAX_SAFE_INTEGER,
             } satisfies Row;
         })
@@ -236,6 +249,7 @@ export function ReferenceManager({ kind = 'references' }: { kind?: Kind }) {
                 summary: String(data.get('summary') ?? '').trim(),
                 goal: String(data.get('goal') ?? '').trim(),
                 plan: String(data.get('plan') ?? '').trim(),
+                body: String(data.get('body') ?? '').trim(),
                 image,
                 order: 0,
                 createdAt: serverTimestamp(),
@@ -289,6 +303,7 @@ export function ReferenceManager({ kind = 'references' }: { kind?: Kind }) {
                 summary: String(data.get('summary') ?? '').trim(),
                 goal: String(data.get('goal') ?? '').trim(),
                 plan: String(data.get('plan') ?? '').trim(),
+                body: String(data.get('body') ?? '').trim(),
                 image: nextImage,
                 updatedAt: serverTimestamp(),
             });
@@ -448,6 +463,11 @@ export function ReferenceManager({ kind = 'references' }: { kind?: Kind }) {
                         }
                         className={textarea}
                     />
+                </label>
+                <label className={`${label} md:col-span-2`}>
+                    <span>본문 · 선택</span>
+                    <textarea name="body" rows={12} placeholder={BODY_PLACEHOLDER} className={textarea} />
+                    <p className="m-0 text-[11px] font-medium leading-relaxed text-muted">{BODY_GUIDE}</p>
                 </label>
                 <label className={label}>
                     <span>{isSpot ? '규격' : '목표'}</span>
@@ -793,6 +813,17 @@ export function ReferenceManager({ kind = 'references' }: { kind?: Kind }) {
                                     defaultValue={editing.summary}
                                     className={textarea}
                                 />
+                            </label>
+                            <label className={`${label} sm:col-span-2`}>
+                                <span>본문 · 선택</span>
+                                <textarea
+                                    name="body"
+                                    rows={16}
+                                    defaultValue={editing.body}
+                                    placeholder={BODY_PLACEHOLDER}
+                                    className={textarea}
+                                />
+                                <p className="m-0 text-[11px] font-medium leading-relaxed text-muted">{BODY_GUIDE}</p>
                             </label>
                             <label className={label}>
                                 <span>{isSpot ? '규격' : '목표'}</span>

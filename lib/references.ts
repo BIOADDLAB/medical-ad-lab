@@ -9,6 +9,8 @@ export type Reference = {
     summary?: string;
     goal?: string;
     plan?: string;
+    /** 상세 페이지 본문. 빈 줄로 문단을 나누고 `## ` 로 소제목을 만든다 */
+    body?: string;
 };
 
 /**
@@ -59,6 +61,7 @@ async function getItems(kind: Kind, fallback: readonly Reference[]): Promise<Ref
                 summary: read(doc.fields, 'summary'),
                 goal: read(doc.fields, 'goal'),
                 plan: read(doc.fields, 'plan'),
+                body: read(doc.fields, 'body'),
                 order: readNumber(doc.fields, 'order'),
                 createdAt: doc.fields?.createdAt?.timestampValue ?? '',
             }))
@@ -73,6 +76,7 @@ async function getItems(kind: Kind, fallback: readonly Reference[]): Promise<Ref
                 summary: item.summary,
                 goal: item.goal,
                 plan: item.plan,
+                body: item.body,
             }));
 
         return items.length ? items : [...fallback];
