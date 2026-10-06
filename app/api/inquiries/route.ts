@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { emailReady, sendLeadEmail } from '@/lib/email';
 import { formatKST, leadToRow, type Lead } from '@/lib/lead';
+import { fetchNaverBlogTitle } from '@/lib/naver-blog';
 import { appendLeadRow, sheetsReady } from '@/lib/sheets';
 import { isHttpUrl } from '@/lib/traffic';
 
@@ -41,6 +42,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: '잠시 후 다시 시도해 주세요.' }, { status: 429 });
     }
 
+    const trafficUrl = url(body.trafficUrl);
     const lead: Lead = {
         createdAt: formatKST(),
         hospital: String(body.hospital).trim(),
@@ -54,8 +56,9 @@ export async function POST(request: Request) {
         trafficSource: text(body.trafficSource, 100),
         trafficMedium: text(body.trafficMedium, 100),
         trafficKeyword: text(body.trafficKeyword, 100),
-        trafficUrl: url(body.trafficUrl),
+        trafficUrl,
         landingUrl: url(body.landingUrl),
+        trafficTitle: await fetchNaverBlogTitle(trafficUrl),
     };
 
     if (!sheetsReady && !emailReady) {

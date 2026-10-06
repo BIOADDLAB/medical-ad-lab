@@ -39,13 +39,17 @@ function LeadSource({ lead }: { lead: LeadRow }) {
             {lead.trafficKeyword && <span className="text-muted">키워드: {lead.trafficKeyword}</span>}
             {isHttpUrl(lead.trafficUrl) && (
                 <a
-                    className="whitespace-nowrap font-bold text-brand"
+                    className={`font-bold text-brand ${lead.trafficTitle ? 'line-clamp-2 max-w-[220px]' : 'whitespace-nowrap'}`}
                     href={lead.trafficUrl}
                     target="_blank"
                     rel="noreferrer noopener"
-                    title={lead.trafficUrl}
+                    title={lead.trafficTitle || lead.trafficUrl}
                 >
-                    {lead.trafficSource === 'naver_blog' ? '블로그 글 보기 ↗' : '유입 페이지 보기 ↗'}
+                    {lead.trafficTitle
+                        ? `${lead.trafficTitle} ↗`
+                        : lead.trafficSource === 'naver_blog'
+                          ? '블로그 글 보기 ↗'
+                          : '유입 페이지 보기 ↗'}
                 </a>
             )}
         </span>
