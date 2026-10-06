@@ -3,6 +3,7 @@ import '@sun-typeface/suit/fonts/variable/woff2/SUIT-Variable.css';
 import './globals.css';
 import { SiteShell } from '@/components/layout/site-shell';
 import { Analytics } from '@/components/layout/analytics';
+import { TrafficCapture } from '@/components/layout/traffic-capture';
 import { SITE_URL, SITE_VERIFICATION } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -101,6 +102,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             <body>
                 <SiteShell>{children}</SiteShell>
                 <Analytics />
+                <TrafficCapture />
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(organization).replace(/</g, '\\u003c') }}

@@ -39,6 +39,8 @@ function buildHtml(lead: Lead) {
           ${row('이메일', lead.email)}
           ${row('문의내용', lead.message)}
           ${row('유입경로', lead.source)}
+          ${lead.trafficKeyword ? row('키워드', lead.trafficKeyword) : ''}
+          ${lead.trafficUrl ? row('유입 URL', lead.trafficUrl) : ''}
         </table>
       </td>
     </tr>

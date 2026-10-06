@@ -1,14 +1,13 @@
 'use client';
 
-import { FormEvent, useEffect, useId, useState } from 'react';
+import { FormEvent, useId, useState } from 'react';
 import { PrivacyModal } from '@/components/lead/privacy-modal';
 import { Icon } from '@/components/ui/icon';
 import { SuccessConfetti } from '@/components/ui/success-confetti';
+import { readTraffic } from '@/lib/traffic';
 
 type FieldName = 'hospital' | 'area' | 'phone' | 'email' | 'privacy';
 type Errors = Partial<Record<FieldName, string>>;
-
-const SOURCE_KEY = 'medical-ad-lab-source';
 
 const messages: Record<FieldName, string> = {
     hospital: '병원명을 입력해 주세요.',
@@ -39,36 +38,6 @@ const areas = [
     '제주',
 ];
 
-const detectSource = () => {
-    const params = new URLSearchParams(window.location.search);
-    const utm = ['utm_source', 'utm_medium', 'utm_campaign']
-        .map((key) => params.get(key)?.trim())
-        .filter(Boolean)
-        .join(' / ');
-
-    if (utm) return utm;
-    if (params.has('fbclid')) return 'meta / paid_social';
-    if (params.has('gclid')) return 'google / cpc';
-
-    if (document.referrer) {
-        try {
-            return new URL(document.referrer).hostname;
-        } catch {
-            return document.referrer;
-        }
-    }
-
-    return '직접 유입';
-};
-
-const saveSource = () => {
-    if (!sessionStorage.getItem(SOURCE_KEY)) {
-        sessionStorage.setItem(SOURCE_KEY, detectSource());
-    }
-};
-
-const readSource = () => sessionStorage.getItem(SOURCE_KEY) ?? detectSource();
-
 export function LeadForm({
     compact = false,
     onDirty,
@@ -82,10 +51,6 @@ export function LeadForm({
     const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle');
     const [errors, setErrors] = useState<Errors>({});
     const [privacyOpen, setPrivacyOpen] = useState(false);
-
-    useEffect(() => {
-        saveSource();
-    }, []);
 
     const validate = (name: FieldName, value: string | boolean) => {
         let invalid = !value;
@@ -117,7 +82,7 @@ export function LeadForm({
             const response = await fetch('/api/inquiries', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...Object.fromEntries(data.entries()), source: readSource() }),
+                body: JSON.stringify({ ...Object.fromEntries(data.entries()), ...readTraffic() }),
             });
             if (!response.ok) throw new Error('submit failed');
             form.reset();

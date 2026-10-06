@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { emailReady, sendLeadEmail } from '@/lib/email';
 import { formatKST, leadToRow, type Lead } from '@/lib/lead';
 import { appendLeadRow, sheetsReady } from '@/lib/sheets';
+import { isHttpUrl } from '@/lib/traffic';
 
 export const runtime = 'nodejs';
 
@@ -17,6 +18,12 @@ function tooManyRequests(ip: string) {
     if (recent.size > 500) recent.clear();
     return hits.length > 3;
 }
+
+const text = (value: unknown, max: number) => String(value ?? '').trim().slice(0, max);
+const url = (value: unknown) => {
+    const candidate = text(value, 1000);
+    return isHttpUrl(candidate) ? candidate : '';
+};
 
 export async function POST(request: Request) {
     const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
@@ -44,6 +51,11 @@ export async function POST(request: Request) {
             .trim()
             .slice(0, 300),
         source: String(body.source ?? '').trim(),
+        trafficSource: text(body.trafficSource, 100),
+        trafficMedium: text(body.trafficMedium, 100),
+        trafficKeyword: text(body.trafficKeyword, 100),
+        trafficUrl: url(body.trafficUrl),
+        landingUrl: url(body.landingUrl),
     };
 
     if (!sheetsReady && !emailReady) {

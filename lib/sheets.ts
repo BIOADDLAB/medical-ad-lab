@@ -3,7 +3,9 @@ import { JWT } from 'google-auth-library';
 const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
 const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 const sheetId = process.env.GOOGLE_SHEET_ID;
-const sheetRange = process.env.GOOGLE_SHEET_RANGE ?? '리드!A:I';
+/** 배포 환경변수가 예전 열 범위(A:I)로 남아 있어도 유입정보 열(J~N)까지 읽도록 시트 이름만 쓴다 */
+const sheetName = (process.env.GOOGLE_SHEET_RANGE ?? '리드').split('!')[0];
+const sheetRange = `${sheetName}!A:N`;
 
 export const sheetsReady = Boolean(clientEmail && privateKey && sheetId);
 
@@ -39,7 +41,7 @@ export async function appendLeadRow(row: string[]) {
     };
 
     const nextRow = (lookupData.values?.length ?? 0) + 2;
-    const writeRange = encodeURIComponent(`리드!A${nextRow}:I${nextRow}`);
+    const writeRange = encodeURIComponent(`리드!A${nextRow}:N${nextRow}`);
 
     const response = await fetch(`${baseUrl}/values/${writeRange}?valueInputOption=USER_ENTERED`, {
         method: 'PUT',

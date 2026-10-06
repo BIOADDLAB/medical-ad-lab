@@ -1,13 +1,15 @@
-export type Lead = {
+import type { Traffic } from './traffic';
+
+export type Lead = Traffic & {
     createdAt: string;
     hospital: string;
     area: string;
     phone: string;
     email: string;
     message: string;
-    source: string;
 };
 
+/** 처리상태·상담메모 뒤에 붙여 기존 행(A~I)의 위치를 바꾸지 않는다 */
 export const LEAD_COLUMNS = [
     '접수일시',
     '병원명',
@@ -18,7 +20,15 @@ export const LEAD_COLUMNS = [
     '유입경로',
     '처리상태',
     '상담메모',
+    'trafficSource',
+    'trafficMedium',
+    'trafficKeyword',
+    'trafficUrl',
+    'landingUrl',
 ] as const;
+
+/** USER_ENTERED 로 쓰므로 외부에서 들어온 값이 수식으로 해석되지 않게 막는다 */
+const asText = (value: string) => (/^[=+\-@]/.test(value) ? `'${value}` : value);
 
 export const leadToRow = (lead: Lead) => [
     lead.createdAt,
@@ -30,6 +40,11 @@ export const leadToRow = (lead: Lead) => [
     lead.source,
     '신규',
     '',
+    asText(lead.trafficSource),
+    asText(lead.trafficMedium),
+    asText(lead.trafficKeyword),
+    asText(lead.trafficUrl),
+    asText(lead.landingUrl),
 ];
 
 export const rowToLead = (row: string[]) => ({
@@ -42,6 +57,11 @@ export const rowToLead = (row: string[]) => ({
     source: row[6] ?? '',
     status: row[7] || '신규',
     memo: row[8] ?? '',
+    trafficSource: row[9] ?? '',
+    trafficMedium: row[10] ?? '',
+    trafficKeyword: row[11] ?? '',
+    trafficUrl: row[12] ?? '',
+    landingUrl: row[13] ?? '',
 });
 
 export const formatKST = (date = new Date()) =>

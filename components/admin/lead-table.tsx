@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getIdToken, type User } from 'firebase/auth';
 import type { LeadRow } from '@/lib/lead';
+import { isHttpUrl, trafficLabel } from '@/lib/traffic';
 
 export type LeadPayload = {
     ready: boolean;
@@ -27,6 +28,29 @@ const toneOf = (status: string) =>
         : status === '신규'
           ? 'bg-brand-pale text-brand'
           : 'bg-success-pale text-success-deep';
+
+/** query 유입정보가 없는 예전 문의는 기존처럼 유입경로 문자열만 보여준다 */
+function LeadSource({ lead }: { lead: LeadRow }) {
+    if (!lead.trafficKeyword && !lead.trafficUrl) return <>{lead.source || '-'}</>;
+
+    return (
+        <span className="grid gap-1">
+            <span>{trafficLabel(lead.trafficSource) || lead.source || '-'}</span>
+            {lead.trafficKeyword && <span className="text-muted">키워드: {lead.trafficKeyword}</span>}
+            {isHttpUrl(lead.trafficUrl) && (
+                <a
+                    className="whitespace-nowrap font-bold text-brand"
+                    href={lead.trafficUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    title={lead.trafficUrl}
+                >
+                    {lead.trafficSource === 'naver_blog' ? '블로그 글 보기 ↗' : '유입 페이지 보기 ↗'}
+                </a>
+            )}
+        </span>
+    );
+}
 
 export function LeadTable({ user }: { user: User }) {
     const [state, setState] = useState<'loading' | 'error' | 'done'>('loading');
@@ -85,7 +109,9 @@ export function LeadTable({ user }: { user: User }) {
                             </div>
                             <div className="grid grid-cols-[58px_1fr] gap-2">
                                 <dt className="text-muted">유입경로</dt>
-                                <dd className="m-0 text-slate">{lead.source || '-'}</dd>
+                                <dd className="m-0 text-slate">
+                                    <LeadSource lead={lead} />
+                                </dd>
                             </div>
                         </dl>
                     </article>
@@ -113,7 +139,9 @@ export function LeadTable({ user }: { user: User }) {
                                 <td className="whitespace-nowrap py-3 pr-4">{lead.phone}</td>
                                 <td className="py-3 pr-4">{lead.email}</td>
                                 <td className="min-w-[260px] whitespace-pre-wrap py-3 pr-4">{lead.message || '-'}</td>
-                                <td className="py-3 pr-4">{lead.source || '-'}</td>
+                                <td className="py-3 pr-4">
+                                    <LeadSource lead={lead} />
+                                </td>
                                 <td className="py-3">
                                     <span
                                         className={`inline-flex h-6 items-center rounded-full px-2.5 text-[10px] font-extrabold ${toneOf(lead.status)}`}
