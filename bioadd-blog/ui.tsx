@@ -197,6 +197,9 @@ export function BlogArticle({ article, related }: { article: Article; related: A
               className="object-cover"
             />
           </div>
+          {article.coverImageCaption ? (
+            <figcaption className="mt-3 text-center text-[13px] leading-6 text-slate-500">{article.coverImageCaption}</figcaption>
+          ) : null}
         </figure>
       ) : null}
 

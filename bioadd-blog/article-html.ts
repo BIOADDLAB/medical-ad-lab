@@ -37,7 +37,15 @@ const OPTIONS: sanitizeHtml.IOptions = {
     img: ["src", "alt", "width", "height", "loading", "decoding"],
     th: ["scope", "colspan", "rowspan"],
     td: ["colspan", "rowspan"],
+    span: ["style"],
     "*": ["id", "class"],
+  },
+  // CMS 에디터의 글자색·크기. 어떤 값을 고를 수 있는지는 CMS가 정하고, 여기서는 색과 크기 형식만 확인한다
+  allowedStyles: {
+    span: {
+      color: [/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i, /^rgb\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*\)$/],
+      "font-size": [/^(?:1\d|2\d|3[0-2])px$/],
+    },
   },
   allowedSchemes: ["http", "https", "mailto", "tel"],
   transformTags: {
@@ -70,9 +78,9 @@ const OPTIONS: sanitizeHtml.IOptions = {
   },
 };
 
-/** 저장 시 남은 빈 문단을 걷어낸다 */
+/** 내용이 없는 블록만 걷어낸다. 엔터로 넣은 빈 줄(<p><br /></p>)은 남긴다 */
 function dropEmptyBlocks(html: string) {
-  return html.replace(/<(p|div|span)(?:\s[^>]*)?>(?:\s|&nbsp;|<br\s*\/?>)*<\/\1>/gi, "");
+  return html.replace(/<(p|div|span)(?:\s[^>]*)?>(?:\s|&nbsp;)*<\/\1>/gi, "");
 }
 
 /** 목차 앵커. h2는 section-N, h3는 section-N-M */

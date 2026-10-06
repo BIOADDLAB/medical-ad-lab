@@ -26,6 +26,8 @@ export interface Article {
   excerpt: string;
   coverImage: string;
   coverImageAlt: string;
+  /** 대표 이미지 바로 아래에 보여줄 문구 (CMS '이미지 아래 문구'). 없으면 표시하지 않는다 */
+  coverImageCaption?: string;
   category: string;
   tags: string[];
   faq?: FaqItem[];
@@ -194,6 +196,7 @@ function restDocumentToArticle(doc: { name?: string; fields?: Record<string, Res
     excerpt: restString(fields.excerpt),
     coverImage: restString(fields.coverImage),
     coverImageAlt: restString(fields.coverImageAlt),
+    coverImageCaption: restString(fields.coverImageCaption),
     category: restString(fields.category),
     tags: restStrings(fields.tags),
     faq: (fields.faq?.arrayValue?.values ?? []).map((item) => ({
