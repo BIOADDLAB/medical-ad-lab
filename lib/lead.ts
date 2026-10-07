@@ -10,7 +10,23 @@ export type Lead = Traffic & {
     trafficTitle: string;
 };
 
-/** J~O 는 담당자가 시트에서 직접 채우는 칸이라 유입정보는 그 뒤(P~U)에 둔다 */
+/** 유입정보는 P열부터 이 순서로 쓴다. 이미 쌓인 행의 열 위치가 바뀌지 않도록 새 항목은 끝에만 붙인다 */
+const TRAFFIC_COLUMNS = [
+    'trafficSource',
+    'trafficMedium',
+    'trafficKeyword',
+    'trafficUrl',
+    'landingUrl',
+    'trafficTitle',
+    'trafficCampaign',
+    'landingTitle',
+    'submitUrl',
+    'device',
+    'firstTouch',
+    'firstTouchUrl',
+] as const satisfies readonly (keyof Lead)[];
+
+/** J~O 는 담당자가 시트에서 직접 채우는 칸이라 유입정보는 그 뒤에 둔다 */
 export const LEAD_COLUMNS = [
     '접수일시',
     '병원명',
@@ -27,13 +43,10 @@ export const LEAD_COLUMNS = [
     '제안금액',
     '제안발송일',
     '다음 연락 예정일',
-    'trafficSource',
-    'trafficMedium',
-    'trafficKeyword',
-    'trafficUrl',
-    'landingUrl',
-    'trafficTitle',
+    ...TRAFFIC_COLUMNS,
 ] as const;
+
+const TRAFFIC_START = LEAD_COLUMNS.indexOf(TRAFFIC_COLUMNS[0]);
 
 /** USER_ENTERED 로 쓰므로 외부에서 들어온 값이 수식으로 해석되지 않게 막는다 */
 const asText = (value: string) => (/^[=+\-@]/.test(value) ? `'${value}` : value);
@@ -47,13 +60,8 @@ export const leadToRow = (lead: Lead) => [
     lead.message,
     lead.source,
     '신규',
-    ...Array<string>(7).fill(''),
-    asText(lead.trafficSource),
-    asText(lead.trafficMedium),
-    asText(lead.trafficKeyword),
-    asText(lead.trafficUrl),
-    asText(lead.landingUrl),
-    asText(lead.trafficTitle),
+    ...Array<string>(TRAFFIC_START - 8).fill(''),
+    ...TRAFFIC_COLUMNS.map((key) => asText(lead[key])),
 ];
 
 export const rowToLead = (row: string[]) => ({
@@ -66,12 +74,10 @@ export const rowToLead = (row: string[]) => ({
     source: row[6] ?? '',
     status: row[7] || '신규',
     memo: row[8] ?? '',
-    trafficSource: row[15] ?? '',
-    trafficMedium: row[16] ?? '',
-    trafficKeyword: row[17] ?? '',
-    trafficUrl: row[18] ?? '',
-    landingUrl: row[19] ?? '',
-    trafficTitle: row[20] ?? '',
+    ...(Object.fromEntries(TRAFFIC_COLUMNS.map((key, index) => [key, row[TRAFFIC_START + index] ?? ''])) as Record<
+        (typeof TRAFFIC_COLUMNS)[number],
+        string
+    >),
 });
 
 export const formatKST = (date = new Date()) =>

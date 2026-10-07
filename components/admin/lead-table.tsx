@@ -29,14 +29,38 @@ const toneOf = (status: string) =>
           ? 'bg-brand-pale text-brand'
           : 'bg-success-pale text-success-deep';
 
-/** query 유입정보가 없는 예전 문의는 기존처럼 유입경로 문자열만 보여준다 */
+const pathOf = (value: string) => {
+    try {
+        const { pathname } = new URL(value);
+        return pathname === '/' ? '' : decodeURIComponent(pathname);
+    } catch {
+        return '';
+    }
+};
+
+/** 유입정보 열이 없는 예전 문의는 기존처럼 유입경로 문자열만 보여준다 */
 function LeadSource({ lead }: { lead: LeadRow }) {
-    if (!lead.trafficKeyword && !lead.trafficUrl) return <>{lead.source || '-'}</>;
+    const label = lead.trafficSource ? trafficLabel(lead.trafficSource, lead.trafficMedium) : lead.source || '-';
+    const hiddenKeyword = !lead.trafficKeyword && lead.trafficMedium === 'organic';
+    const campaign = lead.trafficCampaign !== lead.trafficKeyword ? lead.trafficCampaign : '';
+    const landingPath = pathOf(lead.landingUrl);
+    if (!lead.trafficKeyword && !hiddenKeyword && !campaign && !lead.trafficUrl && !landingPath && !lead.firstTouch) {
+        return <>{label}</>;
+    }
 
     return (
         <span className="grid gap-1">
-            <span>{trafficLabel(lead.trafficSource) || lead.source || '-'}</span>
+            <span>{label}</span>
             {lead.trafficKeyword && <span className="text-muted">키워드: {lead.trafficKeyword}</span>}
+            {hiddenKeyword && (
+                <span
+                    className="text-muted"
+                    title="구글·네이버 등은 검색 결과를 눌러 들어온 방문자의 검색어를 사이트에 넘기지 않습니다. 페이지별 검색어 통계는 Search Console·서치어드바이저에서 볼 수 있습니다."
+                >
+                    검색어: 비공개(검색엔진 정책)
+                </span>
+            )}
+            {campaign && <span className="text-muted">캠페인: {campaign}</span>}
             {isHttpUrl(lead.trafficUrl) && (
                 <a
                     className={`font-bold text-brand ${lead.trafficTitle ? 'line-clamp-2 max-w-[220px]' : 'whitespace-nowrap'}`}
@@ -47,11 +71,38 @@ function LeadSource({ lead }: { lead: LeadRow }) {
                 >
                     {lead.trafficTitle
                         ? `${lead.trafficTitle} ↗`
-                        : lead.trafficSource === 'naver_blog'
+                        : lead.trafficMedium === 'blog'
                           ? '블로그 글 보기 ↗'
-                          : '유입 페이지 보기 ↗'}
+                          : lead.trafficMedium === 'cafe'
+                            ? '카페 글 보기 ↗'
+                            : '유입 페이지 보기 ↗'}
                 </a>
             )}
+            {landingPath && (
+                <a
+                    className="line-clamp-2 max-w-[220px] text-brand"
+                    href={lead.landingUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    title={lead.landingUrl}
+                >
+                    첫 페이지: {lead.landingTitle || landingPath} ↗
+                </a>
+            )}
+            {lead.firstTouch &&
+                (isHttpUrl(lead.firstTouchUrl) ? (
+                    <a
+                        className="line-clamp-2 max-w-[220px] text-muted"
+                        href={lead.firstTouchUrl}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        title={lead.firstTouchUrl}
+                    >
+                        최초 유입: {lead.firstTouch} ↗
+                    </a>
+                ) : (
+                    <span className="text-muted">최초 유입: {lead.firstTouch}</span>
+                ))}
         </span>
     );
 }

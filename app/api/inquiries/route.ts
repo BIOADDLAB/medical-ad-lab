@@ -20,7 +20,10 @@ function tooManyRequests(ip: string) {
     return hits.length > 3;
 }
 
-const text = (value: unknown, max: number) => String(value ?? '').trim().slice(0, max);
+const text = (value: unknown, max: number) =>
+    String(value ?? '')
+        .trim()
+        .slice(0, max);
 const url = (value: unknown) => {
     const candidate = text(value, 1000);
     return isHttpUrl(candidate) ? candidate : '';
@@ -52,13 +55,19 @@ export async function POST(request: Request) {
         message: String(body.message ?? '')
             .trim()
             .slice(0, 300),
-        source: String(body.source ?? '').trim(),
+        source: text(body.source, 200),
         trafficSource: text(body.trafficSource, 100),
         trafficMedium: text(body.trafficMedium, 100),
-        trafficKeyword: text(body.trafficKeyword, 100),
+        trafficKeyword: text(body.trafficKeyword, 200),
         trafficUrl,
         landingUrl: url(body.landingUrl),
         trafficTitle: await fetchNaverBlogTitle(trafficUrl),
+        trafficCampaign: text(body.trafficCampaign, 200),
+        landingTitle: text(body.landingTitle, 200),
+        submitUrl: url(body.submitUrl),
+        device: text(body.device, 50),
+        firstTouch: text(body.firstTouch, 300),
+        firstTouchUrl: url(body.firstTouchUrl),
     };
 
     if (!sheetsReady && !emailReady) {

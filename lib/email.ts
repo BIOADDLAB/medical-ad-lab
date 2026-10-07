@@ -40,8 +40,12 @@ function buildHtml(lead: Lead) {
           ${row('문의내용', lead.message)}
           ${row('유입경로', lead.source)}
           ${lead.trafficTitle ? row('유입 글', lead.trafficTitle) : ''}
-          ${lead.trafficKeyword ? row('키워드', lead.trafficKeyword) : ''}
+          ${lead.trafficKeyword ? row('키워드', lead.trafficKeyword) : lead.trafficMedium === 'organic' ? row('키워드', '검색엔진이 검색어를 전달하지 않음') : ''}
+          ${lead.trafficCampaign && lead.trafficCampaign !== lead.trafficKeyword ? row('캠페인', lead.trafficCampaign) : ''}
           ${lead.trafficUrl ? row('유입 URL', lead.trafficUrl) : ''}
+          ${lead.landingUrl ? row('첫 페이지', lead.landingTitle || lead.landingUrl) : ''}
+          ${lead.device ? row('기기', lead.device) : ''}
+          ${lead.firstTouch ? row('최초 유입', lead.firstTouch) : ''}
         </table>
       </td>
     </tr>

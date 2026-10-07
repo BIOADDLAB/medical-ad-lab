@@ -38,6 +38,17 @@ const areas = [
     '제주',
 ];
 
+type Trackers = { gtag?: (...args: unknown[]) => void; fbq?: (...args: unknown[]) => void };
+
+/** GA4·메타 픽셀 전환 집계용. 분석 스크립트 오류가 접수 완료 처리를 막지 않게 따로 감싼다 */
+const reportLead = () => {
+    try {
+        const { gtag, fbq } = window as Window & Trackers;
+        gtag?.('event', 'generate_lead', { form_location: window.location.pathname });
+        fbq?.('track', 'Lead');
+    } catch {}
+};
+
 export function LeadForm({
     compact = false,
     onDirty,
@@ -85,6 +96,7 @@ export function LeadForm({
                 body: JSON.stringify({ ...Object.fromEntries(data.entries()), ...readTraffic() }),
             });
             if (!response.ok) throw new Error('submit failed');
+            reportLead();
             form.reset();
             setErrors({});
             setStatus('done');
