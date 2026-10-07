@@ -148,7 +148,7 @@ export function BlogList({
         <aside className="mt-20 rounded-2xl bg-white p-8 text-center ring-1 ring-slate-200/80">
           <p className="text-lg font-semibold text-slate-900">우리 병원에 맞는 광고 자리부터 확인하세요</p>
           <p className="mt-2 text-sm text-slate-500">위치와 진료과를 알려주시면 집행 가능한 매체와 예상 비용을 정리해 드립니다.</p>
-          <Link href="/#diagnosis" className="mt-5 inline-flex rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white">
+          <Link href="/#diagnosis" data-track-cta="contact" className="mt-5 inline-flex rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white">
             무료진단 신청하기
           </Link>
         </aside>
@@ -236,7 +236,7 @@ export function BlogArticle({ article, related }: { article: Article; related: A
         <aside className="mt-12 rounded-2xl bg-slate-900 p-8 text-center text-white">
           <h2 className="text-lg font-semibold">광고 자리부터 비용까지 한 번에 정리해 드립니다</h2>
           <p className="mt-2 text-sm text-white/70">병원 위치와 진료과에 맞는 매체와 예상 비용을 무료로 진단해 드립니다.</p>
-          <Link href="/#diagnosis" className="mt-5 inline-flex rounded-lg bg-white px-5 py-3 text-sm font-semibold text-slate-900">
+          <Link href="/#diagnosis" data-track-cta="contact" className="mt-5 inline-flex rounded-lg bg-white px-5 py-3 text-sm font-semibold text-slate-900">
             무료진단 신청하기
           </Link>
         </aside>
