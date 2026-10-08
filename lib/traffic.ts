@@ -1,4 +1,8 @@
+import { getVisitorId, trackingDisabled, validVisitorId } from './visitor';
+
 export type Traffic = {
+    visitorId: string;
+    visitSessionId: string;
     source: string;
     trafficSource: string;
     trafficMedium: string;
@@ -48,7 +52,14 @@ export type Touch = {
 export type Visit = { href: string; referrer: string; userAgent: string; title: string; now: number };
 export type Journey = { first: Touch; last: Touch };
 export type ViewedPage = { url: string; title: string };
-type Session = { entry: Touch; last: Touch; pages: ViewedPage[]; articles: ViewedPage[]; updatedAt: number };
+type Session = {
+    id: string;
+    entry: Touch;
+    last: Touch;
+    pages: ViewedPage[];
+    articles: ViewedPage[];
+    updatedAt: number;
+};
 type Detected = { source: string; medium: string; keyword: string; keywordType: string; url: string; evidence: string };
 
 const KEY = 'medical-ad-lab-attribution-v2';
@@ -404,15 +415,6 @@ export function classifyVisit({ href, referrer, userAgent, title, now }: Visit):
         at: now,
     };
 }
-const sameTouch = (a: Touch, b: Touch) =>
-    a.source === b.source &&
-    a.medium === b.medium &&
-    a.keyword === b.keyword &&
-    a.term === b.term &&
-    a.content === b.content &&
-    a.campaign === b.campaign &&
-    a.url === b.url &&
-    a.landingUrl === b.landingUrl;
 /** 최초 방문은 고정한다. 직접 재방문은 최근 확인 출처를 덮어쓰지 않는다. */
 export const nextJourney = (journey: Journey | null, touch: Touch): Journey => {
     if (!journey) return { first: touch, last: touch };
@@ -469,7 +471,8 @@ const loadSession = (now: number): Session | null => {
     try {
         saved = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
     } catch {}
-    return validTouch(saved?.entry) &&
+    return validVisitorId(saved?.id) &&
+        validTouch(saved?.entry) &&
         validTouch(saved?.last) &&
         validPages(saved.pages) &&
         validPages(saved.articles) &&
@@ -509,9 +512,18 @@ export const captureTraffic = () => {
     const touch = classifyVisit(
         acquire ? visit : { ...visit, href: cleanPageUrl(visit.href), referrer: '', userAgent: '' },
     );
-    if (!session || (acquire && touch.source !== 'direct' && !sameTouch(session.entry, touch))) {
+    const refPage = parseUrl(visit.referrer);
+    const internalEntry = !!refPage && sameHost(refPage.hostname, window.location.hostname);
+    if (!session || (acquire && !internalEntry)) {
         journey = nextJourney(journey, touch);
-        session = { entry: touch, last: journey.last, pages: [], articles: [], updatedAt: visit.now };
+        session = {
+            id: crypto.randomUUID(),
+            entry: touch,
+            last: journey.last,
+            pages: [],
+            articles: [],
+            updatedAt: visit.now,
+        };
     }
     journey ||= { first: session.entry, last: session.last };
     documentCaptured = true;
@@ -529,7 +541,16 @@ export const captureTraffic = () => {
     }
     session.updatedAt = visit.now;
     save(journey, session);
+    if (!trackingDisabled()) {
+        getVisitorId();
+    }
 };
+export function readCurrentVisit() {
+    captureTraffic();
+    const session = loadSession(Date.now());
+    const visitorId = getVisitorId();
+    return session && visitorId ? { visitorId, visitSessionId: session.id, entry: session.entry } : null;
+}
 const formatTime = (at: number) =>
     new Intl.DateTimeFormat('ko-KR', {
         timeZone: 'Asia/Seoul',
@@ -545,6 +566,8 @@ export const readTraffic = (): Traffic => {
         last = session?.last || journey.last,
         entry = session?.entry || last;
     return {
+        visitorId: getVisitorId(),
+        visitSessionId: trackingDisabled() ? '' : session?.id || '',
         source: trafficLabel(last.source, last.medium),
         trafficSource: last.source,
         trafficMedium: last.medium,
@@ -590,6 +613,8 @@ export const readViewedArticles = (value: string): ViewedPage[] => {
 /** 문의 API에서 동일한 필드·길이 제한을 사용한다. */
 export const sanitizeTraffic = (body: Record<string, unknown>): Traffic => {
     const limits: Record<keyof Traffic, number> = {
+        visitorId: 36,
+        visitSessionId: 36,
         source: 200,
         trafficSource: 100,
         trafficMedium: 100,
@@ -633,6 +658,8 @@ export const sanitizeTraffic = (body: Record<string, unknown>): Traffic => {
         if (!isHttpUrl(result[key])) result[key] = '';
     }
     result.trafficReferrer = cleanReferrer(result.trafficReferrer);
+    if (!validVisitorId(result.visitorId)) result.visitorId = '';
+    if (!validVisitorId(result.visitSessionId)) result.visitSessionId = '';
     result.viewedArticles = JSON.stringify(readViewedArticles(result.viewedArticles));
     if (result.trafficSource) result.source = trafficLabel(result.trafficSource, result.trafficMedium);
     return result;

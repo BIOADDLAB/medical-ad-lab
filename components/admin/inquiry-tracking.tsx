@@ -115,10 +115,7 @@ function Detail({ lead }: { lead: LeadRow }) {
                     <div>
                         <dt className="mb-1 text-slate">이번 방문의 첫 페이지</dt>
                         <dd className="m-0">
-                            <PageLink
-                                url={lead.sessionLandingUrl}
-                                title={lead.sessionLandingTitle}
-                            />
+                            <PageLink url={lead.sessionLandingUrl} title={lead.sessionLandingTitle} />
                         </dd>
                     </div>
                     <div>
@@ -249,7 +246,7 @@ export function InquiryTracking({ user }: { user: User }) {
                 '최근 출처 확인 시각 (KST)',
                 '병원·문의처',
                 '연락처 (마스킹)',
-                '유입 출처',
+                '최근 확인 출처',
                 '전달된 검색어',
                 '검색어 근거',
                 '유입 글',
@@ -323,7 +320,7 @@ export function InquiryTracking({ user }: { user: User }) {
                     />
                 </label>
                 <label className="grid gap-1.5 text-xs font-bold">
-                    유입 출처
+                    최근 확인 출처
                     <select
                         className={field}
                         value={source}
@@ -407,7 +404,7 @@ export function InquiryTracking({ user }: { user: User }) {
                                         {[
                                             '문의 접수 / 출처 확인',
                                             '병원·문의처',
-                                            '유입 출처',
+                                            '최근 확인 출처',
                                             '전달된 검색어',
                                             '유입 글 / 홈페이지 글',
                                             '상태',
@@ -535,8 +532,9 @@ export function InquiryTracking({ user }: { user: User }) {
                 )
             )}
             <p className="mb-0 mt-5 max-w-3xl text-xs leading-6 text-slate">
-                출처 확인 시각은 홈페이지에서 유입정보를 기록한 시각이며, 검색한 시각이 아닙니다. 문의하지 않은 방문자는
-                이 목록에 포함되지 않습니다. 검색엔진의 미전달 검색어와 AI 질문은 표시할 수 없습니다.
+                이 탭의 출처는 마지막으로 확인된 유입입니다. 이번 방문 출처는 상세 또는 전체 방문 탭에서 확인하세요.
+                출처 확인 시각은 홈페이지에서 기록한 시각이며 검색 시각이 아닙니다. 문의하지 않은 방문자는 이 목록에
+                포함되지 않습니다. 검색엔진의 미전달 검색어와 AI 질문은 표시할 수 없습니다.
             </p>
         </section>
     );

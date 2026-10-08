@@ -27,6 +27,19 @@ export default function PrivacyPage() {
                         <PolicyBody blocks={section.blocks} />
                     </section>
                 ))}
+                <section className="border-t border-line py-7">
+                    <h2 className="m-0 mb-4 text-h5">방문 통계 수집 안내</h2>
+                    <p className="text-sm leading-8 text-muted">
+                        웹사이트 유입 분석과 서비스 개선을 위해 익명 방문자 ID, 방문 시각, 유입 출처, 전달된 검색어,
+                        조회 페이지와 IP 기준으로 추정한 국가·지역·도시 정보를 기록합니다. 문의를 제출하면 해당 방문
+                        기록과 문의정보가 연결됩니다.
+                    </p>
+                    <p className="text-sm leading-8 text-muted">
+                        실제 IP 주소와 GPS 좌표는 방문 기록에 저장하지 않습니다. 추정 위치는 VPN이나 통신망에 따라 실제
+                        위치와 다를 수 있습니다. 방문자 구분에 사용하는 브라우저 저장정보는 최대 90일 동안 유지되며,
+                        브라우저가 추적 금지(DNT)를 요청하면 방문 기록 수집을 생략합니다.
+                    </p>
+                </section>
                 <p className="mt-8 text-xs font-bold text-slate">시행일자: {privacyEffectiveDate}</p>
                 <p className="mt-3 text-xs text-muted">{privacyConsentNote}</p>
             </div>

@@ -4,7 +4,7 @@ import { FormEvent, useId, useState } from 'react';
 import { PrivacyModal } from '@/components/lead/privacy-modal';
 import { Icon } from '@/components/ui/icon';
 import { SuccessConfetti } from '@/components/ui/success-confetti';
-import { readTraffic } from '@/lib/traffic';
+import { readCurrentVisit, readTraffic } from '@/lib/traffic';
 
 type FieldName = 'hospital' | 'area' | 'phone' | 'email' | 'privacy';
 type Errors = Partial<Record<FieldName, string>>;
@@ -93,7 +93,11 @@ export function LeadForm({
             const response = await fetch('/api/inquiries', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...Object.fromEntries(data.entries()), ...readTraffic() }),
+                body: JSON.stringify({
+                    ...Object.fromEntries(data.entries()),
+                    ...readTraffic(),
+                    visitEntry: readCurrentVisit()?.entry,
+                }),
             });
             if (!response.ok) throw new Error('submit failed');
             reportLead();

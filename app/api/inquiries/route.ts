@@ -1,9 +1,12 @@
-import { NextResponse } from 'next/server';
+import { after, NextResponse } from 'next/server';
+import { randomUUID } from 'node:crypto';
 import { emailReady, sendLeadEmail } from '@/lib/email';
 import { formatKST, leadToRow, type Lead } from '@/lib/lead';
 import { fetchNaverBlogTitle } from '@/lib/naver-blog';
 import { appendLeadRow, sheetsReady } from '@/lib/sheets';
 import { sanitizeTraffic } from '@/lib/traffic';
+import { readVisitIdentity } from '@/lib/visitor';
+import { linkVisitToInquiry, parseVisit, visitsReady } from '@/lib/visits-store';
 
 export const runtime = 'nodejs';
 
@@ -37,6 +40,10 @@ export async function POST(request: Request) {
     }
 
     const traffic = sanitizeTraffic(body);
+    if (!readVisitIdentity(request, body)) {
+        traffic.visitorId = '';
+        traffic.visitSessionId = '';
+    }
     const lead: Lead = {
         createdAt: formatKST(),
         hospital: String(body.hospital).trim(),
@@ -74,5 +81,22 @@ export async function POST(request: Request) {
         console.error('[lead] 메일 발송 실패', mailResult.reason);
     }
 
+    if (visitsReady && traffic.visitorId && traffic.visitSessionId) {
+        const input = parseVisit(request, {
+            ...body,
+            entry: body.visitEntry,
+            eventId: randomUUID(),
+            pageUrl: traffic.submitUrl,
+            pageAt: new Date().toISOString(),
+        });
+        if (input)
+            after(async () => {
+                try {
+                    await linkVisitToInquiry(input, request, lead.hospital, lead.createdAt);
+                } catch (error) {
+                    console.error('[lead] 방문 연결 실패', error instanceof Error ? error.message : 'unknown');
+                }
+            });
+    }
     return NextResponse.json({ ok: true, notification: mailResult.status === 'fulfilled' ? 'sent' : 'failed' });
 }

@@ -10,6 +10,7 @@ import { monthPrefixKST } from '@/lib/lead';
 import { ReferenceManager } from '@/components/admin/reference-manager';
 import { fetchLeads, LeadTable, type LeadPayload } from '@/components/admin/lead-table';
 import { InquiryTracking } from '@/components/admin/inquiry-tracking';
+import { VisitorTracking } from '@/components/admin/visitor-tracking';
 import { TrafficLinkBuilder } from '@/components/admin/traffic-link-builder';
 import { TaskList } from '@/components/admin/task-list';
 
@@ -18,7 +19,7 @@ type View = 'dashboard' | 'tracking' | 'inquiries' | 'references' | 'spots' | 's
 const nav: { id: View; label: string; caption: string }[] = [
     { id: 'dashboard', label: '대시보드', caption: '요약' },
     { id: 'inquiries', label: '무료진단 문의', caption: '리드' },
-    { id: 'tracking', label: '문의 유입 추적', caption: '분석' },
+    { id: 'tracking', label: '유입·방문 추적', caption: '분석' },
     { id: 'references', label: '옥외레퍼런스', caption: '콘텐츠' },
     { id: 'spots', label: '광고 장소', caption: '콘텐츠' },
     { id: 'settings', label: '사이트 설정', caption: '연동' },
@@ -116,6 +117,7 @@ function LoginScreen() {
 
 export function AdminDashboard() {
     const [view, setView] = useState<View>('dashboard');
+    const [trackingTab, setTrackingTab] = useState<'visits' | 'inquiries'>('visits');
     const [menuOpen, setMenuOpen] = useState(false);
     const [user, setUser] = useState<User | null>(null);
     const [checking, setChecking] = useState(firebaseReady);
@@ -393,18 +395,46 @@ export function AdminDashboard() {
                     {view === 'tracking' && (
                         <>
                             <div className="mb-8">
-                                <h1 className="mb-2 mt-0 text-h2">문의 유입 추적</h1>
+                                <h1 className="mb-2 mt-0 text-h2">유입·방문 추적</h1>
                                 <p className="m-0 max-w-3xl text-sm leading-6 text-slate">
-                                    어느 경로와 글을 통해 문의했는지 확인하세요. 병원·문의처는 폼에 입력된 정보입니다.
+                                    방문 시각, 출처, 대략적인 위치와 조회 경로를 확인하고 문의로 이어진 방문을 찾으세요.
                                 </p>
                             </div>
-                            <Panel>
-                                {user ? (
-                                    <InquiryTracking user={user} />
-                                ) : (
-                                    <p className="text-sm">관리자 로그인과 구글시트 연결 후 이용할 수 있습니다.</p>
-                                )}
-                            </Panel>
+                            <nav className="mb-5 flex gap-2" aria-label="유입 기록 유형">
+                                {(
+                                    [
+                                        ['visits', '전체 방문'],
+                                        ['inquiries', '문의 기록'],
+                                    ] as const
+                                ).map(([id, label]) => (
+                                    <button
+                                        key={id}
+                                        type="button"
+                                        id={`tracking-tab-${id}`}
+                                        aria-pressed={trackingTab === id}
+                                        aria-controls="tracking-content"
+                                        onClick={() => setTrackingTab(id)}
+                                        className={`min-h-11 rounded-lg border px-5 text-sm font-bold focus-visible:outline-2 focus-visible:outline-brand ${trackingTab === id ? 'border-brand bg-brand text-white' : 'border-line-strong bg-white text-slate hover:bg-soft'}`}
+                                    >
+                                        {label}
+                                    </button>
+                                ))}
+                            </nav>
+                            <div id="tracking-content" aria-labelledby={`tracking-tab-${trackingTab}`}>
+                                <Panel>
+                                    {user ? (
+                                        trackingTab === 'visits' ? (
+                                            <VisitorTracking user={user} />
+                                        ) : (
+                                            <InquiryTracking user={user} />
+                                        )
+                                    ) : (
+                                        <p className="text-sm">
+                                            관리자 로그인과 방문 저장소 연결 후 이용할 수 있습니다.
+                                        </p>
+                                    )}
+                                </Panel>
+                            </div>
                             <details className="mt-6 rounded-2xl border border-line bg-white p-5">
                                 <summary className="cursor-pointer font-bold focus-visible:outline-2 focus-visible:outline-brand">
                                     게시글별 추적 링크 만들기

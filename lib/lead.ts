@@ -38,6 +38,8 @@ const TRAFFIC_COLUMNS = [
     'viewedArticles',
     'journeyPages',
     'trackingVersion',
+    'visitorId',
+    'visitSessionId',
 ] as const satisfies readonly (keyof Lead)[];
 
 /** J~O 는 담당자가 시트에서 직접 채우는 칸이라 유입정보는 그 뒤에 둔다 */
