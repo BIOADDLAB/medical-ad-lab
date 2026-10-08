@@ -3,7 +3,7 @@ import { emailReady, sendLeadEmail } from '@/lib/email';
 import { formatKST, leadToRow, type Lead } from '@/lib/lead';
 import { fetchNaverBlogTitle } from '@/lib/naver-blog';
 import { appendLeadRow, sheetsReady } from '@/lib/sheets';
-import { isHttpUrl } from '@/lib/traffic';
+import { sanitizeTraffic } from '@/lib/traffic';
 
 export const runtime = 'nodejs';
 
@@ -19,15 +19,6 @@ function tooManyRequests(ip: string) {
     if (recent.size > 500) recent.clear();
     return hits.length > 3;
 }
-
-const text = (value: unknown, max: number) =>
-    String(value ?? '')
-        .trim()
-        .slice(0, max);
-const url = (value: unknown) => {
-    const candidate = text(value, 1000);
-    return isHttpUrl(candidate) ? candidate : '';
-};
 
 export async function POST(request: Request) {
     const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
@@ -45,7 +36,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ message: '잠시 후 다시 시도해 주세요.' }, { status: 429 });
     }
 
-    const trafficUrl = url(body.trafficUrl);
+    const traffic = sanitizeTraffic(body);
     const lead: Lead = {
         createdAt: formatKST(),
         hospital: String(body.hospital).trim(),
@@ -55,24 +46,16 @@ export async function POST(request: Request) {
         message: String(body.message ?? '')
             .trim()
             .slice(0, 300),
-        source: text(body.source, 200),
-        trafficSource: text(body.trafficSource, 100),
-        trafficMedium: text(body.trafficMedium, 100),
-        trafficKeyword: text(body.trafficKeyword, 200),
-        trafficUrl,
-        landingUrl: url(body.landingUrl),
-        trafficTitle: await fetchNaverBlogTitle(trafficUrl),
-        trafficCampaign: text(body.trafficCampaign, 200),
-        landingTitle: text(body.landingTitle, 200),
-        submitUrl: url(body.submitUrl),
-        device: text(body.device, 50),
-        firstTouch: text(body.firstTouch, 300),
-        firstTouchUrl: url(body.firstTouchUrl),
+        ...traffic,
+        trafficTitle: traffic.trafficTitle || (await fetchNaverBlogTitle(traffic.trafficUrl)),
     };
 
-    if (!sheetsReady && !emailReady) {
-        console.warn('[lead] 연동 전 데모 모드로 처리됨', lead.hospital);
-        return NextResponse.json({ ok: true, mode: 'demo' }, { status: 202 });
+    if (!sheetsReady) {
+        console.error('[lead] Google Sheets 환경변수가 설정되지 않았습니다.');
+        return NextResponse.json(
+            { message: '문의 접수 설정을 확인 중입니다. 잠시 후 다시 시도해 주세요.' },
+            { status: 503 },
+        );
     }
 
     // 리드 유실이 최악이므로 시트 저장과 메일 발송을 독립 실행한다.
@@ -91,5 +74,5 @@ export async function POST(request: Request) {
         console.error('[lead] 메일 발송 실패', mailResult.reason);
     }
 
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, notification: mailResult.status === 'fulfilled' ? 'sent' : 'failed' });
 }

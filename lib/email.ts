@@ -1,10 +1,11 @@
 import type { Lead } from './lead';
 import { sheetUrl } from './sheets';
+import { evidenceLabel, readViewedArticles } from './traffic';
 
 const apiKey = process.env.RESEND_API_KEY;
 const from = process.env.MAIL_FROM ?? '병원광고연구소 <onboarding@resend.dev>';
 const notifyEmails = (process.env.NOTIFY_EMAILS ?? '')
-    .split(',')
+    .split(/[,;\n]+/)
     .map((value) => value.trim())
     .filter(Boolean);
 
@@ -16,7 +17,7 @@ const escape = (value: string) =>
 const row = (label: string, value: string) => `
   <tr>
     <td style="padding:14px 18px;border-bottom:1px solid #eef1f6;color:#64748b;font-size:13px;white-space:nowrap;">${label}</td>
-    <td style="padding:14px 18px;border-bottom:1px solid #eef1f6;color:#0d1b2a;font-size:14px;font-weight:600;">${escape(value) || '-'}</td>
+    <td style="padding:14px 18px;border-bottom:1px solid #eef1f6;color:#0d1b2a;font-size:14px;font-weight:600;word-break:break-word;white-space:pre-line;">${escape(value) || '-'}</td>
   </tr>`;
 
 function buildHtml(lead: Lead) {
@@ -38,14 +39,29 @@ function buildHtml(lead: Lead) {
           ${row('연락처', lead.phone)}
           ${row('이메일', lead.email)}
           ${row('문의내용', lead.message)}
-          ${row('유입경로', lead.source)}
-          ${lead.trafficTitle ? row('유입 글', lead.trafficTitle) : ''}
-          ${lead.trafficKeyword ? row('키워드', lead.trafficKeyword) : lead.trafficMedium === 'organic' ? row('키워드', '검색엔진이 검색어를 전달하지 않음') : ''}
-          ${lead.trafficCampaign && lead.trafficCampaign !== lead.trafficKeyword ? row('캠페인', lead.trafficCampaign) : ''}
-          ${lead.trafficUrl ? row('유입 URL', lead.trafficUrl) : ''}
-          ${lead.landingUrl ? row('첫 페이지', lead.landingTitle || lead.landingUrl) : ''}
+          ${row('최근 확인된 유입', lead.source)}
+          ${row('판별 근거', evidenceLabel(lead.trafficEvidence))}
+          ${lead.trafficTitle ? row('유입 콘텐츠', lead.trafficTitle) : ''}
+          ${row(lead.trackingVersion === '2' ? '전달된 검색어' : '기존 키워드 (유형 미구분)', lead.trafficKeyword || '전달되지 않음')}
+          ${lead.trafficKeywordType ? row('검색어 근거', lead.trafficKeywordType === 'naver_query' ? '네이버 광고 n_query' : '이전 검색 URL') : ''}
+          ${lead.trafficAdKeyword ? row('광고 등록 키워드', lead.trafficAdKeyword) : ''}
+          ${lead.trafficTerm ? row('운영 태그 (utm_term)', lead.trafficTerm) : ''}
+          ${lead.trafficContent ? row('글·링크 식별자', lead.trafficContent) : ''}
+          ${lead.trafficCampaign ? row('캠페인', lead.trafficCampaign) : ''}
+          ${lead.trafficUrl ? row('유입 콘텐츠 주소', lead.trafficUrl) : ''}
+          ${lead.trafficReferrer ? row('브라우저 이전 주소', lead.trafficReferrer) : ''}
+          ${lead.trafficCapturedAt ? row('출처 확인 시각', lead.trafficCapturedAt) : ''}
+          ${lead.landingUrl ? row('최근 출처의 진입 페이지', [lead.landingTitle, lead.landingUrl].filter(Boolean).join('\n')) : ''}
+          ${lead.sessionSource ? row('이번 방문', lead.sessionSource) : ''}
+          ${lead.sessionLandingUrl ? row('이번 진입 페이지', [lead.sessionLandingTitle, lead.sessionLandingUrl].filter(Boolean).join('\n')) : ''}
+          ${lead.firstTouch ? row('최초 방문', lead.firstTouch) : ''}
+          ${lead.firstLandingUrl ? row('최초 진입 페이지', [lead.firstLandingTitle, lead.firstLandingUrl].filter(Boolean).join('\n')) : ''}
+          ${readViewedArticles(lead.viewedArticles)
+              .map((article) => row('조회한 홈페이지 글', `${article.title}\n${article.url}`))
+              .join('')}
+          ${lead.journeyPages ? row('페이지 이동', lead.journeyPages) : ''}
+          ${lead.submitUrl ? row('문의한 페이지', lead.submitUrl) : ''}
           ${lead.device ? row('기기', lead.device) : ''}
-          ${lead.firstTouch ? row('최초 유입', lead.firstTouch) : ''}
         </table>
       </td>
     </tr>
@@ -66,6 +82,10 @@ export async function sendLeadEmail(lead: Lead) {
         });
 
         throw new Error('Resend 환경변수가 설정되지 않았습니다.');
+    }
+
+    if (notifyEmails.length > 50 || notifyEmails.some((email) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))) {
+        throw new Error('NOTIFY_EMAILS에는 올바른 이메일 주소를 최대 50개까지 입력해 주세요.');
     }
 
     const response = await fetch('https://api.resend.com/emails', {

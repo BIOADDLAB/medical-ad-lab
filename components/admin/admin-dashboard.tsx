@@ -9,6 +9,7 @@ import { getReferences } from '@/lib/references';
 import { monthPrefixKST } from '@/lib/lead';
 import { ReferenceManager } from '@/components/admin/reference-manager';
 import { fetchLeads, LeadTable, type LeadPayload } from '@/components/admin/lead-table';
+import { TrafficLinkBuilder } from '@/components/admin/traffic-link-builder';
 import { TaskList } from '@/components/admin/task-list';
 
 type View = 'dashboard' | 'inquiries' | 'references' | 'spots' | 'settings';
@@ -368,7 +369,8 @@ export function AdminDashboard() {
                                     <Badge>LEADS</Badge>
                                     <h1 className="mb-2 mt-3.5 text-h2">무료진단 문의</h1>
                                     <p className="m-0 text-xs text-muted">
-                                        구글시트를 그때그때 읽어 보여줍니다. 연락처·이메일은 가려서 표시합니다.
+                                        구글시트의 문의와 유입정보를 표시합니다. 유입 상세에서 방문 경로와 읽은 글을
+                                        확인하세요.
                                     </p>
                                 </div>
                                 {leads?.sheetUrl && (
@@ -382,6 +384,7 @@ export function AdminDashboard() {
                                     </a>
                                 )}
                             </div>
+                            <TrafficLinkBuilder />
                             <Panel>{user && <LeadTable user={user} />}</Panel>
                         </>
                     )}

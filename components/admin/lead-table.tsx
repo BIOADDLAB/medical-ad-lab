@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { getIdToken, type User } from 'firebase/auth';
 import type { LeadRow } from '@/lib/lead';
-import { isHttpUrl, trafficLabel } from '@/lib/traffic';
+import { evidenceLabel, isHttpUrl, readViewedArticles, trafficLabel } from '@/lib/traffic';
 
 export type LeadPayload = {
     ready: boolean;
@@ -29,81 +29,138 @@ const toneOf = (status: string) =>
           ? 'bg-brand-pale text-brand'
           : 'bg-success-pale text-success-deep';
 
-const pathOf = (value: string) => {
-    try {
-        const { pathname } = new URL(value);
-        return pathname === '/' ? '' : decodeURIComponent(pathname);
-    } catch {
-        return '';
-    }
-};
-
-/** 유입정보 열이 없는 예전 문의는 기존처럼 유입경로 문자열만 보여준다 */
-function LeadSource({ lead }: { lead: LeadRow }) {
-    const label = lead.trafficSource ? trafficLabel(lead.trafficSource, lead.trafficMedium) : lead.source || '-';
-    const hiddenKeyword = !lead.trafficKeyword && lead.trafficMedium === 'organic';
-    const campaign = lead.trafficCampaign !== lead.trafficKeyword ? lead.trafficCampaign : '';
-    const landingPath = pathOf(lead.landingUrl);
-    if (!lead.trafficKeyword && !hiddenKeyword && !campaign && !lead.trafficUrl && !landingPath && !lead.firstTouch) {
-        return <>{label}</>;
-    }
-
+function SourceLink({ label, url, title }: { label: string; url: string; title?: string }) {
     return (
-        <span className="grid gap-1">
-            <span>{label}</span>
-            {lead.trafficKeyword && <span className="text-muted">키워드: {lead.trafficKeyword}</span>}
-            {hiddenKeyword && (
-                <span
-                    className="text-muted"
-                    title="구글·네이버 등은 검색 결과를 눌러 들어온 방문자의 검색어를 사이트에 넘기지 않습니다. 페이지별 검색어 통계는 Search Console·서치어드바이저에서 볼 수 있습니다."
-                >
-                    검색어: 비공개(검색엔진 정책)
-                </span>
-            )}
-            {campaign && <span className="text-muted">캠페인: {campaign}</span>}
-            {isHttpUrl(lead.trafficUrl) && (
-                <a
-                    className={`font-bold text-brand ${lead.trafficTitle ? 'line-clamp-2 max-w-[220px]' : 'whitespace-nowrap'}`}
-                    href={lead.trafficUrl}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    title={lead.trafficTitle || lead.trafficUrl}
-                >
-                    {lead.trafficTitle
-                        ? `${lead.trafficTitle} ↗`
-                        : lead.trafficMedium === 'blog'
-                          ? '블로그 글 보기 ↗'
-                          : lead.trafficMedium === 'cafe'
-                            ? '카페 글 보기 ↗'
-                            : '유입 페이지 보기 ↗'}
-                </a>
-            )}
-            {landingPath && (
-                <a
-                    className="line-clamp-2 max-w-[220px] text-brand"
-                    href={lead.landingUrl}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    title={lead.landingUrl}
-                >
-                    첫 페이지: {lead.landingTitle || landingPath} ↗
-                </a>
-            )}
-            {lead.firstTouch &&
-                (isHttpUrl(lead.firstTouchUrl) ? (
+        <div className="grid gap-1">
+            <dt className="text-muted">{label}</dt>
+            <dd className="m-0 break-words">
+                {isHttpUrl(url) ? (
                     <a
-                        className="line-clamp-2 max-w-[220px] text-muted"
-                        href={lead.firstTouchUrl}
+                        className="text-brand underline underline-offset-2"
+                        href={url}
                         target="_blank"
-                        rel="noreferrer noopener"
-                        title={lead.firstTouchUrl}
+                        rel="noopener noreferrer"
+                        title={url}
                     >
-                        최초 유입: {lead.firstTouch} ↗
+                        {title || url}
                     </a>
                 ) : (
-                    <span className="text-muted">최초 유입: {lead.firstTouch}</span>
-                ))}
-        </span>
+                    title || '기록 없음'
+                )}
+            </dd>
+        </div>
+    );
+}
+
+function LeadSource({ lead }: { lead: LeadRow }) {
+    const label = lead.trafficSource
+        ? trafficLabel(lead.trafficSource, lead.trafficMedium)
+        : lead.source || '기록 없음';
+    const articles = readViewedArticles(lead.viewedArticles);
+    const current = lead.trackingVersion === '2';
+    const queryLabel = current ? '전달된 검색어' : '기존 키워드 (유형 미구분)';
+    const query =
+        lead.trafficKeyword || (lead.trafficMedium === 'ai' ? '질문·대화 내용은 전달되지 않음' : '전달되지 않음');
+    const values = [
+        ['판별 근거', evidenceLabel(lead.trafficEvidence)],
+        [queryLabel, query],
+        [
+            '검색어 근거',
+            lead.trafficKeywordType === 'naver_query'
+                ? '네이버 광고 n_query'
+                : lead.trafficKeywordType === 'referrer_query'
+                  ? '이전 검색 URL'
+                  : '',
+        ],
+        ['광고 등록 키워드', lead.trafficAdKeyword],
+        ['운영 태그 (utm_term)', lead.trafficTerm],
+        ['캠페인', lead.trafficCampaign],
+        ['글·링크 식별자', lead.trafficContent],
+        [
+            '출처 확인 시각',
+            lead.trafficCapturedAt
+                ? new Date(lead.trafficCapturedAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })
+                : '',
+        ],
+        ['이번 방문', lead.sessionSource],
+        ['최초 방문', lead.firstTouch],
+        ['기기', lead.device],
+    ].filter(([, value]) => value);
+    return (
+        <div className="grid min-w-44 max-w-sm gap-1 break-words">
+            <strong>{label}</strong>
+            {lead.trafficTitle && <span>{lead.trafficTitle}</span>}
+            {current && <span className="text-muted">{evidenceLabel(lead.trafficEvidence)}</span>}
+            {articles.length > 0 && <span className="text-muted">홈페이지 블로그 {articles.length}개 글 조회</span>}
+            <details className="mt-1">
+                <summary className="cursor-pointer text-brand focus-visible:outline-2 focus-visible:outline-brand">
+                    유입 상세 보기
+                </summary>
+                <dl className="my-3 grid gap-3 text-xs leading-relaxed">
+                    {values.map(([name, value]) => (
+                        <div key={name} className="grid gap-1">
+                            <dt className="text-muted">{name}</dt>
+                            <dd className="m-0">{value}</dd>
+                        </div>
+                    ))}
+                    {!current && (
+                        <p className="m-0 text-muted">
+                            이전 버전의 기록입니다. 기존 키워드에는 캠페인명이나 운영 태그가 섞여 있을 수 있습니다.
+                        </p>
+                    )}
+                    {(lead.trafficUrl || lead.trafficTitle) && (
+                        <SourceLink
+                            label={lead.trafficEvidence === 'utm' ? '유입 콘텐츠 (추적 링크 지정)' : '유입 콘텐츠'}
+                            url={lead.trafficUrl}
+                            title={lead.trafficTitle}
+                        />
+                    )}
+                    {lead.trafficReferrer && (
+                        <div>
+                            <dt className="text-muted">브라우저가 전달한 이전 주소</dt>
+                            <dd className="m-0 break-all">{lead.trafficReferrer}</dd>
+                        </div>
+                    )}
+                    {lead.landingUrl && (
+                        <SourceLink
+                            label="최근 확인 출처의 진입 페이지"
+                            url={lead.landingUrl}
+                            title={lead.landingTitle}
+                        />
+                    )}
+                    {lead.sessionLandingUrl && (
+                        <SourceLink
+                            label="이번 방문의 진입 페이지"
+                            url={lead.sessionLandingUrl}
+                            title={lead.sessionLandingTitle}
+                        />
+                    )}
+                    {lead.firstLandingUrl && (
+                        <SourceLink
+                            label="최초 방문의 진입 페이지"
+                            url={lead.firstLandingUrl}
+                            title={lead.firstLandingTitle}
+                        />
+                    )}
+                    {lead.firstTouchUrl && <SourceLink label="최초 방문의 외부 콘텐츠" url={lead.firstTouchUrl} />}
+                    {lead.submitUrl && <SourceLink label="문의한 페이지" url={lead.submitUrl} />}
+                    {articles.map((article) => (
+                        <SourceLink
+                            key={article.url}
+                            label="이번 방문에서 본 홈페이지 글"
+                            url={article.url}
+                            title={article.title}
+                        />
+                    ))}
+                    {lead.journeyPages && (
+                        <div>
+                            <dt className="text-muted">이번 방문의 페이지 이동 (최근 20개)</dt>
+                            <dd className="m-0 whitespace-pre-line">{lead.journeyPages}</dd>
+                        </div>
+                    )}
+                </dl>
+            </details>
+        </div>
     );
 }
 
@@ -133,6 +190,10 @@ export function LeadTable({ user }: { user: User }) {
 
     return (
         <>
+            <p className="mb-4 mt-0 text-xs leading-relaxed text-muted">
+                유입경로는 최대 90일 내 최근 확인된 출처입니다. 직접 재방문은 이전 출처를 유지하며, 이번 방문 정보는
+                상세에서 확인할 수 있습니다.
+            </p>
             <div className="admin-scroll grid max-h-[min(560px,calc(100vh-220px))] gap-3 overflow-y-auto lg:hidden">
                 {data.leads.map((lead, index) => (
                     <article className="rounded-xl border border-line bg-soft p-4" key={`${lead.createdAt}-${index}`}>

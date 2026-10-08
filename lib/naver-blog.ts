@@ -19,6 +19,7 @@ export async function fetchNaverBlogTitle(url: string) {
     try {
         const response = await fetch(`https://blog.naver.com/PostView.naver?blogId=${match[1]}&logNo=${match[2]}`, {
             headers: { 'User-Agent': 'Mozilla/5.0' },
+            redirect: 'error',
             signal: AbortSignal.timeout(2500),
         });
         if (!response.ok) return '';

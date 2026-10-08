@@ -7,7 +7,6 @@ export type Lead = Traffic & {
     phone: string;
     email: string;
     message: string;
-    trafficTitle: string;
 };
 
 /** 유입정보는 P열부터 이 순서로 쓴다. 이미 쌓인 행의 열 위치가 바뀌지 않도록 새 항목은 끝에만 붙인다 */
@@ -24,6 +23,21 @@ const TRAFFIC_COLUMNS = [
     'device',
     'firstTouch',
     'firstTouchUrl',
+    'trafficContent',
+    'trafficTerm',
+    'trafficAdKeyword',
+    'trafficKeywordType',
+    'trafficEvidence',
+    'trafficReferrer',
+    'trafficCapturedAt',
+    'firstLandingUrl',
+    'firstLandingTitle',
+    'sessionSource',
+    'sessionLandingUrl',
+    'sessionLandingTitle',
+    'viewedArticles',
+    'journeyPages',
+    'trackingVersion',
 ] as const satisfies readonly (keyof Lead)[];
 
 /** J~O 는 담당자가 시트에서 직접 채우는 칸이라 유입정보는 그 뒤에 둔다 */
@@ -48,9 +62,6 @@ export const LEAD_COLUMNS = [
 
 const TRAFFIC_START = LEAD_COLUMNS.indexOf(TRAFFIC_COLUMNS[0]);
 
-/** USER_ENTERED 로 쓰므로 외부에서 들어온 값이 수식으로 해석되지 않게 막는다 */
-const asText = (value: string) => (/^[=+\-@]/.test(value) ? `'${value}` : value);
-
 export const leadToRow = (lead: Lead) => [
     lead.createdAt,
     lead.hospital,
@@ -61,7 +72,7 @@ export const leadToRow = (lead: Lead) => [
     lead.source,
     '신규',
     ...Array<string>(TRAFFIC_START - 8).fill(''),
-    ...TRAFFIC_COLUMNS.map((key) => asText(lead[key])),
+    ...TRAFFIC_COLUMNS.map((key) => lead[key]),
 ];
 
 export const rowToLead = (row: string[]) => ({

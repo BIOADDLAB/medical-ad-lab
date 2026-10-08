@@ -1,4 +1,3 @@
-/** 문의와 함께 서버로 보내는 유입정보. source 는 시트 G열(유입경로)에 들어가는 사람이 읽는 요약이다 */
 export type Traffic = {
     source: string;
     trafficSource: string;
@@ -6,38 +5,58 @@ export type Traffic = {
     trafficKeyword: string;
     trafficUrl: string;
     landingUrl: string;
+    trafficTitle: string;
     trafficCampaign: string;
     landingTitle: string;
     submitUrl: string;
     device: string;
     firstTouch: string;
     firstTouchUrl: string;
+    trafficContent: string;
+    trafficTerm: string;
+    trafficAdKeyword: string;
+    trafficKeywordType: string;
+    trafficEvidence: string;
+    trafficReferrer: string;
+    trafficCapturedAt: string;
+    firstLandingUrl: string;
+    firstLandingTitle: string;
+    sessionSource: string;
+    sessionLandingUrl: string;
+    sessionLandingTitle: string;
+    viewedArticles: string;
+    journeyPages: string;
+    trackingVersion: string;
 };
-
 export type Touch = {
     source: string;
     medium: string;
     keyword: string;
+    keywordType: string;
+    adKeyword: string;
+    term: string;
+    content: string;
+    title: string;
     campaign: string;
     url: string;
+    referrer: string;
+    evidence: string;
     landingUrl: string;
     landingTitle: string;
     at: number;
 };
-
 export type Visit = { href: string; referrer: string; userAgent: string; title: string; now: number };
-
 export type Journey = { first: Touch; last: Touch };
+export type ViewedPage = { url: string; title: string };
+type Session = { entry: Touch; last: Touch; pages: ViewedPage[]; articles: ViewedPage[]; updatedAt: number };
+type Detected = { source: string; medium: string; keyword: string; keywordType: string; url: string; evidence: string };
 
-type Detected = { source: string; medium: string; keyword: string; url: string };
-
-const KEY = 'medical-ad-lab-journey';
-const LEGACY_KEY = 'medical-ad-lab-traffic';
+const KEY = 'medical-ad-lab-attribution-v2';
+const SESSION_KEY = 'medical-ad-lab-session-v2';
 const TTL = 90 * 24 * 60 * 60 * 1000;
 const SESSION = 30 * 60 * 1000;
-
 const own = (map: object, key: string) => Object.prototype.hasOwnProperty.call(map, key);
-
+const text = (value: unknown, max = 200) => (typeof value === 'string' ? value.trim().slice(0, max) : '');
 const parseUrl = (value: string) => {
     try {
         return new URL(value);
@@ -112,6 +131,10 @@ const SOURCE_ALIASES: Record<string, string> = {
     'gemini.google.com': 'gemini',
     'naver.com': 'naver',
     'blog.naver.com': 'naver_blog',
+    'm.blog.naver.com': 'naver_blog',
+    'google.com': 'google',
+    'bing.com': 'bing',
+    'claude.ai': 'claude',
     naverblog: 'naver_blog',
     fb: 'facebook',
     ig: 'instagram',
@@ -226,15 +249,41 @@ const IN_APPS: [RegExp, string, string, string][] = [
     [/\bBAND\//, 'band', 'social', '밴드'],
 ];
 
-export const isHttpUrl = (value: string) => ['http:', 'https:'].includes(parseUrl(value)?.protocol ?? '');
-
+export const isHttpUrl = (value: string) => {
+    const url = parseUrl(value);
+    return !!url && ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password;
+};
+export const cleanPageUrl = (value: string) => {
+    const url = parseUrl(value);
+    return url && isHttpUrl(value) ? `${url.origin}${url.pathname}`.slice(0, 1000) : '';
+};
+const cleanReferrer = (value: string) => {
+    const url = parseUrl(value);
+    if (!url) return '';
+    if (url.protocol === 'android-app:') return `android-app://${url.hostname}`;
+    if (!isHttpUrl(value)) return '';
+    const clean = new URL(cleanPageUrl(value));
+    for (const key of ['q', 'query', 'p', 'blogId', 'logNo']) {
+        const item = text(url.searchParams.get(key));
+        if (item) clean.searchParams.set(key, item);
+    }
+    return clean.href.slice(0, 1000);
+};
 export const trafficLabel = (source: string, medium = '') => {
-    if (!source || source === 'direct') return '직접 유입';
+    if (!source || source === 'direct') return '직접 방문·출처 확인 불가';
     const name = own(SOURCE_LABELS, source) ? SOURCE_LABELS[source] : source;
     const kind = own(MEDIUM_LABELS, medium) ? MEDIUM_LABELS[medium] : medium;
     return kind ? `${name} · ${kind}` : name;
 };
-
+export const evidenceLabel = (value: string) =>
+    ({
+        utm: '추적 링크에 지정된 출처',
+        ad_parameter: '광고 추적 파라미터',
+        referrer: '브라우저가 전달한 이전 사이트',
+        app_referrer: '앱이 전달한 출처',
+        app_hint: '앱 브라우저 기준 추정',
+        none: '출처 정보 미전달',
+    })[value] || '기존 기록·판별 근거 없음';
 export const detectDevice = (userAgent: string) => {
     const kind =
         /iPad|Tablet/i.test(userAgent) || (/Android/.test(userAgent) && !/Mobi/.test(userAgent))
@@ -245,21 +294,16 @@ export const detectDevice = (userAgent: string) => {
     const app = IN_APPS.find(([pattern]) => pattern.test(userAgent))?.[3];
     return app ? `${kind} · ${app} 앱` : kind;
 };
-
-/**
- * 네이버 블로그는 Referrer-Policy 가 unsafe-url 이라 글 주소 전체가 referrer 로 넘어온다.
- * PC(PostView.naver?blogId=&logNo=)·모바일·blog.naver.com/아이디/글번호 형태를 같은 주소로 맞춘다
- */
-export const naverBlogUrl = (referrer: string) => {
-    const url = parseUrl(referrer);
-    if (!url || !/(^|\.)blog\.naver\.com$/.test(url.hostname)) return '';
+/** 글 주소가 실제 전달된 경우만 정규화한다. 도메인만으로 글을 알아낼 수는 없다. */
+export const naverBlogUrl = (value: string) => {
+    const url = parseUrl(value);
+    if (!url || !isHttpUrl(value) || !/^(m\.)?blog\.naver\.com$/.test(url.hostname)) return '';
     const [first = '', second = ''] = url.pathname.split('/').filter(Boolean);
-    const blogId = url.searchParams.get('blogId') ?? first;
-    const logNo = url.searchParams.get('logNo') ?? second;
+    const blogId = url.searchParams.get('blogId') || first;
+    const logNo = url.searchParams.get('logNo') || second;
     if (!/^[\w-]+$/.test(blogId)) return '';
     return /^\d+$/.test(logNo) ? `https://blog.naver.com/${blogId}/${logNo}` : `https://blog.naver.com/${blogId}`;
 };
-
 const normalize = (value: string, aliases: Record<string, string>) => {
     const key = value
         .trim()
@@ -267,198 +311,329 @@ const normalize = (value: string, aliases: Record<string, string>) => {
         .replace(/^www\./, '');
     return own(aliases, key) ? aliases[key] : key;
 };
-
-const found = (source: string, medium: string, keyword = ''): Detected => ({ source, medium, keyword, url: '' });
-
-const pageUrl = (url: URL) => (url.pathname.length > 1 || url.search ? url.href.split('#')[0].slice(0, 1000) : '');
-
-/** 외부 사이트가 아니면(우리 사이트 안 이동·읽을 수 없는 값) null */
-const parseReferrer = (referrer: string, pageHost: string): Detected | null => {
-    const url = parseUrl(referrer);
+const detected = (source: string, medium: string, evidence: string): Detected => ({
+    source,
+    medium,
+    evidence,
+    keyword: '',
+    keywordType: '',
+    url: '',
+});
+const sameHost = (a: string, b: string) => a.replace(/^www\./, '') === b.replace(/^www\./, '');
+const parseReferrer = (value: string, pageHost: string): Detected | null => {
+    const url = parseUrl(value);
     if (!url) return null;
     if (url.protocol === 'android-app:') {
         const rule = APP_RULES.find(([pattern]) => pattern.test(url.hostname));
-        return found(rule?.[1] ?? url.hostname, rule?.[2] ?? 'referral');
+        return detected(rule?.[1] || url.hostname, rule?.[2] || 'referral', 'app_referrer');
     }
-    const host = url.hostname.replace(/^www\./, '');
-    if (!['http:', 'https:'].includes(url.protocol) || host === pageHost.replace(/^www\./, '')) return null;
-
+    if (!isHttpUrl(value) || sameHost(url.hostname, pageHost)) return null;
     const rule = HOST_RULES.find(([pattern]) => pattern.test(url.hostname));
-    if (!rule) return { source: host, medium: 'referral', keyword: '', url: pageUrl(url) };
-    const [, source, medium] = rule;
+    const source = rule?.[1] || url.hostname.replace(/^www\./, '');
+    const medium = rule?.[2] || 'referral';
+    const result = detected(source, medium, 'referrer');
     if (medium === 'organic') {
-        // 구글 /url?q= 같은 리다이렉트 주소는 q 에 검색어가 아니라 이동할 주소가 들어 있다
-        const keyword =
-            url.searchParams
-                .get(SEARCH_PARAMS[source] ?? 'q')
-                ?.trim()
-                .slice(0, 200) ?? '';
-        return found(source, medium, isHttpUrl(keyword) ? '' : keyword);
+        const keyword = text(url.searchParams.get(SEARCH_PARAMS[source] || 'q'));
+        if (keyword && !isHttpUrl(keyword) && !/\/(url|aclk)$/.test(url.pathname)) {
+            result.keyword = keyword;
+            result.keywordType = 'referrer_query';
+        }
+    } else if (medium !== 'email') {
+        result.url = source === 'naver_blog' ? naverBlogUrl(value) : cleanReferrer(value);
     }
-    if (source === 'naver_blog') return { source, medium, keyword: '', url: naverBlogUrl(referrer) };
-    return { source, medium, keyword: '', url: medium === 'email' ? '' : pageUrl(url) };
+    return result;
 };
-
-/** 광고 클릭 ID·추적 파라미터. 네이버 검색광고는 '추적 기능'을 켜면 n_query 에 실제 검색어가 붙는다 */
-const detectAd = (params: URLSearchParams, read: (key: string) => string): Detected | null => {
-    if (params.has('n_media') || params.has('n_query') || params.has('n_keyword')) {
-        return found('naver', 'cpc', read('n_query') || read('n_keyword'));
+const detectAd = (read: (key: string) => string): Detected | null => {
+    if (read('n_media') || read('n_query') || read('n_keyword') || /(^|\|)tr=(sa|brnd)(\||$)/.test(read('NaPm'))) {
+        return {
+            ...detected('naver', 'cpc', 'ad_parameter'),
+            keyword: read('n_query'),
+            keywordType: read('n_query') ? 'naver_query' : '',
+        };
     }
-    if (/(^|\|)tr=(sa|brnd)(\||$)/.test(read('NaPm'))) return found('naver', 'cpc');
-    if (params.has('gclid') || params.has('gbraid') || params.has('wbraid')) return found('google', 'cpc');
-    if (params.has('msclkid')) return found('bing', 'cpc');
-    if (params.has('ttclid')) return found('tiktok', 'paid_social');
+    if (read('gclid') || read('gbraid') || read('wbraid')) return detected('google', 'cpc', 'ad_parameter');
+    if (read('msclkid')) return detected('bing', 'cpc', 'ad_parameter');
+    if (read('ttclid')) return detected('tiktok', 'paid_social', 'ad_parameter');
     return null;
 };
-
-/**
- * 우선순위: utm·광고 파라미터 > referrer > 앱 내 브라우저 UA > 직접 유입.
- * 사이트 안에서 이동한 페이지도 direct 로 나오며, nextJourney 가 direct 로는 이전 유입을 덮어쓰지 않는다
- */
 export function classifyVisit({ href, referrer, userAgent, title, now }: Visit): Touch {
     const page = parseUrl(href);
-    const params = page?.searchParams ?? new URLSearchParams();
-    const read = (key: string) => params.get(key)?.trim().slice(0, 200) ?? '';
-
-    const utmSource = normalize(read('utm_source'), SOURCE_ALIASES);
+    const params = page?.searchParams || new URLSearchParams();
+    const refPage = parseUrl(referrer);
+    const internal = !!refPage && sameHost(refPage.hostname, page?.hostname || '');
+    const read = (key: string) => (internal ? '' : text(params.get(key)));
+    let utmSource = normalize(read('utm_source'), SOURCE_ALIASES);
     const utmMedium = normalize(read('utm_medium'), MEDIUM_ALIASES);
-    const campaign = read('utm_campaign');
-    const refUrl = params.get('ref_url')?.trim() ?? '';
-    const ref = referrer ? parseReferrer(referrer, page?.hostname ?? '') : null;
-    const app = referrer ? undefined : IN_APPS.find(([pattern]) => pattern.test(userAgent));
-
-    const detected =
-        detectAd(params, read) ??
-        ref ??
-        (app && found(app[1], app[2])) ??
-        (params.has('fbclid') ? found('meta', 'social') : null) ??
-        found('direct', 'direct');
-
-    const source = utmSource || detected.source;
+    if (utmSource === 'naver' && utmMedium === 'blog') utmSource = 'naver_blog';
+    if (utmSource === 'naver' && utmMedium === 'cafe') utmSource = 'naver_cafe';
+    const ref = parseReferrer(referrer, page?.hostname || '');
+    const app = !internal && !ref ? IN_APPS.find(([pattern]) => pattern.test(userAgent)) : undefined;
+    const base =
+        detectAd(read) ||
+        ref ||
+        (app ? detected(app[1], app[2], 'app_hint') : null) ||
+        (read('fbclid') ? detected('meta', 'social', 'ad_parameter') : null) ||
+        detected('direct', 'direct', 'none');
+    const source = utmSource || base.source;
     const medium =
         utmMedium ||
-        (source === detected.source
-            ? detected.medium
+        (source === base.source
+            ? base.medium
             : AI_SOURCES.has(source)
               ? 'ai'
               : source.endsWith('_blog')
                 ? 'blog'
                 : 'referral');
-
+    const compatible = source === base.source;
+    const refUrl = internal ? '' : text(params.get('ref_url'), 1000);
     return {
         source,
         medium,
-        keyword:
-            read('utm_term') || detected.keyword || (medium === 'blog' || source.endsWith('_blog') ? campaign : ''),
-        campaign,
-        url: (isHttpUrl(refUrl) ? refUrl.slice(0, 1000) : '') || detected.url,
-        landingUrl: href.split('#')[0].slice(0, 1000),
-        landingTitle: title
-            .replace(/\s*\|\s*병원광고연구소$/, '')
-            .trim()
-            .slice(0, 200),
+        keyword: compatible ? base.keyword : '',
+        keywordType: compatible ? base.keywordType : '',
+        adKeyword: source === 'naver' && medium === 'cpc' ? read('n_keyword') : '',
+        term: read('utm_term'),
+        content: read('utm_content'),
+        campaign: read('utm_campaign'),
+        title: read('ref_title'),
+        url: (isHttpUrl(refUrl) ? naverBlogUrl(refUrl) || cleanReferrer(refUrl) : '') || (compatible ? base.url : ''),
+        referrer: internal ? '' : cleanReferrer(referrer),
+        evidence: utmSource ? 'utm' : base.evidence,
+        landingUrl: cleanPageUrl(href),
+        landingTitle: text(title.replace(/\s*\|\s*병원광고연구소$/, '')),
         at: now,
     };
 }
-
 const sameTouch = (a: Touch, b: Touch) =>
     a.source === b.source &&
     a.medium === b.medium &&
     a.keyword === b.keyword &&
+    a.term === b.term &&
+    a.content === b.content &&
+    a.campaign === b.campaign &&
     a.url === b.url &&
-    a.campaign === b.campaign;
-
-/**
- * 최초 유입과 문의 직전 유입을 함께 둔다(GA 의 '마지막 직접 유입 아닌 클릭'과 같은 기준).
- * 직접 재방문은 직전 유입을 지우지 않고, 출처를 모르던 최초 방문은 처음 확인된 출처로 바꾼다
- */
+    a.landingUrl === b.landingUrl;
+/** 최초 방문은 고정한다. 직접 재방문은 최근 확인 출처를 덮어쓰지 않는다. */
 export const nextJourney = (journey: Journey | null, touch: Touch): Journey => {
     if (!journey) return { first: touch, last: touch };
-    if (touch.medium === 'direct') return journey;
-    if (sameTouch(journey.last, touch) && touch.at - journey.last.at < SESSION) return journey;
-    return { first: journey.first.medium === 'direct' ? touch : journey.first, last: touch };
+    if (touch.source === 'direct') return journey;
+    return { first: journey.first, last: touch };
 };
-
-type LegacyTraffic = Partial<
-    Record<'trafficSource' | 'trafficMedium' | 'trafficKeyword' | 'trafficUrl' | 'landingUrl', string>
-> & {
-    tracked?: boolean;
-    fromQuery?: boolean;
-    at?: number;
+const validTime = (at: unknown, now: number, ttl: number) =>
+    typeof at === 'number' && Number.isFinite(at) && at > 0 && now >= at && now - at < ttl;
+const validTouch = (value: unknown): value is Touch => {
+    if (!value || typeof value !== 'object') return false;
+    const item = value as Record<string, unknown>;
+    return (
+        [
+            'source',
+            'medium',
+            'keyword',
+            'keywordType',
+            'adKeyword',
+            'term',
+            'content',
+            'title',
+            'campaign',
+            'url',
+            'referrer',
+            'evidence',
+            'landingUrl',
+            'landingTitle',
+        ].every((key) => typeof item[key] === 'string') && typeof item.at === 'number'
+    );
 };
-
-/** 이전 버전이 브라우저에 남긴 값. 출처가 확인된 값만 최초 유입으로 이어 쓴다 */
-export const fromLegacy = (raw: LegacyTraffic | null): Touch | null =>
-    raw && (raw.tracked || raw.fromQuery) && raw.trafficSource && typeof raw.at === 'number'
-        ? {
-              source: raw.trafficSource,
-              medium: raw.trafficMedium || 'referral',
-              keyword: raw.trafficKeyword ?? '',
-              campaign: raw.trafficKeyword ?? '',
-              url: raw.trafficUrl ?? '',
-              landingUrl: raw.landingUrl ?? '',
-              landingTitle: '',
-              at: raw.at,
-          }
-        : null;
-
+const validPages = (value: unknown): value is ViewedPage[] =>
+    Array.isArray(value) &&
+    value.length <= 20 &&
+    value.every(
+        (item) => item && typeof item.url === 'string' && isHttpUrl(item.url) && typeof item.title === 'string',
+    );
 let memory: Journey | null = null;
-
-const load = (now: number): Journey | null => {
+let sessionMemory: Session | null = null;
+let documentCaptured = false;
+const loadJourney = (now: number): Journey | null => {
+    let saved = memory;
     try {
-        const saved = JSON.parse(localStorage.getItem(KEY) ?? 'null') as Journey | null;
-        if (typeof saved?.last?.at === 'number' && typeof saved.first?.at === 'number' && now - saved.last.at < TTL) {
-            return saved;
-        }
-        const legacy = fromLegacy(JSON.parse(localStorage.getItem(LEGACY_KEY) ?? 'null'));
-        if (legacy && now - legacy.at < TTL) return { first: legacy, last: legacy };
+        saved = JSON.parse(localStorage.getItem(KEY) || 'null');
     } catch {}
-    return memory;
+    return validTouch(saved?.first) &&
+        validTouch(saved?.last) &&
+        validTime(saved.first.at, now, TTL) &&
+        validTime(saved.last.at, now, TTL)
+        ? saved
+        : null;
 };
-
-const save = (journey: Journey) => {
+const loadSession = (now: number): Session | null => {
+    let saved = sessionMemory;
+    try {
+        saved = JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null');
+    } catch {}
+    return validTouch(saved?.entry) &&
+        validTouch(saved?.last) &&
+        validPages(saved.pages) &&
+        validPages(saved.articles) &&
+        validTime(saved.updatedAt, now, SESSION) &&
+        validTime(saved.entry.at, now, TTL)
+        ? saved
+        : null;
+};
+const save = (journey: Journey, session: Session) => {
     memory = journey;
+    sessionMemory = session;
     try {
         localStorage.setItem(KEY, JSON.stringify(journey));
-        localStorage.removeItem(LEGACY_KEY);
+    } catch {}
+    try {
+        sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
     } catch {}
 };
-
 const currentVisit = (): Visit => ({
     href: window.location.href,
     referrer: document.referrer,
     userAgent: navigator.userAgent,
-    title: document.title,
+    title: document.querySelector('article h1')?.textContent || document.title,
     now: Date.now(),
 });
-
-const formatDay = (at: number) =>
-    new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Seoul' }).format(new Date(at)).replace(/-/g, '.');
-
+const isArticle = (value: string) =>
+    /^\/blog\/[^/]+\/?$/.test(parseUrl(value)?.pathname || '') &&
+    !/^\/blog\/(admin|search|category|tag)(\/|$)/.test(parseUrl(value)?.pathname || '');
+/** Next.js 이동도 기록하되 document.referrer는 문서 첫 진입에서만 해석한다. */
 export const captureTraffic = () => {
     const visit = currentVisit();
-    save(nextJourney(load(visit.now), classifyVisit(visit)));
+    if (/^\/(admin|api)(\/|$)|^\/blog\/admin(\/|$)/.test(window.location.pathname)) return;
+    let journey = loadJourney(visit.now);
+    let session = loadSession(visit.now);
+    const navigation = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+    const acquire = !documentCaptured && (!session || !['reload', 'back_forward'].includes(navigation?.type || ''));
+    const touch = classifyVisit(
+        acquire ? visit : { ...visit, href: cleanPageUrl(visit.href), referrer: '', userAgent: '' },
+    );
+    if (!session || (acquire && touch.source !== 'direct' && !sameTouch(session.entry, touch))) {
+        journey = nextJourney(journey, touch);
+        session = { entry: touch, last: journey.last, pages: [], articles: [], updatedAt: visit.now };
+    }
+    journey ||= { first: session.entry, last: session.last };
+    documentCaptured = true;
+    const page = { url: cleanPageUrl(visit.href), title: text(visit.title.replace(/\s*\|\s*병원광고연구소$/, '')) };
+    const previous = session.pages.at(-1);
+    if (previous?.url === page.url) previous.title = page.title;
+    else session.pages = [...session.pages, page].slice(-20);
+    if (isArticle(page.url)) {
+        const article = session.articles.find((item) => item.url === page.url);
+        if (article) article.title = page.title;
+        else session.articles = [...session.articles, page].slice(-10);
+    }
+    for (const item of [journey.first, journey.last, session.entry, session.last]) {
+        if (item.landingUrl === page.url) item.landingTitle = page.title;
+    }
+    session.updatedAt = visit.now;
+    save(journey, session);
 };
-
+const formatTime = (at: number) =>
+    new Intl.DateTimeFormat('ko-KR', {
+        timeZone: 'Asia/Seoul',
+        dateStyle: 'short',
+        timeStyle: 'short',
+    }).format(new Date(at));
 export const readTraffic = (): Traffic => {
+    captureTraffic();
     const visit = currentVisit();
-    const { first, last } = load(visit.now) ?? nextJourney(null, classifyVisit(visit));
-    const repeat = !sameTouch(first, last);
-
+    const journey = loadJourney(visit.now) || nextJourney(null, classifyVisit(visit));
+    const session = loadSession(visit.now);
+    const first = journey.first,
+        last = session?.last || journey.last,
+        entry = session?.entry || last;
     return {
         source: trafficLabel(last.source, last.medium),
         trafficSource: last.source,
         trafficMedium: last.medium,
         trafficKeyword: last.keyword,
+        trafficKeywordType: last.keywordType,
+        trafficTerm: last.term,
+        trafficAdKeyword: last.adKeyword,
+        trafficContent: last.content,
+        trafficTitle: last.title,
         trafficUrl: last.url,
-        landingUrl: last.landingUrl,
         trafficCampaign: last.campaign,
+        trafficEvidence: last.evidence,
+        trafficReferrer: last.referrer,
+        trafficCapturedAt: new Date(last.at).toISOString(),
+        landingUrl: last.landingUrl,
         landingTitle: last.landingTitle,
-        submitUrl: visit.href.split('#')[0].slice(0, 1000),
+        submitUrl: cleanPageUrl(visit.href),
         device: detectDevice(visit.userAgent),
-        firstTouch: repeat
-            ? [trafficLabel(first.source, first.medium), first.keyword, formatDay(first.at)].filter(Boolean).join(' · ')
-            : '',
-        firstTouchUrl: repeat ? first.url : '',
+        firstTouch: `${trafficLabel(first.source, first.medium)} · ${formatTime(first.at)}`,
+        firstTouchUrl: first.url,
+        firstLandingUrl: first.landingUrl,
+        firstLandingTitle: first.landingTitle,
+        sessionSource: `${trafficLabel(entry.source, entry.medium)} (${evidenceLabel(entry.evidence)})`,
+        sessionLandingUrl: entry.landingUrl,
+        sessionLandingTitle: entry.landingTitle,
+        viewedArticles: JSON.stringify(session?.articles || []),
+        journeyPages: (session?.pages || []).map((page) => `${new URL(page.url).pathname} — ${page.title}`).join('\n'),
+        trackingVersion: '2',
     };
+};
+export const readViewedArticles = (value: string): ViewedPage[] => {
+    try {
+        const pages: unknown = JSON.parse(value);
+        if (!Array.isArray(pages)) return [];
+        return pages
+            .slice(-10)
+            .filter((item) => item && isHttpUrl(item.url) && isArticle(item.url))
+            .map((item) => ({ url: cleanPageUrl(item.url), title: text(item.title) }));
+    } catch {
+        return [];
+    }
+};
+/** 문의 API에서 동일한 필드·길이 제한을 사용한다. */
+export const sanitizeTraffic = (body: Record<string, unknown>): Traffic => {
+    const limits: Record<keyof Traffic, number> = {
+        source: 200,
+        trafficSource: 100,
+        trafficMedium: 100,
+        trafficKeyword: 200,
+        trafficUrl: 1000,
+        landingUrl: 1000,
+        trafficTitle: 200,
+        trafficCampaign: 200,
+        landingTitle: 200,
+        submitUrl: 1000,
+        device: 50,
+        firstTouch: 300,
+        firstTouchUrl: 1000,
+        trafficContent: 200,
+        trafficTerm: 200,
+        trafficAdKeyword: 200,
+        trafficKeywordType: 50,
+        trafficEvidence: 50,
+        trafficReferrer: 1000,
+        trafficCapturedAt: 50,
+        firstLandingUrl: 1000,
+        firstLandingTitle: 200,
+        sessionSource: 300,
+        sessionLandingUrl: 1000,
+        sessionLandingTitle: 200,
+        viewedArticles: 16000,
+        journeyPages: 8000,
+        trackingVersion: 10,
+    };
+    const result = Object.fromEntries(
+        Object.entries(limits).map(([key, limit]) => [key, text(body[key], limit)]),
+    ) as Traffic;
+    for (const key of [
+        'trafficUrl',
+        'landingUrl',
+        'submitUrl',
+        'firstTouchUrl',
+        'firstLandingUrl',
+        'sessionLandingUrl',
+    ] as const) {
+        if (!isHttpUrl(result[key])) result[key] = '';
+    }
+    result.trafficReferrer = cleanReferrer(result.trafficReferrer);
+    result.viewedArticles = JSON.stringify(readViewedArticles(result.viewedArticles));
+    if (result.trafficSource) result.source = trafficLabel(result.trafficSource, result.trafficMedium);
+    return result;
 };

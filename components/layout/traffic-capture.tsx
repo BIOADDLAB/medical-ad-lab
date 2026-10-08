@@ -1,13 +1,32 @@
 'use client';
 
-import { useEffect } from 'react';
+import { Suspense, useEffect } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { captureTraffic } from '@/lib/traffic';
 
-/** 페이지를 새로 불러올 때마다 query·referrer 를 분류해 최초·직전 유입을 갱신한다. 사이트 안 이동은 다시 실행되지 않는다 */
-export function TrafficCapture() {
+function Capture() {
+    const pathname = usePathname();
+    const search = useSearchParams().toString();
+
     useEffect(() => {
         captureTraffic();
-    }, []);
+        const observer = new MutationObserver(captureTraffic);
+        const title = document.querySelector('title');
+        if (title) observer.observe(title, { childList: true, subtree: true, characterData: true });
+        window.addEventListener('pageshow', captureTraffic);
+        return () => {
+            observer.disconnect();
+            window.removeEventListener('pageshow', captureTraffic);
+        };
+    }, [pathname, search]);
 
     return null;
+}
+
+export function TrafficCapture() {
+    return (
+        <Suspense fallback={null}>
+            <Capture />
+        </Suspense>
+    );
 }
