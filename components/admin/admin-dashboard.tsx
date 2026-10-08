@@ -9,14 +9,16 @@ import { getReferences } from '@/lib/references';
 import { monthPrefixKST } from '@/lib/lead';
 import { ReferenceManager } from '@/components/admin/reference-manager';
 import { fetchLeads, LeadTable, type LeadPayload } from '@/components/admin/lead-table';
+import { InquiryTracking } from '@/components/admin/inquiry-tracking';
 import { TrafficLinkBuilder } from '@/components/admin/traffic-link-builder';
 import { TaskList } from '@/components/admin/task-list';
 
-type View = 'dashboard' | 'inquiries' | 'references' | 'spots' | 'settings';
+type View = 'dashboard' | 'tracking' | 'inquiries' | 'references' | 'spots' | 'settings';
 
 const nav: { id: View; label: string; caption: string }[] = [
     { id: 'dashboard', label: '대시보드', caption: '요약' },
     { id: 'inquiries', label: '무료진단 문의', caption: '리드' },
+    { id: 'tracking', label: '문의 유입 추적', caption: '분석' },
     { id: 'references', label: '옥외레퍼런스', caption: '콘텐츠' },
     { id: 'spots', label: '광고 장소', caption: '콘텐츠' },
     { id: 'settings', label: '사이트 설정', caption: '연동' },
@@ -384,8 +386,33 @@ export function AdminDashboard() {
                                     </a>
                                 )}
                             </div>
-                            <TrafficLinkBuilder />
                             <Panel>{user && <LeadTable user={user} />}</Panel>
+                        </>
+                    )}
+
+                    {view === 'tracking' && (
+                        <>
+                            <div className="mb-8">
+                                <h1 className="mb-2 mt-0 text-h2">문의 유입 추적</h1>
+                                <p className="m-0 max-w-3xl text-sm leading-6 text-slate">
+                                    어느 경로와 글을 통해 문의했는지 확인하세요. 병원·문의처는 폼에 입력된 정보입니다.
+                                </p>
+                            </div>
+                            <Panel>
+                                {user ? (
+                                    <InquiryTracking user={user} />
+                                ) : (
+                                    <p className="text-sm">관리자 로그인과 구글시트 연결 후 이용할 수 있습니다.</p>
+                                )}
+                            </Panel>
+                            <details className="mt-6 rounded-2xl border border-line bg-white p-5">
+                                <summary className="cursor-pointer font-bold focus-visible:outline-2 focus-visible:outline-brand">
+                                    게시글별 추적 링크 만들기
+                                </summary>
+                                <div className="mt-5">
+                                    <TrafficLinkBuilder />
+                                </div>
+                            </details>
                         </>
                     )}
 
