@@ -6,6 +6,10 @@ import { isHttpUrl, naverBlogUrl } from '@/lib/traffic';
 
 const channels = [
     { id: 'naver_blog', label: '네이버 블로그', medium: 'blog' },
+    { id: 'chatgpt', label: 'ChatGPT', medium: 'ai' },
+    { id: 'claude', label: 'Claude', medium: 'ai' },
+    { id: 'gemini', label: 'Gemini', medium: 'ai' },
+    { id: 'perplexity', label: 'Perplexity', medium: 'ai' },
     { id: 'naver_cafe', label: '네이버 카페', medium: 'cafe' },
     { id: 'instagram', label: '인스타그램', medium: 'social' },
     { id: 'kakaotalk', label: '카카오톡', medium: 'social' },
@@ -99,8 +103,8 @@ export function TrafficLinkBuilder() {
                 게시글별 추적 링크 만들기
             </summary>
             <p className="mb-5 mt-3 max-w-3xl text-xs leading-relaxed text-muted">
-                글마다 만든 주소를 링크에 넣으면 문의에서 글 제목과 링크 식별자를 확인할 수 있습니다. 제목은 여기 입력한
-                값이며, 방문자의 실제 검색어와는 다릅니다.
+                게시 채널별 추적 링크를 만들어 사용하면 AI 서비스와 블로그 유입을 구분할 수 있습니다. 추적 링크를 사용하지
+                않은 AI 추천은 브라우저가 출처를 숨긴 경우 식별할 수 없습니다. 입력한 제목은 실제 검색어가 아닙니다.
             </p>
             <form
                 onSubmit={generate}

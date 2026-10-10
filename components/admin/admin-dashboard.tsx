@@ -12,6 +12,7 @@ import { fetchLeads, LeadTable, type LeadPayload } from '@/components/admin/lead
 import { InquiryTracking } from '@/components/admin/inquiry-tracking';
 import { VisitorTracking } from '@/components/admin/visitor-tracking';
 import { TrafficLinkBuilder } from '@/components/admin/traffic-link-builder';
+import { TrafficOverview } from '@/components/admin/traffic-overview';
 import { TaskList } from '@/components/admin/task-list';
 
 type View = 'dashboard' | 'tracking' | 'inquiries' | 'references' | 'spots' | 'settings';
@@ -304,6 +305,7 @@ export function AdminDashboard() {
                                     </p>
                                 </div>
                             </div>
+                            {user && <TrafficOverview user={user} onViewDetails={() => move('tracking')} />}
                             <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
                                 {stats.map(([label, value, note]) => (
                                     <Panel key={label}>

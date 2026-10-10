@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react';
 import { getIdToken, type User } from 'firebase/auth';
 import type { LeadRow } from '@/lib/lead';
-import { evidenceLabel, isHttpUrl, trafficLabel } from '@/lib/traffic';
+import { evidenceLabel, isHttpUrl, trafficLabel, visitAttribution } from '@/lib/traffic';
 import { locationLabel, visitTime, type VisitPage, type VisitRecord } from '@/lib/visit';
 import { fetchLeads } from './lead-table';
 
@@ -14,6 +14,10 @@ const button =
 const day = (at: number) => new Date(at + 9 * 3600000).toISOString().slice(0, 10);
 const start = () => day(Date.now() - 6 * 86400000);
 const end = () => day(Date.now());
+const sourceLabel = (visit: VisitRecord) => {
+    const { source, medium } = visitAttribution(visit);
+    return trafficLabel(source, medium);
+};
 const hasQuery = (visit: VisitRecord) =>
     !!visit.keyword && ['naver_query', 'referrer_query'].includes(visit.keywordType);
 
@@ -183,10 +187,10 @@ export function VisitorTracking({ user }: { user: User }) {
         return result;
     }, [leads]);
     const visits = payload?.visits || [];
-    const sources = [...new Set(visits.map((visit) => trafficLabel(visit.source, visit.medium)))].sort();
+    const sources = [...new Set(visits.map((visit) => sourceLabel(visit)))].sort();
     const locations = [...new Set(visits.map(locationLabel))].sort();
     const filtered = visits.filter((visit) => {
-        if (source && trafficLabel(visit.source, visit.medium) !== source) return false;
+        if (source && sourceLabel(visit) !== source) return false;
         if (location && locationLabel(visit) !== location) return false;
         const lead = leadMap.get(visit.id);
         const linked = !!lead || !!visit.hospital;
@@ -195,7 +199,7 @@ export function VisitorTracking({ user }: { user: User }) {
             visit.visitorId,
             visit.hospital,
             lead?.hospital,
-            trafficLabel(visit.source, visit.medium),
+            sourceLabel(visit),
             visit.keyword,
             visit.externalTitle,
             visit.landingTitle,
@@ -251,7 +255,7 @@ export function VisitorTracking({ user }: { user: User }) {
                 visit.visitorId,
                 visit.id,
                 leadMap.get(visit.id)?.hospital || visit.hospital || '',
-                trafficLabel(visit.source, visit.medium),
+                sourceLabel(visit),
                 evidenceLabel(visit.evidence),
                 hasQuery(visit) ? visit.keyword : '',
                 locationLabel(visit),
@@ -385,7 +389,7 @@ export function VisitorTracking({ user }: { user: User }) {
                         )}
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm">
                             <span aria-live="polite">
-                                방문 <strong className="tabular-nums">{filtered.length}</strong>건 · 방문자{' '}
+                                방문 <strong className="tabular-nums">{filtered.length}</strong>회(세션) · 고유 방문자{' '}
                                 {new Set(filtered.map((visit) => visit.visitorId)).size}명 · 문의 연결 {linkedCount}건
                             </span>
                             <span className="text-xs text-slate">최근 조회 {updatedAt} · KST</span>
@@ -447,7 +451,7 @@ export function VisitorTracking({ user }: { user: User }) {
                                                         </button>
                                                     </td>
                                                     <td className="min-w-44 max-w-56 px-4 py-4">
-                                                        <strong>{trafficLabel(visit.source, visit.medium)}</strong>
+                                                        <strong>{sourceLabel(visit)}</strong>
                                                         <p className="mb-0 mt-2 text-xs text-slate">
                                                             {evidenceLabel(visit.evidence)}
                                                         </p>
@@ -554,7 +558,7 @@ export function VisitorTracking({ user }: { user: User }) {
                 )
             )}
             <p className="mb-0 mt-5 max-w-3xl text-xs leading-6 text-slate">
-                문의 전 방문은 익명 ID로 표시합니다. 같은 브라우저의 ID를 눌러 재방문을 모아 볼 수 있습니다. 위치는 IP
+                문의 전 방문은 익명 ID로 표시합니다. 같은 브라우저의 ID를 눌러 재방문을 모아 볼 수 있으며, 30분 이상 활동이 없거나 외부에서 새로 들어오면 별도 방문으로 기록합니다. 위치는 IP
                 기준 추정이며 VPN·통신망에 따라 다를 수 있습니다. 미전달 검색어와 AI 질문은 가져올 수 없습니다. 방문
                 기록은 새 기능 적용 후부터 수집됩니다.
             </p>

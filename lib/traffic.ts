@@ -280,6 +280,19 @@ const cleanReferrer = (value: string) => {
     }
     return clean.href.slice(0, 1000);
 };
+/** 확인 가능한 referrer로만 AI 유입을 보정한다. 랜딩 경로(/blog)는 출처가 아니다. */
+export function visitAttribution(visit: {
+    source: string;
+    medium: string;
+    referrer: string;
+    landingUrl: string;
+}) {
+    const landing = parseUrl(visit.landingUrl);
+    const ref = parseReferrer(visit.referrer, landing?.hostname || '');
+    if (ref && AI_SOURCES.has(ref.source)) return { source: ref.source, medium: 'ai' };
+    return { source: visit.source, medium: AI_SOURCES.has(visit.source) ? 'ai' : visit.medium };
+}
+
 export const trafficLabel = (source: string, medium = '') => {
     if (!source || source === 'direct') return '직접 방문·출처 확인 불가';
     const name = own(SOURCE_LABELS, source) ? SOURCE_LABELS[source] : source;
@@ -385,16 +398,13 @@ export function classifyVisit({ href, referrer, userAgent, title, now }: Visit):
         (app ? detected(app[1], app[2], 'app_hint') : null) ||
         (read('fbclid') ? detected('meta', 'social', 'ad_parameter') : null) ||
         detected('direct', 'direct', 'none');
-    const source = utmSource || base.source;
-    const medium =
-        utmMedium ||
-        (source === base.source
-            ? base.medium
-            : AI_SOURCES.has(source)
-              ? 'ai'
-              : source.endsWith('_blog')
-                ? 'blog'
-                : 'referral');
+    // 실제 AI 서비스에서 넘어온 referrer는 잘못 붙은 블로그 UTM보다 우선한다.
+    const aiReferrer = ref && AI_SOURCES.has(ref.source) ? ref : null;
+    const source = aiReferrer?.source || utmSource || base.source;
+    const medium = AI_SOURCES.has(source)
+        ? 'ai'
+        : utmMedium ||
+          (source === base.source ? base.medium : source.endsWith('_blog') ? 'blog' : 'referral');
     const compatible = source === base.source;
     const refUrl = internal ? '' : text(params.get('ref_url'), 1000);
     return {
@@ -406,10 +416,12 @@ export function classifyVisit({ href, referrer, userAgent, title, now }: Visit):
         term: read('utm_term'),
         content: read('utm_content'),
         campaign: read('utm_campaign'),
-        title: read('ref_title'),
-        url: (isHttpUrl(refUrl) ? naverBlogUrl(refUrl) || cleanReferrer(refUrl) : '') || (compatible ? base.url : ''),
+        title: aiReferrer ? '' : read('ref_title'),
+        url: aiReferrer
+            ? base.url
+            : (isHttpUrl(refUrl) ? naverBlogUrl(refUrl) || cleanReferrer(refUrl) : '') || (compatible ? base.url : ''),
         referrer: internal ? '' : cleanReferrer(referrer),
-        evidence: utmSource ? 'utm' : base.evidence,
+        evidence: aiReferrer ? 'referrer' : utmSource ? 'utm' : base.evidence,
         landingUrl: cleanPageUrl(href),
         landingTitle: text(title.replace(/\s*\|\s*병원광고연구소$/, '')),
         at: now,
@@ -519,7 +531,7 @@ export const captureTraffic = () => {
         session = {
             id: crypto.randomUUID(),
             entry: touch,
-            last: journey.last,
+            last: touch,
             pages: [],
             articles: [],
             updatedAt: visit.now,
@@ -563,7 +575,7 @@ export const readTraffic = (): Traffic => {
     const journey = loadJourney(visit.now) || nextJourney(null, classifyVisit(visit));
     const session = loadSession(visit.now);
     const first = journey.first,
-        last = session?.last || journey.last,
+        last = session?.entry || journey.last,
         entry = session?.entry || last;
     return {
         visitorId: getVisitorId(),
