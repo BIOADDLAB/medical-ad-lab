@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { parseVisit, saveVisitPage, visitsReady } from '@/lib/visits-store';
+import { requestTrackingDisabled } from '@/lib/visitor';
 
 export const runtime = 'nodejs';
 const recent = new Map<string, { at: number; count: number }>();
@@ -9,7 +10,10 @@ export async function POST(request: Request) {
     const origin = request.headers.get('origin');
     if (origin !== new URL(request.url).origin)
         return NextResponse.json({ message: '허용되지 않은 요청입니다.' }, { status: 403 });
-    if (request.headers.get('dnt') === '1' || /bot|crawl|spider|preview/i.test(request.headers.get('user-agent') || ''))
+    if (
+        requestTrackingDisabled(request) ||
+        /bot|crawl|spider|preview|ChatGPT-User|Claude-User/i.test(request.headers.get('user-agent') || '')
+    )
         return new Response(null, { status: 204 });
     if (!visitsReady) return NextResponse.json({ message: '방문 저장소를 연결해 주세요.' }, { status: 503 });
     const ip = request.headers.get('x-vercel-forwarded-for') || request.headers.get('x-forwarded-for') || 'local';

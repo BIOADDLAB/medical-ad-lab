@@ -1,205 +1,355 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getIdToken, type User } from 'firebase/auth';
-import { trafficLabel, visitAttribution } from '@/lib/traffic';
-import type { VisitRecord } from '@/lib/visit';
+import { evidenceLabel, isHttpUrl } from '@/lib/traffic';
+import { dayKST, recentRange, type ReportRange, type TrafficReportPayload } from '@/lib/traffic-report';
+import { visitTime } from '@/lib/visit';
+import {
+    ReportPeriod,
+    downloadReportCsv,
+    reportButton,
+    reportNumber as num,
+    reportRate as rate,
+} from './traffic-report-controls';
 
-type VisitPayload = { ready: boolean; visits: VisitRecord[]; truncated: boolean; message?: string };
-type Props = { user: User; onViewDetails: () => void };
-const dayKST = (value: number) => new Date(value + 9 * 3600000).toISOString().slice(0, 10);
-const dayLabel = (value: string) => value.slice(5).replace('-', '.');
-const num = (value: number) => value.toLocaleString('ko-KR');
-const sourceLabel = (visit: VisitRecord) => {
-    const { source, medium } = visitAttribution(visit);
-    return trafficLabel(source, medium);
+type Props = {
+    user: User;
+    onViewDetails?: () => void;
+    range?: ReportRange;
+    refreshKey?: number;
+    aiOnly?: boolean;
 };
+function PageLink({ url, title }: { url: string; title: string }) {
+    return isHttpUrl(url) ? (
+        <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="break-words text-brand underline underline-offset-4"
+        >
+            {title || new URL(url).pathname}
+        </a>
+    ) : (
+        <span>{title || '기록 없음'}</span>
+    );
+}
 
-export function TrafficOverview({ user, onViewDetails }: Props) {
-    const [payload, setPayload] = useState<VisitPayload | null>(null);
+export function TrafficOverview({ user, onViewDetails, range, refreshKey = 0, aiOnly = false }: Props) {
+    const [selected, setSelected] = useState(() => recentRange());
+    const [refresh, setRefresh] = useState(0);
+    const [payload, setPayload] = useState<TrafficReportPayload | null>(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
-    const [refresh, setRefresh] = useState(0);
-    const [asOf, setAsOf] = useState('');
-
+    const { from, to } = range || selected;
     useEffect(() => {
         const controller = new AbortController();
         const run = async () => {
             setLoading(true);
             setError('');
-            const today = Date.now();
-            const from = dayKST(today - 6 * 86400000);
-            const to = dayKST(today);
+            setPayload(null);
             try {
-                const token = await getIdToken(user);
-                const response = await fetch(`/api/admin/visits?from=${from}&to=${to}`, {
-                    headers: { Authorization: `Bearer ${token}` },
+                const response = await fetch(`/api/admin/traffic-report?${new URLSearchParams({ from, to })}`, {
+                    headers: { Authorization: `Bearer ${await getIdToken(user)}` },
                     cache: 'no-store',
                     signal: controller.signal,
                 });
-                const result = (await response.json()) as VisitPayload;
-                if (!response.ok) throw new Error(result.message || '방문 현황을 불러오지 못했습니다.');
-                if (!controller.signal.aborted) {
-                    setPayload(result);
-                    setAsOf(dayKST(Date.now()));
-                }
+                const result = (await response.json()) as TrafficReportPayload;
+                if (!response.ok) throw new Error(result.message || '방문 성과를 불러오지 못했습니다.');
+                if (!controller.signal.aborted) setPayload(result);
             } catch (cause) {
-                if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : '방문 조회 실패');
+                if (!controller.signal.aborted)
+                    setError(cause instanceof Error ? cause.message : '방문 성과 조회 실패');
             } finally {
                 if (!controller.signal.aborted) setLoading(false);
             }
         };
         void run();
         return () => controller.abort();
-    }, [user, refresh]);
+    }, [user, from, to, refresh, refreshKey]);
 
-    const summary = useMemo(() => {
-        const visits = payload?.visits || [];
-        const now = Date.now();
-        const days = Array.from({ length: 7 }, (_, index) => dayKST(now - (6 - index) * 86400000));
-        const daily = days.map((date) => ({ date, count: 0 }));
-        const channels = new Map<string, number>();
-        const landing = new Map<string, { title: string; count: number }>();
-        const today = dayKST(now);
-        let todayVisits = 0;
-        let aiVisits = 0;
-        let linked = 0;
-        const todayIds = new Set<string>();
-
-        for (const visit of visits) {
-            const date = dayKST(Date.parse(visit.startedAt));
-            const cell = daily.find((item) => item.date === date);
-            if (cell) cell.count++;
-            if (date === today) {
-                todayVisits++;
-                todayIds.add(visit.visitorId);
-            }
-            const label = sourceLabel(visit);
-            channels.set(label, (channels.get(label) || 0) + 1);
-            if (visitAttribution(visit).medium === 'ai') aiVisits++;
-            if (visit.inquiryAt || visit.hospital) linked++;
-            const path = (() => {
-                try {
-                    return new URL(visit.landingUrl).pathname;
-                } catch {
-                    return '';
-                }
-            })();
-            if (path) {
-                const previous = landing.get(path);
-                landing.set(path, {
-                    title: visit.landingTitle || previous?.title || (path === '/' ? '메인 페이지' : path),
-                    count: (previous?.count || 0) + 1,
-                });
-            }
-        }
-        const sorted = (map: Map<string, number>) => [...map].sort((a, b) => b[1] - a[1]).slice(0, 5);
-        return {
-            total: visits.length,
-            todayVisits,
-            todayUnique: todayIds.size,
-            aiVisits,
-            linked,
-            daily,
-            channels: sorted(channels),
-            landing: [...landing].sort((a, b) => b[1].count - a[1].count).slice(0, 5),
-        };
-    }, [payload]);
-
-    const metrics: [string, string, string][] = [
-        ['오늘 총 방문', num(summary.todayVisits), '재방문 포함 · 세션 기준'],
-        ['오늘 고유 방문자', num(summary.todayUnique), '브라우저 ID 기준'],
-        ['최근 7일 방문', num(summary.total), '오늘 포함 · 세션 기준'],
-        ['최근 7일 AI 유입', num(summary.aiVisits), '출처가 확인된 방문만'],
-    ];
-    const maxDay = Math.max(1, ...summary.daily.map((item) => item.count));
-    const maxChannel = Math.max(1, ...summary.channels.map(([, count]) => count));
+    const report = payload?.report;
+    const metrics: [string, string, string][] = !report
+        ? []
+        : aiOnly
+          ? [
+                ['AI 유입 방문', num(report.aiVisits), '출처가 식별된 방문'],
+                ['AI 문의 발생 방문', num(report.aiConvertedVisits), '한 방문은 최대 1회 집계'],
+                ['AI 문의 전환율', rate(report.aiConvertedVisits, report.aiVisits), '문의 발생 방문 ÷ AI 방문'],
+                ['전체 방문 중 AI', rate(report.aiVisits, report.visits), 'AI 방문 ÷ 전체 방문'],
+            ]
+          : [
+                ['방문 횟수', num(report.visits), '같은 브라우저 재방문 포함'],
+                ['고유 방문자', num(report.uniqueVisitors), '브라우저 ID 중복 제외'],
+                ['AI 유입 방문', num(report.aiVisits), '출처가 식별된 방문'],
+                ['문의 발생 방문', num(report.convertedVisits), '한 방문은 최대 1회 집계'],
+                ['문의 전환율', rate(report.convertedVisits, report.visits), '문의 발생 방문 ÷ 전체 방문'],
+            ];
+    const dailyMax = Math.max(1, ...(report?.daily || []).map((item) => (aiOnly ? item.aiVisits : item.visits)));
+    const channels = aiOnly ? report?.platforms || [] : (report?.channels || []).slice(0, 5);
+    const landings = aiOnly ? report?.aiLandings || [] : report?.landings || [];
 
     return (
-        <section className="mb-7" aria-label="홈페이지 방문 분석">
+        <section className="mb-7 min-w-0" aria-label={aiOnly ? 'AI 유입 성과' : '방문 성과 요약'}>
             <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
                 <div>
-                    <h2 className="m-0 text-h5">홈페이지 방문 현황</h2>
-                    <p className="mb-0 mt-1 text-xs leading-5 text-muted">
-                        한국시간 기준 · 같은 사람의 재방문은 별도 방문으로 집계 · 새로고침은 중복 집계하지 않음
+                    <h2 className="m-0 text-h5">{aiOnly ? 'AI 유입 성과' : '홈페이지 방문 현황'}</h2>
+                    <p className="mb-0 mt-1 text-xs leading-5 text-slate">
+                        {from} ~ {to} · 한국시간 · 방문 시작일 기준
                     </p>
                 </div>
-                <div className="flex items-center gap-3">
-                    <button type="button" onClick={() => setRefresh((x) => x + 1)} className="text-xs font-bold text-brand">
-                        새로고침
-                    </button>
-                    <button type="button" onClick={onViewDetails} className="text-xs font-bold text-brand">
+                {onViewDetails && (
+                    <button type="button" className={reportButton} onClick={onViewDetails}>
                         방문 상세 보기
                     </button>
-                </div>
+                )}
             </div>
-            {error ? (
-                <div role="alert" className="rounded-xl border border-red-200 bg-white p-5 text-sm text-red-700">{error}</div>
-            ) : !loading && payload && !payload.ready ? (
-                <div className="rounded-xl border border-line bg-white p-5 text-sm text-muted">
-                    {payload.message || '방문 기록 저장소 연결 후 집계를 확인할 수 있습니다.'}
+            {!range && (
+                <ReportPeriod
+                    value={selected}
+                    busy={loading}
+                    onChange={(next) => {
+                        setSelected(next);
+                        setRefresh((value) => value + 1);
+                    }}
+                />
+            )}
+            {loading ? (
+                <p role="status" className="rounded-xl bg-soft p-5 text-sm">
+                    선택 기간 전체 방문을 집계하고 있습니다.
+                </p>
+            ) : error ? (
+                <div role="alert" className="rounded-xl bg-red-50 p-5 text-sm text-red-800">
+                    {error}
+                    <button type="button" onClick={() => setRefresh((value) => value + 1)} className="ml-3 underline">
+                        다시 조회
+                    </button>
                 </div>
+            ) : !payload?.ready || !report ? (
+                <p role="status" className="rounded-xl bg-soft p-5 text-sm">
+                    {payload?.message || '방문 저장소 연결이 필요합니다.'}
+                </p>
             ) : (
                 <>
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                        {metrics.map(([label, value, note]) => (
-                            <div key={label} className="rounded-2xl border border-line bg-white p-5 shadow-[0_7px_24px_rgba(19,43,80,.035)]">
-                                <span className="text-xs text-muted">{label}</span>
-                                <strong className="mt-2 block text-h3 tabular-nums">{loading ? '—' : value}</strong>
-                                <small className="mt-2 block text-xs text-muted">{note}</small>
-                            </div>
+                    {onViewDetails && from <= dayKST() && to >= dayKST() && (
+                        <p className="text-sm">
+                            오늘 방문 <strong>{num(report.todayVisits)}회</strong> · 오늘 고유 방문자{' '}
+                            <strong>{num(report.todayUnique)}명</strong>
+                        </p>
+                    )}
+                    <div className={`grid gap-3 sm:grid-cols-2 ${aiOnly ? 'xl:grid-cols-4' : 'xl:grid-cols-5'}`}>
+                        {metrics.map(([label, value, caption]) => (
+                            <article key={label} className="rounded-xl border border-line bg-white p-4">
+                                <p className="m-0 text-xs font-bold text-slate">{label}</p>
+                                <strong className="my-2 block text-3xl tabular-nums">{value}</strong>
+                                <p className="m-0 text-xs leading-5 text-muted">{caption}</p>
+                            </article>
                         ))}
                     </div>
-                    <div className="mt-4 grid gap-4 xl:grid-cols-3">
-                        <article className="rounded-2xl border border-line bg-white p-5">
-                            <h3 className="m-0 text-sm font-bold">일별 방문 추이</h3>
-                            <div className="mt-5 flex h-36 items-end gap-2" aria-label="최근 7일 일별 방문 횟수">
-                                {summary.daily.map(({ date, count }) => (
-                                    <div key={date} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2">
-                                        <span className="text-[11px] tabular-nums text-muted">{loading ? '-' : count}</span>
-                                        <div className="flex h-24 w-full items-end rounded-md bg-soft">
-                                            <div className="w-full rounded-md bg-brand transition-[height]" style={{ height: `${(count / maxDay) * 100}%` }} />
-                                        </div>
-                                        <span className="whitespace-nowrap text-[10px] text-muted">{dayLabel(date)}</span>
-                                    </div>
-                                ))}
+                    {report.warning && (
+                        <p role="status" className="rounded-lg bg-amber-50 p-3 text-xs leading-6 text-amber-900">
+                            {report.warning}
+                        </p>
+                    )}
+                    <div className="mt-5 grid gap-4 xl:grid-cols-2">
+                        <article className="min-w-0 rounded-xl border border-line bg-white p-5">
+                            <h3 className="m-0 text-sm font-bold">{aiOnly ? '날짜별 AI 방문' : '날짜별 방문'}</h3>
+                            <div className="mt-4 overflow-x-auto">
+                                <ol
+                                    className="m-0 flex h-40 min-w-full list-none items-end gap-2 p-0"
+                                    aria-label="날짜별 방문 횟수"
+                                >
+                                    {report.daily.map((item) => {
+                                        const count = aiOnly ? item.aiVisits : item.visits;
+                                        return (
+                                            <li
+                                                key={item.date}
+                                                className="flex h-full min-w-8 flex-1 flex-col items-center justify-end gap-1 text-[10px]"
+                                                title={`${item.date}: ${num(count)}회`}
+                                            >
+                                                <span className="tabular-nums">{num(count)}</span>
+                                                <div
+                                                    className="w-full max-w-10 rounded-t bg-brand"
+                                                    style={{
+                                                        height: `${Math.max(count ? 3 : 0, (count / dailyMax) * 100)}px`,
+                                                    }}
+                                                />
+                                                <span className="whitespace-nowrap text-muted">
+                                                    {item.date.slice(5).replace('-', '.')}
+                                                </span>
+                                            </li>
+                                        );
+                                    })}
+                                </ol>
                             </div>
                         </article>
-                        <article className="rounded-2xl border border-line bg-white p-5">
-                            <h3 className="m-0 text-sm font-bold">주요 유입 경로</h3>
-                            <div className="mt-4 grid gap-3">
-                                {summary.channels.map(([source, count]) => (
-                                    <div key={source}>
-                                        <div className="flex justify-between gap-3 text-xs">
-                                            <span className="truncate" title={source}>{source}</span>
-                                            <strong className="tabular-nums">{num(count)}회</strong>
-                                        </div>
-                                        <div className="mt-1.5 h-1.5 rounded-full bg-soft">
-                                            <div className="h-full rounded-full bg-brand" style={{ width: `${(count / maxChannel) * 100}%` }} />
-                                        </div>
-                                    </div>
-                                ))}
-                                {!summary.channels.length && <p className="text-xs text-muted">아직 방문 기록이 없습니다.</p>}
+                        <article className="min-w-0 rounded-xl border border-line bg-white p-5">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <h3 className="m-0 text-sm font-bold">
+                                    {aiOnly ? '플랫폼별 방문·문의' : '유입처 상위 5개'}
+                                </h3>
+                                {aiOnly && (
+                                    <button
+                                        type="button"
+                                        className="text-xs text-brand underline"
+                                        onClick={() =>
+                                            downloadReportCsv(`AI-유입-${from}-${to}.csv`, [
+                                                [
+                                                    '기간 시작',
+                                                    '기간 종료',
+                                                    '플랫폼',
+                                                    '방문',
+                                                    '문의 발생 방문',
+                                                    '문의 전환율',
+                                                ],
+                                                ...channels.map((item) => [
+                                                    from,
+                                                    to,
+                                                    item.label,
+                                                    item.visits,
+                                                    item.convertedVisits,
+                                                    rate(item.convertedVisits, item.visits),
+                                                ]),
+                                            ])
+                                        }
+                                    >
+                                        CSV 다운로드
+                                    </button>
+                                )}
                             </div>
-                        </article>
-                        <article className="rounded-2xl border border-line bg-white p-5">
-                            <h3 className="m-0 text-sm font-bold">인기 첫 방문 페이지</h3>
-                            <ol className="mt-4 grid list-none gap-3 p-0">
-                                {summary.landing.map(([path, item], index) => (
-                                    <li key={path} className="flex items-start gap-3 text-xs">
-                                        <span className="text-slate">{index + 1}.</span>
-                                        <span className="min-w-0 flex-1 break-words">{item.title}<small className="mt-0.5 block truncate text-muted" title={path}>{path}</small></span>
-                                        <strong className="shrink-0 tabular-nums">{num(item.count)}회</strong>
-                                    </li>
-                                ))}
-                                {!summary.landing.length && <li className="text-xs text-muted">아직 방문 기록이 없습니다.</li>}
-                            </ol>
+                            <div className="mt-3 overflow-x-auto">
+                                <table className="w-full min-w-[320px] text-left text-xs">
+                                    <caption className="sr-only">유입처별 방문과 문의 발생 방문</caption>
+                                    <thead className="border-b border-line text-slate">
+                                        <tr>
+                                            {['유입처', '방문', '문의', '전환율'].map((label) => (
+                                                <th scope="col" className="py-3 pr-3" key={label}>
+                                                    {label}
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {channels.map((item) => (
+                                            <tr
+                                                key={`${item.source}:${item.medium}`}
+                                                className="border-b border-line last:border-0"
+                                            >
+                                                <th scope="row" className="py-3 pr-3 font-medium">
+                                                    {item.label}
+                                                </th>
+                                                <td className="pr-3 tabular-nums">{num(item.visits)}</td>
+                                                <td className="pr-3 tabular-nums">{num(item.convertedVisits)}</td>
+                                                <td className="tabular-nums">
+                                                    {rate(item.convertedVisits, item.visits)}
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                                {!channels.length && (
+                                    <p className="text-xs text-muted">선택 기간의 방문 기록이 없습니다.</p>
+                                )}
+                            </div>
                         </article>
                     </div>
-                    <p className="mt-3 text-xs leading-5 text-muted">
-                        최근 7일 문의 연결 확인 {loading ? '—' : num(summary.linked)}건 · 출처 정보가 전달되지 않은 AI 추천은 직접 방문·출처 미확인으로 표시됩니다.
-                        {payload?.truncated ? ' 조회 가능한 최근 1,000건 기준이며 실제 방문 수는 더 많을 수 있습니다.' : ''}
-                        {asOf ? ` · 조회 기준 ${asOf} (KST)` : ''}
+                    <article className="mt-4 rounded-xl border border-line bg-white p-5">
+                        <h3 className="m-0 text-sm font-bold">
+                            {aiOnly ? 'AI에서 처음 들어온 페이지' : '인기 첫 방문 페이지'}
+                        </h3>
+                        <p className="mt-1 text-xs text-muted">
+                            {aiOnly ? '플랫폼과 페이지별 상위 20개' : '방문 횟수 상위 10개'} · 문의는 해당 페이지로
+                            진입한 방문에서 발생한 경우입니다.
+                        </p>
+                        <div className="overflow-x-auto">
+                            <table className="w-full min-w-[420px] text-left text-xs">
+                                <caption className="sr-only">첫 방문 페이지별 성과</caption>
+                                <thead className="border-b border-line text-slate">
+                                    <tr>
+                                        {(aiOnly
+                                            ? ['유입처', '첫 페이지', '방문', '문의']
+                                            : ['첫 페이지', '방문', '문의']
+                                        ).map((label) => (
+                                            <th key={label} scope="col" className="py-3 pr-3">
+                                                {label}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {landings.map((item) => (
+                                        <tr
+                                            key={`${item.source}:${item.url}`}
+                                            className="border-b border-line last:border-0"
+                                        >
+                                            {aiOnly && <td className="py-3 pr-3">{item.label}</td>}
+                                            <td className="max-w-lg py-3 pr-5">
+                                                <PageLink url={item.url} title={item.title} />
+                                            </td>
+                                            <td className="pr-3 tabular-nums">{num(item.visits)}</td>
+                                            <td className="tabular-nums">{num(item.convertedVisits)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        {!landings.length && (
+                            <p className="text-xs text-muted">
+                                선택 기간에 {aiOnly ? '출처가 식별된 AI ' : ''}방문이 없습니다.
+                            </p>
+                        )}
+                    </article>
+                    {aiOnly && (
+                        <article className="mt-4 rounded-xl border border-line bg-white p-5">
+                            <h3 className="m-0 text-sm font-bold">최근 AI 방문 20건</h3>
+                            <div className="mt-3 overflow-x-auto">
+                                <table className="w-full min-w-[620px] text-left text-xs">
+                                    <caption className="sr-only">
+                                        최근 AI 방문 시각, 출처, 판별 근거, 첫 페이지, 문의 여부
+                                    </caption>
+                                    <thead className="border-b border-line text-slate">
+                                        <tr>
+                                            {['방문 시각', '유입처 / 근거', '첫 페이지', '문의'].map((label) => (
+                                                <th scope="col" className="py-3 pr-3" key={label}>
+                                                    {label}
+                                                </th>
+                                            ))}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {report.recentAi.map((item) => (
+                                            <tr key={item.id} className="border-b border-line last:border-0">
+                                                <td className="whitespace-nowrap py-3 pr-4">{visitTime(item.at)}</td>
+                                                <td className="py-3 pr-4">
+                                                    {item.label}
+                                                    <span className="mt-1 block text-muted">
+                                                        {evidenceLabel(item.evidence)}
+                                                    </span>
+                                                </td>
+                                                <td className="max-w-sm py-3 pr-4">
+                                                    <PageLink url={item.url} title={item.title} />
+                                                </td>
+                                                <td>{item.converted ? '문의 연결' : '미확인'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {!report.recentAi.length && (
+                                <p className="text-xs text-muted">표시할 AI 방문이 없습니다.</p>
+                            )}
+                        </article>
+                    )}
+                    <p className="mt-3 text-xs leading-6 text-slate">
+                        전체 {num(report.visits)}회 중 직접 방문·출처 미확인 {num(report.unknownVisits)}회. 출처가
+                        전달되지 않은 AI 방문도 여기에 포함될 수 있습니다. 문의 전환율은 문의가 발생한 방문 수를
+                        기준으로 하며, 다른 기기나 브라우저의 방문은 연결하지 않습니다.
+                        {aiOnly &&
+                            ' AI 유입에는 이전 사이트 정보 또는 추적 링크로 식별된 방문이 포함됩니다. 추적 링크는 공유될 수 있으므로 판별 근거를 함께 확인하세요.'}
+                        <span className="block">
+                            최근 기록 활동 {report.latestVisitAt ? visitTime(report.latestVisitAt) : '기록 없음'} · 집계
+                            완료 {visitTime(report.generatedAt)} · 보관 중인 전체 방문 기준
+                        </span>
                     </p>
                 </>
             )}

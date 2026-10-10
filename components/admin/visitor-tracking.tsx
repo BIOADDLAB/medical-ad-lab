@@ -6,6 +6,8 @@ import type { LeadRow } from '@/lib/lead';
 import { evidenceLabel, isHttpUrl, trafficLabel, visitAttribution } from '@/lib/traffic';
 import { locationLabel, visitTime, type VisitPage, type VisitRecord } from '@/lib/visit';
 import { fetchLeads } from './lead-table';
+import { TrafficOverview } from './traffic-overview';
+import { dayKST, recentRange, validReportRange } from '@/lib/traffic-report';
 
 const field =
     'h-11 w-full rounded-lg border border-line-strong bg-white px-3 text-sm focus-visible:outline-2 focus-visible:outline-brand';
@@ -73,7 +75,7 @@ function VisitDetail({ user, visit, lead }: { user: User; visit: VisitRecord; le
         ['익명 방문자 ID', visit.visitorId],
         ['방문 세션 ID', visit.id],
         ['위치 (IP 기준 추정)', locationLabel(visit)],
-        ['출처 근거', evidenceLabel(visit.evidence)],
+        ['출처 근거', evidenceLabel(visitAttribution(visit).evidence)],
         ['광고 등록 키워드', visit.adKeyword],
         ['운영 태그 (검색어 아님)', visit.term],
         ['캠페인', visit.campaign],
@@ -158,6 +160,11 @@ export function VisitorTracking({ user }: { user: User }) {
     useEffect(() => {
         const controller = new AbortController();
         const run = async () => {
+            setLoading(true);
+            setError('');
+            setPayload(null);
+            setLeads([]);
+            setLeadWarning('');
             const [visits, inquiry] = await Promise.allSettled([
                 adminFetch<Payload>(user, `/api/admin/visits?from=${query.from}&to=${query.to}`, controller.signal),
                 fetchLeads(user),
@@ -193,7 +200,7 @@ export function VisitorTracking({ user }: { user: User }) {
         if (source && sourceLabel(visit) !== source) return false;
         if (location && locationLabel(visit) !== location) return false;
         const lead = leadMap.get(visit.id);
-        const linked = !!lead || !!visit.hospital;
+        const linked = !!lead || !!visit.hospital || !!visit.inquiryAt;
         if ((conversion === 'yes' && !linked) || (conversion === 'no' && linked)) return false;
         return [
             visit.visitorId,
@@ -213,11 +220,10 @@ export function VisitorTracking({ user }: { user: User }) {
     const pages = Math.max(1, Math.ceil(filtered.length / 25));
     const currentPage = Math.min(page, pages);
     const rows = filtered.slice((currentPage - 1) * 25, currentPage * 25);
-    const linkedCount = filtered.filter((visit) => leadMap.has(visit.id) || visit.hospital).length;
+    const linkedCount = filtered.filter((visit) => leadMap.has(visit.id) || visit.hospital || visit.inquiryAt).length;
     const apply = () => {
-        const distance = Date.parse(`${to}T00:00:00+09:00`) - Date.parse(`${from}T00:00:00+09:00`);
-        if (!Number.isFinite(distance) || distance < 0 || distance >= 90 * 86400000) {
-            setError('조회 기간은 시작일과 종료일을 포함해 최대 90일입니다.');
+        if (!validReportRange(from, to)) {
+            setError('조회 기간은 오늘까지 최대 90일입니다.');
             return;
         }
         setLoading(true);
@@ -256,7 +262,7 @@ export function VisitorTracking({ user }: { user: User }) {
                 visit.id,
                 leadMap.get(visit.id)?.hospital || visit.hospital || '',
                 sourceLabel(visit),
-                evidenceLabel(visit.evidence),
+                evidenceLabel(visitAttribution(visit).evidence),
                 hasQuery(visit) ? visit.keyword : '',
                 locationLabel(visit),
                 visit.landingUrl,
@@ -280,19 +286,46 @@ export function VisitorTracking({ user }: { user: User }) {
 
     return (
         <section aria-label="방문 유입 기록" className="min-w-0">
+            <div className="mb-3 flex flex-wrap gap-2">
+                {[1, 7, 30].map((days) => (
+                    <button
+                        key={days}
+                        type="button"
+                        className={button}
+                        disabled={loading}
+                        onClick={() => {
+                            const range = recentRange(days);
+                            setFrom(range.from);
+                            setTo(range.to);
+                            setPage(1);
+                            setExpanded('');
+                            setQuery({ ...range, refresh: query.refresh + 1 });
+                        }}
+                    >
+                        {days === 1 ? '오늘' : `최근 ${days}일`}
+                    </button>
+                ))}
+            </div>
             <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_auto_auto]">
                 <label className="grid gap-1.5 text-xs font-bold">
                     방문 시작일
                     <input
                         className={field}
                         type="date"
+                        max={dayKST()}
                         value={from}
                         onChange={(event) => setFrom(event.target.value)}
                     />
                 </label>
                 <label className="grid gap-1.5 text-xs font-bold">
                     방문 종료일
-                    <input className={field} type="date" value={to} onChange={(event) => setTo(event.target.value)} />
+                    <input
+                        className={field}
+                        type="date"
+                        max={dayKST()}
+                        value={to}
+                        onChange={(event) => setTo(event.target.value)}
+                    />
                 </label>
                 <button type="button" className={`${button} self-end`} onClick={apply} disabled={loading}>
                     {loading ? '불러오는 중…' : '조회 / 새로고침'}
@@ -306,6 +339,11 @@ export function VisitorTracking({ user }: { user: User }) {
                     CSV 다운로드
                 </button>
             </div>
+            <TrafficOverview user={user} range={{ from: query.from, to: query.to }} refreshKey={query.refresh} />
+            <h2 className="mb-3 text-h5">방문 상세 목록</h2>
+            <p className="text-xs leading-6 text-slate">
+                아래 필터와 CSV는 상세 목록에만 적용됩니다. 위 요약은 선택 기간 전체 방문 기준입니다.
+            </p>
             <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <label className="grid gap-1.5 text-xs font-bold">
                     이번 방문 출처
@@ -389,8 +427,9 @@ export function VisitorTracking({ user }: { user: User }) {
                         )}
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-3 text-sm">
                             <span aria-live="polite">
-                                방문 <strong className="tabular-nums">{filtered.length}</strong>회(세션) · 고유 방문자{' '}
-                                {new Set(filtered.map((visit) => visit.visitorId)).size}명 · 문의 연결 {linkedCount}건
+                                목록 내 방문 <strong className="tabular-nums">{filtered.length}</strong>회(세션) · 고유
+                                방문자 {new Set(filtered.map((visit) => visit.visitorId)).size}명 · 문의 연결{' '}
+                                {linkedCount}건
                             </span>
                             <span className="text-xs text-slate">최근 조회 {updatedAt} · KST</span>
                         </div>
@@ -430,6 +469,7 @@ export function VisitorTracking({ user }: { user: User }) {
                                     {rows.map((visit) => {
                                         const lead = leadMap.get(visit.id),
                                             hospital = lead?.hospital || visit.hospital;
+                                        const linked = Boolean(lead || hospital || visit.inquiryAt);
                                         return (
                                             <Fragment key={visit.id}>
                                                 <tr className="border-b border-line align-top hover:bg-soft/50">
@@ -453,7 +493,7 @@ export function VisitorTracking({ user }: { user: User }) {
                                                     <td className="min-w-44 max-w-56 px-4 py-4">
                                                         <strong>{sourceLabel(visit)}</strong>
                                                         <p className="mb-0 mt-2 text-xs text-slate">
-                                                            {evidenceLabel(visit.evidence)}
+                                                            {evidenceLabel(visitAttribution(visit).evidence)}
                                                         </p>
                                                     </td>
                                                     <td className="min-w-36 max-w-44 break-words px-4 py-4">
@@ -479,9 +519,9 @@ export function VisitorTracking({ user }: { user: User }) {
                                                     <td className="whitespace-nowrap px-4 py-4 text-xs leading-6">
                                                         <div>페이지 {visit.pageCount}회</div>
                                                         <span
-                                                            className={hospital ? 'font-bold text-brand' : 'text-slate'}
+                                                            className={linked ? 'font-bold text-brand' : 'text-slate'}
                                                         >
-                                                            {hospital ? '문의 연결' : '문의 미확인'}
+                                                            {linked ? '문의 연결' : '문의 미확인'}
                                                         </span>
                                                     </td>
                                                     <td className="px-4 py-2">
@@ -558,9 +598,10 @@ export function VisitorTracking({ user }: { user: User }) {
                 )
             )}
             <p className="mb-0 mt-5 max-w-3xl text-xs leading-6 text-slate">
-                문의 전 방문은 익명 ID로 표시합니다. 같은 브라우저의 ID를 눌러 재방문을 모아 볼 수 있으며, 30분 이상 활동이 없거나 외부에서 새로 들어오면 별도 방문으로 기록합니다. 위치는 IP
-                기준 추정이며 VPN·통신망에 따라 다를 수 있습니다. 미전달 검색어와 AI 질문은 가져올 수 없습니다. 방문
-                기록은 새 기능 적용 후부터 수집됩니다.
+                문의 전 방문은 익명 ID로 표시합니다. 같은 브라우저의 ID를 눌러 재방문을 모아 볼 수 있으며, 30분 이상
+                활동이 없거나 외부에서 새로 들어오면 별도 방문으로 기록합니다. 위치는 IP 기준 추정이며 VPN·통신망에 따라
+                다를 수 있습니다. 미전달 검색어와 AI 질문은 가져올 수 없습니다. 방문 기록은 새 기능 적용 후부터
+                수집됩니다.
             </p>
         </section>
     );

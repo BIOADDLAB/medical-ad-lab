@@ -262,11 +262,12 @@ const row = (doc: Document): VisitRecord => {
     } as VisitRecord;
 };
 
-export async function listVisits(from: string, to: string) {
+async function queryVisits(from: string, to: string, limit: number, cursor?: Document, readTime?: string) {
     const response = await checked(
         await call(':runQuery', {
             method: 'POST',
             body: JSON.stringify({
+                ...(readTime ? { readTime } : {}),
                 structuredQuery: {
                     from: [{ collectionId: 'trafficVisits' }],
                     where: {
@@ -290,16 +291,51 @@ export async function listVisits(from: string, to: string) {
                             ],
                         },
                     },
-                    orderBy: [{ field: { fieldPath: 'startedAt' }, direction: 'DESCENDING' }],
-                    limit: 1001,
+                    orderBy: [
+                        { field: { fieldPath: 'startedAt' }, direction: 'DESCENDING' },
+                        { field: { fieldPath: '__name__' }, direction: 'DESCENDING' },
+                    ],
+                    ...(cursor
+                        ? {
+                              startAt: {
+                                  before: false,
+                                  values: [
+                                      { timestampValue: read(cursor, 'startedAt') },
+                                      { referenceValue: cursor.name },
+                                  ],
+                              },
+                          }
+                        : {}),
+                    limit,
                 },
             }),
         }),
     );
-    const records = ((await response.json()) as { document?: Document }[]).flatMap((item) =>
-        item.document ? [row(item.document)] : [],
-    );
-    return { visits: records.slice(0, 1000), truncated: records.length > 1000 };
+    const data = (await response.json()) as { document?: Document; readTime?: string }[];
+    return {
+        documents: data.flatMap((item) => (item.document ? [item.document] : [])),
+        readTime: data.find((item) => item.readTime)?.readTime,
+    };
+}
+
+export async function listVisits(from: string, to: string) {
+    const { documents } = await queryVisits(from, to, 1001);
+    return { visits: documents.slice(0, 1000).map(row), truncated: documents.length > 1000 };
+}
+
+/** 목록의 표시 제한과 별개로 같은 스냅샷을 끝까지 읽어 합계를 계산한다. */
+export async function* visitBatches(from: string, to: string) {
+    let cursor: Document | undefined;
+    let readTime: string | undefined;
+    const deadline = Date.now() + 45000;
+    while (true) {
+        if (Date.now() > deadline) throw new VisitStoreError(504);
+        const batch = await queryVisits(from, to, 1000, cursor, readTime);
+        readTime ||= batch.readTime;
+        yield batch.documents.map(row);
+        if (batch.documents.length < 1000) return;
+        cursor = batch.documents.at(-1);
+    }
 }
 
 export async function listVisitPages(id: string) {

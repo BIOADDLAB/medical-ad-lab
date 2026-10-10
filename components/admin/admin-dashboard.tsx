@@ -13,6 +13,8 @@ import { InquiryTracking } from '@/components/admin/inquiry-tracking';
 import { VisitorTracking } from '@/components/admin/visitor-tracking';
 import { TrafficLinkBuilder } from '@/components/admin/traffic-link-builder';
 import { TrafficOverview } from '@/components/admin/traffic-overview';
+import { SearchTerms } from '@/components/admin/search-terms';
+import { InternalTrafficToggle } from '@/components/admin/internal-traffic-toggle';
 import { TaskList } from '@/components/admin/task-list';
 
 type View = 'dashboard' | 'tracking' | 'inquiries' | 'references' | 'spots' | 'settings';
@@ -118,7 +120,7 @@ function LoginScreen() {
 
 export function AdminDashboard() {
     const [view, setView] = useState<View>('dashboard');
-    const [trackingTab, setTrackingTab] = useState<'visits' | 'inquiries'>('visits');
+    const [trackingTab, setTrackingTab] = useState<'visits' | 'ai' | 'search' | 'inquiries'>('visits');
     const [menuOpen, setMenuOpen] = useState(false);
     const [user, setUser] = useState<User | null>(null);
     const [checking, setChecking] = useState(firebaseReady);
@@ -402,10 +404,13 @@ export function AdminDashboard() {
                                     방문 시각, 출처, 대략적인 위치와 조회 경로를 확인하고 문의로 이어진 방문을 찾으세요.
                                 </p>
                             </div>
-                            <nav className="mb-5 flex gap-2" aria-label="유입 기록 유형">
+                            <InternalTrafficToggle />
+                            <nav className="mb-5 flex flex-wrap gap-2" aria-label="유입 기록 유형">
                                 {(
                                     [
                                         ['visits', '전체 방문'],
+                                        ['ai', 'AI 유입'],
+                                        ['search', '검색어'],
                                         ['inquiries', '문의 기록'],
                                     ] as const
                                 ).map(([id, label]) => (
@@ -427,6 +432,10 @@ export function AdminDashboard() {
                                     {user ? (
                                         trackingTab === 'visits' ? (
                                             <VisitorTracking user={user} />
+                                        ) : trackingTab === 'ai' ? (
+                                            <TrafficOverview user={user} aiOnly />
+                                        ) : trackingTab === 'search' ? (
+                                            <SearchTerms user={user} />
                                         ) : (
                                             <InquiryTracking user={user} />
                                         )

@@ -14,6 +14,14 @@ const persist = () => {
     } catch {}
 };
 
+export function clearPendingVisits() {
+    queue = [];
+    current = null;
+    blockedUntil = 0;
+    clearTimeout(retry);
+    persist();
+}
+
 function pending() {
     if (queue) return queue;
     try {

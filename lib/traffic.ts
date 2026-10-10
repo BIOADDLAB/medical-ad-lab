@@ -125,7 +125,7 @@ const MEDIUM_LABELS: Record<string, string> = {
     cpc: '광고',
     display: '디스플레이 광고',
     paid_social: '소셜 광고',
-    ai: 'AI 검색',
+    ai: 'AI 추천',
     sms: '문자',
     qr: 'QR',
     social: '',
@@ -286,11 +286,16 @@ export function visitAttribution(visit: {
     medium: string;
     referrer: string;
     landingUrl: string;
+    evidence?: string;
 }) {
     const landing = parseUrl(visit.landingUrl);
     const ref = parseReferrer(visit.referrer, landing?.hostname || '');
-    if (ref && AI_SOURCES.has(ref.source)) return { source: ref.source, medium: 'ai' };
-    return { source: visit.source, medium: AI_SOURCES.has(visit.source) ? 'ai' : visit.medium };
+    if (ref && AI_SOURCES.has(ref.source)) return { source: ref.source, medium: 'ai', evidence: 'referrer' };
+    return {
+        source: visit.source,
+        medium: AI_SOURCES.has(visit.source) ? 'ai' : visit.medium,
+        evidence: visit.evidence || 'none',
+    };
 }
 
 export const trafficLabel = (source: string, medium = '') => {
@@ -403,8 +408,7 @@ export function classifyVisit({ href, referrer, userAgent, title, now }: Visit):
     const source = aiReferrer?.source || utmSource || base.source;
     const medium = AI_SOURCES.has(source)
         ? 'ai'
-        : utmMedium ||
-          (source === base.source ? base.medium : source.endsWith('_blog') ? 'blog' : 'referral');
+        : utmMedium || (source === base.source ? base.medium : source.endsWith('_blog') ? 'blog' : 'referral');
     const compatible = source === base.source;
     const refUrl = internal ? '' : text(params.get('ref_url'), 1000);
     return {
