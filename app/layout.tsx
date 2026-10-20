@@ -4,6 +4,7 @@ import './globals.css';
 import { SiteShell } from '@/components/layout/site-shell';
 import { Analytics } from '@/components/layout/analytics';
 import { TrafficCapture } from '@/components/layout/traffic-capture';
+import { BlogTracker } from '@/bioadd-blog/tracker';
 import { SITE_URL, SITE_VERIFICATION } from '@/lib/site';
 
 export const metadata: Metadata = {
@@ -103,6 +104,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
                 <SiteShell>{children}</SiteShell>
                 <Analytics />
                 <TrafficCapture />
+                {/* 블로그를 본 방문자가 다른 페이지로 옮겨 누른 문의(무료진단) 클릭까지 CMS에 셉니다 */}
+                <BlogTracker />
                 <script
                     type="application/ld+json"
                     dangerouslySetInnerHTML={{ __html: JSON.stringify(organization).replace(/</g, '\\u003c') }}

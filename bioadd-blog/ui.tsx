@@ -1,263 +1,137 @@
-import Image from "next/image";
 import Link from "next/link";
-
-import { HOSPITAL } from "@/bioadd-blog/hospital.config";
-import { extractToc, renderArticleHtml } from "@/bioadd-blog/article-html";
-import {
-  articleAuthorName,
-  formatDate,
-  hospitalSeoTitle,
-  resolveFaqs,
-  type Article,
-} from "@/bioadd-blog/kit";
+import Image from "next/image";
+import { ArticleBody, allowedImage, prepareHtml } from "./body";
+import { HOSPITAL } from "./hospital.config";
+import { BLOG, CTA, MENU, PER_PAGE, articlePath, categoryKey, crumbs, ctaLinks, dateLabel, doctorShown, faqs, kst, listLead, listPath, reviewLabel, toc, type Article, type Crumb } from "./kit";
 
 export function JsonLd({ data }: { data: unknown }) {
   return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />;
 }
-
-export function Breadcrumb({ trail }: { trail: { name: string; href?: string }[] }) {
+function DateLabel({ a }: { a: Article }) {
+  return a.publishedAt ? <time dateTime={kst(a.publishedAt)}>{dateLabel(a.publishedAt)}</time> : null;
+}
+/** 등록한 이미지 호스트면 Next/Image, 아니면 일반 img로 보여 줍니다. first는 가장 먼저(LCP), eager는 첫 화면이라 바로 불러옵니다. */
+function Picture({ src, alt, first, eager, sizes, className }: { src: string; alt: string; first?: boolean; eager?: boolean; sizes: string; className?: string }) {
+  const load = { loading: first || eager ? "eager" : "lazy", fetchPriority: first ? "high" : undefined, decoding: "async" } as const;
+  if (allowedImage(src)) return <Image className={className} src={src} alt={alt} width={1200} height={675} sizes={sizes} {...load} />;
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img className={className} src={src} alt={alt} width={1200} height={675} {...load} />;
+}
+function Breadcrumb({ items }: { items: Crumb[] }) {
   return (
-    <nav aria-label="브레드크럼" className="text-[13px] text-slate-500">
-      <ol className="flex flex-wrap items-center gap-1.5">
-        {trail.map((item, index) => (
-          <li key={item.name} className="flex items-center gap-1.5">
-            {index > 0 ? <span aria-hidden="true" className="text-slate-300">/</span> : null}
-            {item.href ? (
-              <Link href={item.href} className="hover:text-slate-900">{item.name}</Link>
-            ) : (
-              <span className="text-slate-700" aria-current="page">{item.name}</span>
-            )}
-          </li>
-        ))}
+    <nav aria-label="브레드크럼">
+      <ol className="blog-breadcrumb">
+        {items.map((c, i) => <li key={c.path}>{i < items.length - 1 ? <Link href={c.path}>{c.name}</Link> : <span aria-current="page">{c.name}</span>}</li>)}
       </ol>
     </nav>
   );
 }
-
-function prettyDate(iso: string) {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return iso.slice(0, 10);
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${date.getFullYear()}.${month}.${day}`;
-}
-
-function Thumbnail({ article, priority, sizes }: { article: Article; priority: boolean; sizes: string }) {
-  if (!article.coverImage) {
-    return (
-      <div
-        className="flex h-full w-full flex-col justify-between p-6"
-        style={{ background: `color-mix(in srgb, ${HOSPITAL.color} 12%, #f3eee7)` }}
-      >
-        <span className="text-[11px] font-medium uppercase tracking-[0.18em]" style={{ color: HOSPITAL.color }}>
-          {article.category || "칼럼"}
-        </span>
-        <p className="line-clamp-3 text-xl font-semibold leading-[1.28] tracking-tight text-slate-800">{article.title}</p>
-      </div>
-    );
-  }
+function Cta({ article }: { article?: Article }) {
+  const links = ctaLinks(article);
+  if (!links.length) return null;
   return (
-    <Image
-      src={article.coverImage}
-      alt={article.coverImageAlt || article.title}
-      fill
-      sizes={sizes}
-      priority={priority}
-      fetchPriority={priority ? "high" : undefined}
-      className="object-cover transition-transform duration-700 group-hover:scale-[1.04]"
-    />
+    <section className="blog-cta">
+      <h2>{CTA.title}</h2>
+      {CTA.text && <p className="blog-cta-text">{CTA.text}</p>}
+      <div className="blog-cta-links">{links.map((l) => <Link key={l.href} href={l.href} data-track-cta="consultation">{l.label}</Link>)}</div>
+    </section>
   );
 }
-
-function categoryHref(category: string) {
-  return category === "all" ? "/blog" : `/blog?category=${encodeURIComponent(category)}`;
+function Category({ name }: { name: string }) {
+  return categoryKey(name) ? <Link className="blog-category" href={listPath(name)}>{name}</Link> : <span className="blog-category">{name}</span>;
 }
 
-export function BlogList({
-  articles,
-  categories,
-  current,
-}: {
-  articles: Article[];
-  categories: string[];
-  current: string;
-}) {
-  const heading = hospitalSeoTitle();
-  const lead = HOSPITAL.description;
-
+export function BlogList({ articles, categories, category, page, total }: { articles: Article[]; categories: string[]; category: string; page: number; total: number }) {
+  const pages = Math.ceil(total / PER_PAGE);
   return (
-    <div className="bg-[#faf9f7]">
-      <div className="mx-auto max-w-[1080px] px-5 pb-24 pt-12 sm:px-8 sm:pt-16">
-        <Breadcrumb trail={[{ name: "홈", href: "/" }, { name: heading }]} />
-        <header className="mt-6 mb-10 sm:mb-14">
-          <h1 className="text-[1.75rem] font-semibold tracking-[-0.03em] text-slate-900 sm:text-[2rem]">{heading}</h1>
-          {lead ? <p className="mt-4 max-w-2xl text-[15px] leading-[1.85] text-slate-500">{lead}</p> : null}
-          {categories.length > 1 ? (
-            <nav aria-label="카테고리" className="mt-8 flex flex-wrap gap-1.5">
-              {categories.map((item) => (
-                <Link
-                  key={item}
-                  href={categoryHref(item)}
-                  aria-current={current === item ? "page" : undefined}
-                  className={`rounded-full px-3.5 py-1.5 text-[13px] ${
-                    current === item ? "bg-slate-900 text-white" : "bg-white text-slate-500 ring-1 ring-slate-200/80"
-                  }`}
-                >
-                  {item === "all" ? "전체" : item}
-                </Link>
-              ))}
-            </nav>
-          ) : null}
-          <p className="mt-6 text-[13px] text-slate-400">전체 {articles.length}개의 글</p>
-        </header>
-
-        {articles.length === 0 ? (
-          <p className="py-28 text-center text-sm text-slate-400">아직 발행된 글이 없습니다. 새 글이 올라오면 여기에서 확인할 수 있습니다.</p>
-        ) : (
-          <ul className="grid gap-x-10 gap-y-14 sm:grid-cols-2">
-            {articles.map((article, index) => (
-              <li key={article.id} className="group flex flex-col">
-                <Link
-                  href={`/blog/${article.slug}`}
-                  tabIndex={-1}
-                  aria-hidden="true"
-                  className="relative aspect-[16/10] overflow-hidden rounded-[1.2rem] bg-[#efeae3]"
-                >
-                  <Thumbnail article={article} priority={index === 0} sizes="(max-width: 640px) 100vw, 500px" />
-                </Link>
-                <h2 className="mt-6 text-[1.15rem] font-semibold leading-snug tracking-[-0.03em] text-slate-900 sm:text-[1.25rem]">
-                  <Link href={`/blog/${article.slug}`} className="group-hover:text-slate-600">{article.title}</Link>
-                </h2>
-                {article.excerpt ? (
-                  <p className="mt-2.5 line-clamp-2 text-[14px] leading-7 text-slate-500">{article.excerpt}</p>
-                ) : null}
-                <p className="mt-4 flex flex-wrap items-center gap-x-2 text-[12px] tracking-wide text-slate-400">
-                  {article.category ? (
-                    <>
-                      <span>{article.category}</span>
-                      <span aria-hidden="true" className="text-slate-300">·</span>
-                    </>
-                  ) : null}
-                  <time dateTime={article.createdAt.slice(0, 10)}>{prettyDate(article.createdAt)}</time>
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <aside className="mt-20 rounded-2xl bg-white p-8 text-center ring-1 ring-slate-200/80">
-          <p className="text-lg font-semibold text-slate-900">우리 병원에 맞는 광고 자리부터 확인하세요</p>
-          <p className="mt-2 text-sm text-slate-500">위치와 진료과를 알려주시면 집행 가능한 매체와 예상 비용을 정리해 드립니다.</p>
-          <Link href="/#diagnosis" data-track-cta="contact" className="mt-5 inline-flex rounded-lg bg-slate-900 px-5 py-3 text-sm font-semibold text-white">
-            무료진단 신청하기
-          </Link>
-        </aside>
+    <div className="blog-list">
+      <Breadcrumb items={crumbs(category)} />
+      <header className="blog-heading">
+        <h1>{category || MENU}</h1>
+        <p>{listLead(category, total)}</p>
+      </header>
+      {categories.length > 0 && (
+        <nav className="blog-filters" aria-label="카테고리">
+          {["", ...categories].map((c) => <Link key={c || "all"} href={listPath(c)} aria-current={category === c ? "page" : undefined}>{c || "전체"}</Link>)}
+        </nav>
+      )}
+      <p className="blog-count">전체 {total}개의 글</p>
+      <div className="blog-grid">
+        {articles.map((a, i) => (
+          <article key={a.id}>
+            <Picture src={a.coverImage} alt={a.coverImageAlt} first={i === 0} eager={i < 3} sizes="(max-width: 640px) calc(100vw - 40px), (max-width: 960px) 50vw, 33vw" />
+            <h2><Link href={articlePath(a.slug)}>{a.title}</Link></h2>
+            <p className="blog-excerpt">{a.excerpt}</p>
+            <div className="blog-meta"><Category name={a.category} /><DateLabel a={a} /></div>
+          </article>
+        ))}
       </div>
+      {!articles.length && <p className="blog-empty">아직 발행된 글이 없습니다.</p>}
+      {pages > 1 && (
+        <nav className="blog-pagination" aria-label="페이지">
+          {Array.from({ length: pages }, (_, i) => i + 1).filter((n) => n === 1 || n === pages || Math.abs(n - page) <= 2).map((n) => <Link key={n} href={listPath(category, n)} aria-current={n === page ? "page" : undefined}>{n}</Link>)}
+        </nav>
+      )}
+      <Cta />
     </div>
   );
 }
 
-export function BlogArticle({ article, related }: { article: Article; related: Article[] }) {
-  const html = renderArticleHtml(article.content);
-  const toc = extractToc(html);
-  const faqs = resolveFaqs(article);
-  const author = articleAuthorName();
-
+export async function BlogArticle({ article: a, related, previous, next }: { article: Article; related: Article[]; previous?: Article; next?: Article }) {
+  const html = prepareHtml(a.content), items = toc(html), faq = faqs(a);
   return (
-    <article>
-      <header className="border-b border-slate-100 bg-slate-50">
-        <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
-          <Breadcrumb
-            trail={[
-              { name: "홈", href: "/" },
-              { name: hospitalSeoTitle(), href: "/blog" },
-              { name: article.title },
-            ]}
-          />
-          <div className="mt-6 flex flex-wrap items-center gap-2 text-sm text-slate-500">
-            {article.category ? <span className="rounded-md bg-slate-100 px-2 py-0.5 text-slate-700">{article.category}</span> : null}
-            <time dateTime={article.createdAt.slice(0, 10)}>{formatDate(article.createdAt)}</time>
-            <span>{author}</span>
-          </div>
-          <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">{article.title}</h1>
-          {article.excerpt ? <p className="mt-4 text-base leading-8 text-slate-600">{article.excerpt}</p> : null}
-        </div>
+    <article className="blog-article">
+      <Breadcrumb items={crumbs(a.category, a)} />
+      <header className="blog-heading">
+        <div className="blog-meta"><Category name={a.category} /><DateLabel a={a} />{doctorShown && !a.reviewedAt && <span>{HOSPITAL.doctorName}{HOSPITAL.doctorTitle ? ` ${HOSPITAL.doctorTitle}` : ""}</span>}{a.reviewedAt && <span className="blog-reviewed">{reviewLabel(a)} <time dateTime={kst(a.reviewedAt)}>{dateLabel(a.reviewedAt)}</time></span>}</div>
+        <h1>{a.title}</h1>
+        <p className="blog-lead">{a.excerpt}</p>
+        <small className="blog-updated">최종 수정 <time dateTime={kst(a.updatedAt)}>{dateLabel(a.updatedAt)}</time></small>
       </header>
-
-      {article.coverImage ? (
-        <figure className="mx-auto mt-8 max-w-3xl px-4 sm:px-6">
-          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-2xl bg-slate-100">
-            <Image
-              src={article.coverImage}
-              alt={article.coverImageAlt || article.title}
-              fill
-              sizes="(max-width: 768px) 100vw, 768px"
-              priority
-              fetchPriority="high"
-              className="object-cover"
-            />
+      <figure className="blog-cover-figure">
+        <Picture className="blog-cover" src={a.coverImage} alt={a.coverImageAlt} first sizes="(max-width: 840px) calc(100vw - 40px), 792px" />
+        {a.coverImageCaption && <figcaption>{a.coverImageCaption}</figcaption>}
+      </figure>
+      {items.length > 1 && (
+        <nav className="blog-toc" aria-label="목차">
+          <strong>이 글의 내용</strong>
+          <ol>{items.map((item) => <li key={item.id} className={item.level === "h3" ? "sub" : ""}><a href={`#${item.id}`}>{item.title}</a></li>)}</ol>
+        </nav>
+      )}
+      <ArticleBody html={html} />
+      {faq.length > 0 && (
+        <section className="blog-section">
+          <h2>자주 묻는 질문</h2>
+          {faq.map((f) => <div key={f.question}><h3>Q. {f.question}</h3><p className="blog-faq-answer">A. {f.answer}</p></div>)}
+        </section>
+      )}
+      {a.tags?.length > 0 && <p className="blog-tags">{a.tags.map((tag) => <span key={tag}>#{tag} </span>)}</p>}
+      {doctorShown && (
+        <section className="blog-doctor">
+          <h2>의료진 소개</h2>
+          <p className="blog-doctor-name"><strong>{HOSPITAL.doctorName}</strong>{HOSPITAL.doctorTitle && <span>{HOSPITAL.doctorTitle}</span>}</p>
+          {HOSPITAL.doctorBio && <p className="blog-doctor-bio">{HOSPITAL.doctorBio}</p>}
+        </section>
+      )}
+      <Cta article={a} />
+      {related.length > 0 && (
+        <section className="blog-section">
+          <h2>함께 보면 좋은 정보</h2>
+          <div className="blog-grid">
+            {related.map((r) => (
+              <article key={r.id}>
+                <Picture src={r.coverImage} alt={r.coverImageAlt} sizes="(max-width: 640px) 100vw, 33vw" />
+                <h3><Link href={articlePath(r.slug)}>{r.title}</Link></h3>
+              </article>
+            ))}
           </div>
-          {article.coverImageCaption ? (
-            <figcaption className="mt-3 text-center text-[13px] leading-6 text-slate-500">{article.coverImageCaption}</figcaption>
-          ) : null}
-        </figure>
-      ) : null}
-
-      <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        {toc.length > 1 ? (
-          <nav aria-label="목차" className="article-toc">
-            <p className="text-sm font-semibold text-slate-900">목차</p>
-            <ol className="mt-3 space-y-2">
-              {toc.map((item) => (
-                <li key={item.id}>
-                  <a href={`#${item.id}`} className="text-sm text-slate-600 hover:text-slate-900">{item.text}</a>
-                </li>
-              ))}
-            </ol>
-          </nav>
-        ) : null}
-
-        <div className="prose-cms" dangerouslySetInnerHTML={{ __html: html }} />
-
-        {faqs.length > 0 ? (
-          <section className="faq-section mt-12 border-t border-slate-200 pt-8">
-            <h2 className="text-xl font-semibold text-slate-900">자주 묻는 질문</h2>
-            <div className="mt-4 space-y-4">
-              {faqs.map((item) => (
-                <div key={item.question} className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <h3 className="text-base font-semibold text-slate-900">{item.question}</h3>
-                  <p className="mt-2 whitespace-pre-line text-sm leading-6 text-slate-600">{item.answer}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        <aside className="mt-12 rounded-2xl bg-slate-900 p-8 text-center text-white">
-          <h2 className="text-lg font-semibold">광고 자리부터 비용까지 한 번에 정리해 드립니다</h2>
-          <p className="mt-2 text-sm text-white/70">병원 위치와 진료과에 맞는 매체와 예상 비용을 무료로 진단해 드립니다.</p>
-          <Link href="/#diagnosis" data-track-cta="contact" className="mt-5 inline-flex rounded-lg bg-white px-5 py-3 text-sm font-semibold text-slate-900">
-            무료진단 신청하기
-          </Link>
-        </aside>
-
-        {related.length > 0 ? (
-          <nav aria-label="관련 글" className="mt-12 border-t border-slate-200 pt-8">
-            <h2 className="text-lg font-semibold text-slate-900">함께 보면 좋은 정보</h2>
-            <ul className="mt-4 space-y-3">
-              {related.map((item) => (
-                <li key={item.id}>
-                  <Link href={`/blog/${item.slug}`} className="text-slate-700 hover:underline">{item.title}</Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        ) : null}
-
-        <p className="mt-10">
-          <Link href="/blog" className="text-sm font-medium text-slate-500 hover:text-slate-900">← 목록으로 돌아가기</Link>
-        </p>
-      </div>
+        </section>
+      )}
+      <nav className="blog-adjacent" aria-label="이전글과 다음글">
+        {previous && <Link href={articlePath(previous.slug)}>이전글 · {previous.title}</Link>}
+        {next && <Link href={articlePath(next.slug)}>다음글 · {next.title}</Link>}
+      </nav>
+      <Link className="blog-back" href={BLOG}>목록으로 돌아가기</Link>
     </article>
   );
 }

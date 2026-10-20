@@ -93,6 +93,7 @@ export function SiteHeader({ solid, onDiagnosis, onMenuToggle, menuOpen }: Props
                 <div className="ml-auto flex items-center gap-2 xl:ml-0 xl:gap-0">
                     <button
                         type="button"
+                        data-track-cta="consultation"
                         onClick={(event) => onDiagnosis(event.currentTarget)}
                         className={`h-9 rounded-lg px-3.5 text-[14px] font-extrabold transition-colors xl:h-12 xl:px-5 xl:text-[14px] 2xl:px-8 2xl:text-body ${
                             isSolid ? 'bg-brand text-white' : 'bg-white text-brand'

@@ -1,3 +1,4 @@
+import { BLOG, MENU, absolute, articlePath, description, getArticles } from '@/bioadd-blog/kit';
 import { faqs, mediaItems, processItems } from '@/data';
 import { getReferences, getSpots } from '@/lib/references';
 import { SITE_URL } from '@/lib/site';
@@ -10,7 +11,8 @@ export const revalidate = 3600;
  */
 export async function GET() {
     const baseUrl = SITE_URL;
-    const [references, spots] = await Promise.all([getReferences(), getSpots()]);
+    // 블로그 글은 CMS가 잠시 응답하지 않아도 나머지 내용은 내보낸다
+    const [references, spots, articles] = await Promise.all([getReferences(), getSpots(), getArticles().catch(() => [])]);
 
     const text = [
         '# 병원광고연구소 (MEDICAL AD LAB)',
@@ -31,7 +33,12 @@ export async function GET() {
         '## 집행 가능한 광고매체',
         ...spots.map((item) => `- [${item.title} (${item.area} ${item.type})](${baseUrl}/media/${item.slug})`),
         '',
-        '## 칼럼',
+        `## ${MENU}`,
+        '',
+        `- [${MENU} 전체](${absolute(BLOG)})`,
+        ...articles
+            .slice(0, 50)
+            .map((a) => `- [${a.title.replace(/[[\]]/g, '')}](${absolute(articlePath(a.slug))}): ${description(a)}`),
         '',
         '## 문의',
         `- 회사소개: ${baseUrl}/company`,

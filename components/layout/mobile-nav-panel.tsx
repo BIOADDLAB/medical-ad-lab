@@ -25,6 +25,7 @@ function DiagnosisButton({
     return (
         <button
             type="button"
+            data-track-cta="consultation"
             onClick={(event) => onDiagnosis(event.currentTarget)}
             className={`min-h-[54px] w-full rounded-xl px-6 text-sm font-extrabold transition-colors md:mx-auto md:max-w-[440px] ${
                 dark ? 'bg-white text-brand' : 'bg-brand text-white'

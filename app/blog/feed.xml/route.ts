@@ -1,34 +1,12 @@
-import { HOSPITAL } from '@/bioadd-blog/hospital.config';
-import { absoluteUrl, blogPostUrl, getPublishedArticles } from '@/bioadd-blog/kit';
-
+import { BLOG, MENU, absolute, articlePath, description, getArticles } from "@/bioadd-blog/kit";
+import { HOSPITAL } from "@/bioadd-blog/hospital.config";
+export const revalidate = 60;
+const esc = (text: string) => text.replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" })[c]!);
 export async function GET() {
-    const articles = await getPublishedArticles();
-    const items = articles
-        .map(
-            (article) => `<item>
-  <title><![CDATA[${article.title}]]></title>
-  <link>${blogPostUrl(article.slug)}</link>
-  <guid>${blogPostUrl(article.slug)}</guid>
-  <pubDate>${new Date(article.createdAt).toUTCString()}</pubDate>
-  <description><![CDATA[${article.excerpt}]]></description>
-</item>`,
-        )
-        .join('\n');
-
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
-  <channel>
-    <title>${HOSPITAL.name} 블로그</title>
-    <link>${absoluteUrl('/blog')}</link>
-    <description>발행된 블로그 글 피드</description>
-    <language>ko</language>
-    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
-    <atom:link href="${absoluteUrl('/blog/feed.xml')}" rel="self" type="application/rss+xml" />
-    ${items}
-  </channel>
-</rss>`;
-
-    return new Response(xml, {
-        headers: { 'Content-Type': 'application/rss+xml; charset=utf-8' },
-    });
+  const items = (await getArticles()).slice(0, 30).map((a) => {
+    const url = esc(absolute(articlePath(a.slug)));
+    return `<item><title>${esc(a.title)}</title><link>${url}</link><guid isPermaLink="true">${url}</guid><pubDate>${new Date(a.publishedAt!).toUTCString()}</pubDate><description>${esc(description(a))}</description>${a.category ? `<category>${esc(a.category)}</category>` : ""}</item>`;
+  });
+  const xml = `<?xml version="1.0" encoding="UTF-8"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>${esc(`${MENU} | ${HOSPITAL.name}`)}</title><link>${esc(absolute(BLOG))}</link><description>${esc(HOSPITAL.description || `${HOSPITAL.name}의 ${MENU}`)}</description><language>ko</language><atom:link href="${esc(absolute(`${BLOG}/feed.xml`))}" rel="self" type="application/rss+xml"/>${items.join("")}</channel></rss>`;
+  return new Response(xml, { headers: { "Content-Type": "application/rss+xml; charset=utf-8" } });
 }

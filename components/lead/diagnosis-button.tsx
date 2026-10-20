@@ -6,6 +6,8 @@ export function DiagnosisButton({ children, className = '' }: { children: React.
         <button
             type="button"
             className={className}
+            // 블로그를 본 방문의 문의 클릭으로 CMS에 셉니다
+            data-track-cta="consultation"
             onClick={(event) =>
                 window.dispatchEvent(new CustomEvent('diagnosis-open', { detail: event.currentTarget }))
             }
