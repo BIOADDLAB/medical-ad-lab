@@ -16,15 +16,10 @@ export function HomeMotion() {
             const context = gsap.context(() => {
                 const heroTimeline = gsap.timeline({ defaults: { ease: 'power4.out' } });
 
+                // 제목(h1)은 서버가 그린 그대로 둔다. 화면이 뜬 뒤 다시 숨겼다 올리면 가장 중요한 글자가 늦게 보이고 깜빡인다.
                 heroTimeline
                     .fromTo('.hero-eyebrow', { x: -18, opacity: 0 }, { x: 0, opacity: 1, duration: 0.65 })
-                    .fromTo(
-                        '.hero-title-line',
-                        { yPercent: 108 },
-                        { yPercent: 0, duration: 0.9, stagger: 0.1 },
-                        '-=0.38',
-                    )
-                    .fromTo('.hero-support', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 }, '-=0.52')
+                    .fromTo('.hero-support', { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.7 }, '-=0.3')
                     .fromTo(
                         '.hero-badge',
                         { y: 9, opacity: 0, filter: 'blur(4px)' },

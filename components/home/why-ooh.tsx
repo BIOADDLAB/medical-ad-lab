@@ -6,12 +6,13 @@ export function WhyOoh() {
     return (
         <section className="bg-white py-section">
             <div className="site-container">
+                <h2 className="sr-only">병원 옥외광고는 매체와 위치 선택이 중요한 이유</h2>
                 <Reveal variant="heading">
-                    <h2 className="section-title mb-10 text-center lg:mb-[72px]">
+                    <p className="section-title mb-10 text-center lg:mb-[72px]">
                         같은 광고라도, 어디에 어떻게 쓰느냐에 따라
                         <br />
                         <em className="not-italic text-brand">결과는 완전히 달라집니다.</em>
-                    </h2>
+                    </p>
                 </Reveal>
                 <div className="mx-auto grid max-w-[1144px] gap-5 lg:gap-[52px]">
                     {whyOoh.map((item, index) => (

@@ -54,6 +54,7 @@ export function DiagnosisModal({ open, dirty, onClose, onDirty }: Props) {
                 open ? 'visible opacity-100' : 'invisible opacity-0'
             }`}
         >
+            {open && (
             <section
                 ref={dialogRef}
                 role="dialog"
@@ -93,6 +94,7 @@ export function DiagnosisModal({ open, dirty, onClose, onDirty }: Props) {
                     <LeadForm compact onDirty={onDirty} />
                 </div>
             </section>
+            )}
         </div>
     );
 }

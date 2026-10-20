@@ -7,6 +7,47 @@ import { cache, type CSSProperties } from "react";
 import { HOSPITAL } from "./hospital.config";
 import { origin } from "./kit";
 
+// 규칙적인 줄바꿈: 한 문단에 문장이 여러 개면 문장마다 줄을 바꿉니다(예전 글도 새 글처럼 한 줄에 한 문장).
+// 글자 부분만 바꾸고 태그 속성(사진 설명 등)은 건드리지 않습니다. 표 안 문단과 요약 줄(data-role)은 그대로 둡니다.
+const SENTENCE_END = String.raw`(?:[다요까죠][.!?]|[가-힣][!?])(?:["”’')\]]|&quot;|&#39;)*`;
+const SENTENCE_GAP = String.raw`(?:[ \t]|&nbsp;)+`;
+const SENTENCE_NEXT = String.raw`(?=[가-힣A-Za-z0-9"“‘(\[]|&quot;)`;
+const SENTENCE_IN_TEXT = new RegExp(`(${SENTENCE_END})${SENTENCE_GAP}${SENTENCE_NEXT}`, "g");
+const SENTENCE_AT_END = new RegExp(`${SENTENCE_END}$`);
+const SENTENCE_AT_START = new RegExp(`^${SENTENCE_GAP}${SENTENCE_NEXT}`);
+const SENTENCE_BEFORE_TAG = new RegExp(`(${SENTENCE_END})${SENTENCE_GAP}$`);
+export function breakSentences(html: string) {
+  return html
+    .split(/(<table\b[\s\S]*?<\/table>)/i)
+    .map((block) =>
+      block.startsWith("<table")
+        ? block
+        : block.replace(/<p>([\s\S]*?)<\/p>/g, (_, inner: string) => {
+            const parts = inner.split(/(<[^>]+>)/);
+            let pending = false;
+            for (let i = 0; i < parts.length; i++) {
+              const part = parts[i];
+              if (!part) continue;
+              if (part.startsWith("<")) {
+                // 문장 끝 바로 뒤의 닫는 글자 태그(굵게·표시 등)는 건너뛰고 다음 글자에서 줄을 바꿉니다.
+                if (!/^<\/(?:strong|em|u|s|mark|span|a)>$/i.test(part)) pending = false;
+                continue;
+              }
+              let text = pending ? part.replace(SENTENCE_AT_START, "<br>") : part;
+              text = text.replace(SENTENCE_IN_TEXT, "$1<br>");
+              // 문장 끝 + 띄어쓰기 바로 뒤에 여는 글자 태그(굵게·링크 등)가 오면 그 태그 앞에서 줄을 바꿉니다.
+              const open = parts[i + 1],
+                after = parts[i + 2];
+              if (open && after && /^<(?:strong|em|u|s|mark|span|a)\b[^>]*>$/i.test(open) && /^(?:[가-힣A-Za-z0-9"“‘(\[]|&quot;)/.test(after)) text = text.replace(SENTENCE_BEFORE_TAG, "$1<br>");
+              pending = SENTENCE_AT_END.test(text);
+              parts[i] = text;
+            }
+            return `<p>${parts.join("")}</p>`;
+          }),
+    )
+    .join("");
+}
+
 export function prepareHtml(content: string) {
   let section = 0, hasSection = false;
   const site = origin();
@@ -36,6 +77,7 @@ export function prepareHtml(content: string) {
   });
   // 내용 없는 문단은 지웁니다. 엔터로 넣은 빈 줄(<p><br></p>)은 글쓴이가 띄운 간격이라 둡니다.
   html = html.replace(/<p>(?:\s|&nbsp;)*<\/p>/g, "");
+  html = breakSentences(html);
   html = html.replace(/<table\b[^>]*>[\s\S]*?<\/table>/gi, (table) => {
     if (!/<thead\b/i.test(table))
       table = table

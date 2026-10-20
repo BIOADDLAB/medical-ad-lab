@@ -21,7 +21,18 @@ type Row = {
     plan: string;
     body: string;
     order: number;
+    /** 예전 주소들. 주소를 바꾸면 여기에 남기고, 사이트(proxy.ts)가 예전 주소를 새 주소로 301 이동한다 */
+    previousSlugs: string[];
 };
+
+/** 주소 규칙: 영문 소문자·숫자·하이픈, 3~60자. 화면 입력칸만이 아니라 저장할 때도 확인한다 */
+const SLUG_RULE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const slugProblem = (slug: string) =>
+    !SLUG_RULE.test(slug)
+        ? '영문 주소는 영문 소문자·숫자·하이픈만 쓸 수 있습니다. 예) songpa-subway'
+        : slug.length < 3 || slug.length > 60
+          ? '영문 주소는 3~60자로 적어 주세요.'
+          : '';
 
 const BODY_GUIDE =
     '상세 페이지 아래에 그대로 나옵니다. 빈 줄로 문단을 나누고, 소제목은 줄 맨 앞에 ## 를 붙이세요. 800~1500자 정도가 적당합니다. 문단마다 숫자를 하나씩 넣으면 검색에 훨씬 잘 잡힙니다.';
@@ -86,6 +97,7 @@ const readRows = (snapshot: Awaited<ReturnType<typeof getDocs>>) =>
                 plan: String(data.plan ?? ''),
                 body: String(data.body ?? ''),
                 order: typeof data.order === 'number' ? data.order : Number.MAX_SAFE_INTEGER,
+                previousSlugs: Array.isArray(data.previousSlugs) ? data.previousSlugs.map(String) : [],
             } satisfies Row;
         })
         .sort((a, b) => a.order - b.order);
@@ -229,6 +241,8 @@ export function ReferenceManager({ kind = 'references' }: { kind?: Kind }) {
             const snapshot = await getDocs(collection(firebase.db, kind));
             const currentRows = readRows(snapshot);
 
+            const invalid = slugProblem(slug);
+            if (invalid) throw new Error(invalid);
             if (currentRows.some((row) => row.slug === slug)) {
                 setRows(currentRows);
                 throw new Error(
@@ -289,9 +303,15 @@ export function ReferenceManager({ kind = 'references' }: { kind?: Kind }) {
         setMessage('');
 
         try {
+            const invalid = slugProblem(slug);
+            if (invalid) throw new Error(invalid);
             if (rows.some((row) => row.id !== editing.id && row.slug === slug)) {
                 throw new Error('이미 사용 중인 영문 URL입니다.');
             }
+            // 주소를 바꾸면 예전 주소를 남겨 둔다(검색에 잡힌 예전 주소가 404가 되지 않게 새 주소로 301 이동)
+            const previousSlugs = [...new Set([...editing.previousSlugs, ...(editing.slug && editing.slug !== slug ? [editing.slug] : [])])].filter(
+                (old) => old && old !== slug,
+            );
 
             const nextImage = file?.size ? await uploadImage(file, slug, kind) : editing.image;
 
@@ -305,6 +325,7 @@ export function ReferenceManager({ kind = 'references' }: { kind?: Kind }) {
                 plan: String(data.get('plan') ?? '').trim(),
                 body: String(data.get('body') ?? '').trim(),
                 image: nextImage,
+                previousSlugs,
                 updatedAt: serverTimestamp(),
             });
 

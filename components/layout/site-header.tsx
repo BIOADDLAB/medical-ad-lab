@@ -91,17 +91,21 @@ export function SiteHeader({ solid, onDiagnosis, onMenuToggle, menuOpen }: Props
                 </nav>
 
                 <div className="ml-auto flex items-center gap-2 xl:ml-0 xl:gap-0">
-                    <button
-                        type="button"
+                    {/* 링크라서 JS 없이도 홈 신청 폼(/#apply)으로 간다. JS가 있으면 진단 창을 연다 */}
+                    <Link
+                        href="/#apply"
                         data-track-cta="consultation"
-                        onClick={(event) => onDiagnosis(event.currentTarget)}
-                        className={`h-9 rounded-lg px-3.5 text-[14px] font-extrabold transition-colors xl:h-12 xl:px-5 xl:text-[14px] 2xl:px-8 2xl:text-body ${
+                        onClick={(event) => {
+                            event.preventDefault();
+                            onDiagnosis(event.currentTarget);
+                        }}
+                        className={`inline-flex h-9 items-center rounded-lg px-3.5 text-[14px] font-extrabold transition-colors xl:h-12 xl:px-5 xl:text-[14px] 2xl:px-8 2xl:text-body ${
                             isSolid ? 'bg-brand text-white' : 'bg-white text-brand'
                         }`}
                     >
                         <span className="xl:hidden">무료진단</span>
                         <span className="hidden xl:inline">무료진단 받기</span>
-                    </button>
+                    </Link>
                     <button
                         type="button"
                         aria-label={menuOpen ? '메뉴 닫기' : '메뉴 열기'}

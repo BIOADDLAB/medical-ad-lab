@@ -1,11 +1,23 @@
 import { PolicyBody } from '@/components/legal/policy-body';
 import { privacyConsentNote, privacyEffectiveDate, privacyIntro, privacySections } from '@/lib/privacy-policy';
 
+const description =
+    '병원광고연구소가 무료진단과 옥외광고 상담 과정에서 수집하는 개인정보의 항목과 이용 목적, 보유기간, 이용자의 권리와 문의 방법을 안내합니다.';
+
 export const metadata = {
     title: '개인정보 수집 및 이용 안내',
-    description:
-        '병원광고연구소가 무료진단과 광고 상담 과정에서 수집하는 개인정보의 항목, 이용 목적, 보유기간과 이용자의 권리를 안내합니다.',
+    description,
     alternates: { canonical: '/privacy' },
+    // 홈의 공유 정보를 물려받지 않게 이 페이지 값을 넣는다
+    openGraph: {
+        title: '개인정보 수집 및 이용 안내 | 병원광고연구소',
+        description,
+        url: '/privacy',
+        siteName: '병원광고연구소',
+        locale: 'ko_KR',
+        type: 'website',
+        images: [{ url: '/og-image.jpg', width: 1200, height: 630, alt: '병원광고연구소' }],
+    },
 };
 
 export default function PrivacyPage() {

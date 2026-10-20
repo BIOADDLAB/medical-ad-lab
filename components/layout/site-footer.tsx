@@ -10,7 +10,8 @@ const businessInfo = [
     '전화 02-2038-0088',
 ];
 
-export function SiteFooter() {
+/** contactEmail: 관리자 설정의 대표 이메일(layout이 서버에서 읽어 넘김). 없으면 기본 주소 */
+export function SiteFooter({ contactEmail = '' }: { contactEmail?: string }) {
     return (
         <footer className="border-t border-line bg-white py-12 sm:py-14 lg:py-[70px]">
             <div className="site-container">
@@ -63,7 +64,7 @@ export function SiteFooter() {
                                 </span>
                             ))}
                         </address>
-                        <ContactEmail fallback="medicaladlab@gmail.com" />
+                        <ContactEmail email={contactEmail || 'medicaladlab@gmail.com'} />
                     </div>
                     <small className="shrink-0 text-xs tracking-[.02em] text-muted sm:text-sm">
                         Copyright ⓒ bioadd lab. All Rights Reserved.

@@ -6,12 +6,13 @@ export function Lab() {
     return (
         <section className="bg-soft py-section">
             <div className="site-container">
+                <h2 className="sr-only">병원광고연구소가 매체를 비교하는 방식</h2>
                 <Reveal variant="heading">
-                    <h2 className="section-title mb-10 text-center lg:mb-[72px] lg:text-h1">
+                    <p className="section-title mb-10 text-center lg:mb-[72px] lg:text-h1">
                         옥외광고 회사는 많지만,
                         <br />
                         <em className="not-italic text-brand">병원의 입장에서 비교하는 곳은 드뭅니다.</em>
-                    </h2>
+                    </p>
                 </Reveal>
                 {/* 시안: 가운데를 기준으로 이미지와 글이 서로 안쪽으로 붙는다 */}
                 <div className="mx-auto grid max-w-[800px] gap-12 lg:gap-y-[56px]">

@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 
 import { CATALOG, CatalogDetail, detailTrail } from '@/components/catalog/catalog';
 import { breadcrumbJsonLd } from '@/components/layout/breadcrumb';
-import { getRelatedSpots, getSpot, getSpots, SPOT_GOAL_FALLBACK, SPOT_PLAN_FALLBACK } from '@/lib/references';
+import { getRelatedSpots, getSpot, getSpots, SPOT_GOAL_FALLBACK, SPOT_PLAN_FALLBACK, kstIso } from '@/lib/references';
 import { SITE_URL } from '@/lib/site';
 
 type PageProps = { params: Promise<{ slug: string }> };
@@ -19,7 +19,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const { slug } = await params;
     const item = await getSpot(slug);
     if (!item) return { title: '광고매체를 찾을 수 없습니다', robots: { index: false, follow: false } };
-    const description = item.summary || `${item.area} ${item.type} 집행 가능한 광고 자리입니다.`;
+    // 요약이 없거나 짧으면(70자 미만) 지역·매체로 설명을 채운다
+    const description =
+        item.summary && item.summary.length >= 70
+            ? item.summary
+            : `${item.summary ? `${item.summary} ` : ''}${item.area ? `${item.area}에서 ` : ''}지금 집행할 수 있는 ${item.type} 광고 자리입니다. 매체 규격과 집행 조건을 확인하고 병원광고연구소에 무료로 문의할 수 있습니다.`;
     return {
         title: `${item.title} · ${item.type}`,
         description,
@@ -30,6 +34,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
             description,
             url: `${META.path}/${item.slug}`,
             type: 'article',
+            // 처음 올린 시각·마지막으로 고친 시각(+09:00)
+            publishedTime: kstIso(item.createdAt),
+            modifiedTime: kstIso(item.updatedAt),
             siteName: '병원광고연구소',
             locale: 'ko_KR',
             images: [{ url: item.image, alt: `${item.title} ${item.type}`, width: 1200, height: 630 }],

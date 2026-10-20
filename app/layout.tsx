@@ -1,11 +1,21 @@
 import type { Metadata } from 'next';
-import '@sun-typeface/suit/fonts/variable/woff2/SUIT-Variable.css';
+import localFont from 'next/font/local';
 import './globals.css';
 import { SiteShell } from '@/components/layout/site-shell';
 import { Analytics } from '@/components/layout/analytics';
 import { TrafficCapture } from '@/components/layout/traffic-capture';
 import { BlogTracker } from '@/bioadd-blog/tracker';
 import { SITE_URL, SITE_VERIFICATION } from '@/lib/site';
+import { getPublicSettings } from '@/lib/site-settings';
+
+/** 글꼴(SUIT 가변). 내려받는 동안 기본 글꼴로 먼저 글자를 보여 준다(display: swap). 큰 파일이라 미리 받기(preload)는 하지 않는다 */
+const suit = localFont({
+    src: '../node_modules/@sun-typeface/suit/fonts/variable/woff2/SUIT-Variable.woff2',
+    weight: '100 900',
+    display: 'swap',
+    preload: false,
+    variable: '--font-suit',
+});
 
 export const metadata: Metadata = {
     metadataBase: new URL(SITE_URL),
@@ -55,7 +65,9 @@ export const metadata: Metadata = {
     },
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+    // GA·픽셀 ID와 대표 이메일은 서버에서 읽는다(공개 페이지가 Firebase 클라이언트를 불러오지 않게)
+    const settings = await getPublicSettings();
     /* 사업자 정보는 푸터 표기·네이버 플레이스와 같은 값이어야 한다 */
     const organization = {
         '@context': 'https://schema.org',
@@ -99,10 +111,16 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         ],
     };
     return (
-        <html lang="ko" data-scroll-behavior="smooth">
+        <html lang="ko" data-scroll-behavior="smooth" className={suit.variable}>
             <body>
-                <SiteShell>{children}</SiteShell>
-                <Analytics />
+                {/* JS가 꺼져 있으면 등장 효과로 숨겨 둔 내용(섹션·진행 순서·배너 문구)을 바로 보여 준다 */}
+                <noscript
+                    dangerouslySetInnerHTML={{
+                        __html: '<style>[data-reveal],.page-banner-copy,.process-item{opacity:1!important;transform:none!important;clip-path:none!important}</style>',
+                    }}
+                />
+                <SiteShell contactEmail={settings.contactEmail}>{children}</SiteShell>
+                <Analytics gaId={settings.gaId} pixelId={settings.pixelId} />
                 <TrafficCapture />
                 {/* 블로그를 본 방문자가 다른 페이지로 옮겨 누른 문의(무료진단) 클릭까지 CMS에 셉니다 */}
                 <BlogTracker />

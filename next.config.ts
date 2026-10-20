@@ -16,21 +16,21 @@ const nextConfig: NextConfig = {
         dangerouslyAllowSVG: true,
         contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     },
-    /** 이미 색인된 옛 주소들. 전부 영구 리다이렉트로 새 주소에 연결한다 */
+    /** 이미 색인된 옛 주소들. 전부 영구 리다이렉트(301)로 새 주소에 연결한다(permanent: true는 308) */
     async redirects() {
         return [
-            { source: '/about', destination: '/blog', permanent: true },
-            { source: '/about/:slug', destination: '/blog', permanent: true },
+            { source: '/about', destination: '/blog', statusCode: 301 },
+            { source: '/about/:slug', destination: '/blog', statusCode: 301 },
             // 한 주소를 탭으로 나눠 쓰던 /insight 를 주제별 주소로 분리했다
             {
                 source: '/insight',
                 has: [{ type: 'query', key: 'tab', value: 'reference' }],
                 destination: '/cases',
-                permanent: true,
+                statusCode: 301,
             },
-            { source: '/insight', destination: '/media', permanent: true },
-            { source: '/insight/reference/:slug', destination: '/cases/:slug', permanent: true },
-            { source: '/insight/spot/:slug', destination: '/media/:slug', permanent: true },
+            { source: '/insight', destination: '/media', statusCode: 301 },
+            { source: '/insight/reference/:slug', destination: '/cases/:slug', statusCode: 301 },
+            { source: '/insight/spot/:slug', destination: '/media/:slug', statusCode: 301 },
         ];
     },
 };

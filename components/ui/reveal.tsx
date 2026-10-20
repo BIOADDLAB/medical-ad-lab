@@ -40,6 +40,8 @@ export function Reveal({
     return (
         <motion.div
             className={className}
+            // JS가 꺼진 브라우저에서는 layout의 <noscript> 규칙이 이 표시로 내용을 바로 보이게 한다
+            data-reveal=""
             initial={reduceMotion ? false : selected.initial}
             whileInView={reduceMotion ? undefined : selected.visible}
             viewport={{ once: true, amount: variant === 'heading' ? 0.45 : 0.22 }}

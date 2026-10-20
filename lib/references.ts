@@ -11,7 +11,18 @@ export type Reference = {
     plan?: string;
     /** 상세 페이지 본문. 빈 줄로 문단을 나누고 `## ` 로 소제목을 만든다 */
     body?: string;
+    /** 마지막 수정 시각(관리자 화면이 저장할 때 남김). 사이트맵 lastmod에 쓴다 */
+    updatedAt?: string;
+    /** 처음 올린 시각 */
+    createdAt?: string;
 };
+
+/** 공유 정보의 발행·수정 시각: 한국 시간(+09:00) ISO 8601 */
+export function kstIso(iso?: string) {
+    const time = iso ? Date.parse(iso) : NaN;
+    if (!Number.isFinite(time)) return undefined;
+    return `${new Date(time + 9 * 3_600_000).toISOString().slice(0, 19)}+09:00`;
+}
 
 /**
  * goal·plan 은 두 종류가 같은 칸을 나눠 쓴다. 라벨만 다르다
@@ -64,6 +75,7 @@ async function getItems(kind: Kind, fallback: readonly Reference[]): Promise<Ref
                 body: read(doc.fields, 'body'),
                 order: readNumber(doc.fields, 'order'),
                 createdAt: doc.fields?.createdAt?.timestampValue ?? '',
+                updatedAt: doc.fields?.updatedAt?.timestampValue ?? doc.fields?.createdAt?.timestampValue ?? '',
             }))
             .filter((item) => item.slug && item.title && item.image)
             .sort((a, b) => a.order - b.order || b.createdAt.localeCompare(a.createdAt))
@@ -77,6 +89,8 @@ async function getItems(kind: Kind, fallback: readonly Reference[]): Promise<Ref
                 goal: item.goal,
                 plan: item.plan,
                 body: item.body,
+                ...(item.updatedAt ? { updatedAt: item.updatedAt } : {}),
+                ...(item.createdAt ? { createdAt: item.createdAt } : {}),
             }));
 
         return items.length ? items : [...fallback];

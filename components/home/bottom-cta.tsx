@@ -5,11 +5,12 @@ export function BottomCta() {
         <section className="bg-deep py-section text-center text-white">
             <div className="site-container">
                 <p className="m-0 text-label font-black text-sm tracking-tight text-brand-light-02">BEFORE YOU SPEND</p>
-                <h2 className="section-title mt-5 font-bold leading-[1.5] lg:mt-7 lg:text-h1">
+                {/* 마지막 신청 안내 문구. 슬로건이라 제목(h2)으로 두지 않는다 */}
+                <p className="section-title mt-5 font-bold leading-[1.5] lg:mt-7 lg:text-h1">
                     광고비를 쓰기 전에,
                     <br />
                     <em className="not-italic font-black text-mint">우리 병원 주변부터 확인해보세요.</em>
-                </h2>
+                </p>
                 <p className="mx-auto mb-8 mt-5 text-sm font-bold text-[#B8C4D6] lg:mb-11 lg:mt-6 lg:text-[20px]">
                     받은 견적이 있다면 적정 가격을 확인하고, 없다면 맞는 광고부터 찾아드립니다.
                 </p>

@@ -6,12 +6,13 @@ export function Results() {
     return (
         <section className="results-bg py-section text-white" id="diagnosis">
             <div className="site-container">
+                <h2 className="sr-only">무료진단 후 받는 결과물</h2>
                 <Reveal variant="heading">
-                    <h2 className="section-title mb-10 text-center lg:mb-[80px] lg:text-h1">
+                    <p className="section-title mb-10 text-center lg:mb-[80px] lg:text-h1">
                         상담이 아니라, 직접 검토할 수 있는
                         <br />
                         <em className="not-italic text-mint">결과물을 보내드립니다.</em>
-                    </h2>
+                    </p>
                 </Reveal>
                 <div className="mx-auto grid max-w-[830px] gap-5 sm:grid-cols-2 lg:gap-10">
                     {resultCards.map((card, index) => (

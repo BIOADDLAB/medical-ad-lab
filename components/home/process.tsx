@@ -27,10 +27,11 @@ export function Process() {
         <section ref={rootRef} className={`bg-white py-16 lg:py-20 ${played ? 'is-played' : ''}`} id="process">
             <div className="site-container">
                 <div className="mb-10 text-center lg:mb-12">
-                    <h2 className="section-title">
+                    <h2 className="sr-only">무료진단 진행 순서</h2>
+                    <p className="section-title">
                         병원이 해야 할 일은
                         <em className="not-italic text-brand"> 신청뿐입니다.</em>
-                    </h2>
+                    </p>
                 </div>
                 <ol className="process-track relative mx-auto grid max-w-[1120px] list-none grid-cols-1 gap-8 p-0 sm:grid-cols-2 lg:grid-cols-5 lg:gap-0">
                     {processItems.map(([number, title, description], index) => (

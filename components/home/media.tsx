@@ -28,12 +28,9 @@ export function Media() {
                                 <p className="m-0 mb-6 max-w-[220px] whitespace-pre-line text-body font-bold tracking-tighter text-muted lg:max-w-[200px] lg:leading-[1.5]">
                                     {item.description}
                                 </p>
-                                <Link
-                                    href={`/cases?type=${item.key}`}
-                                    className="btn-outline"
-                                    aria-label={`${item.title} 레퍼런스 보기`}
-                                >
-                                    대표 구성과 비용 확인
+                                {/* 링크 글자만 봐도 어디로 가는지 알 수 있게 매체 이름을 넣는다 */}
+                                <Link href={`/cases?type=${item.key}`} className="btn-outline">
+                                    {item.title} 사례 보기
                                 </Link>
                             </div>
                             <div className="media-visual order-1 grid place-items-center rounded-[28px] bg-brand-tint py-6 sm:order-2 sm:py-0">

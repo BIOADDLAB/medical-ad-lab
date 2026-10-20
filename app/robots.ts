@@ -25,7 +25,7 @@ export default function robots(): MetadataRoute.Robots {
             { userAgent: '*', allow: '/', disallow: ['/admin', '/api/'] },
             ...AI_CRAWLERS.map((userAgent) => ({ userAgent, allow: '/', disallow: ['/admin', '/api/'] })),
         ],
-        // 블로그는 자기 사이트맵을 따로 가진다. 홈 사이트맵에는 /blog 를 넣지 않는다
-        sitemap: [`${baseUrl}/sitemap.xml`, `${baseUrl}/blog/sitemap.xml`],
+        // /sitemap.xml은 색인 파일이라 페이지·사례·광고 자리와 블로그 사이트맵을 모두 담는다
+        sitemap: `${baseUrl}/sitemap.xml`,
     };
 }

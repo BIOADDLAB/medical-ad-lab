@@ -3,7 +3,7 @@
 /* =============== 디자인 시스템 =============== */
 @theme {
     /* 전역 폰트 설정 */
-    --font-sans: 'SUIT Variable', SUIT, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-sans: var(--font-suit), 'SUIT Variable', SUIT, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
     /* 컬러시스템 */
     --color-brand: #2468f0;

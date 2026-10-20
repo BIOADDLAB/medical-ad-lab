@@ -26,7 +26,7 @@ export const HOSPITAL = {
   "categoryPages": {},
   "cmsUrl": "https://article.bioaddlab.com",
   "siteUrl": "https://www.medicaladlab.com",
-  "contactUrl": "/#diagnosis",
+  "contactUrl": "/#apply",
   "cta": {
     "title": "광고 자리부터 비용까지 한 번에 정리해 드립니다",
     "text": "병원 위치와 진료과에 맞는 매체와 예상 비용을 무료로 진단해 드립니다.",

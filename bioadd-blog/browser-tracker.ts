@@ -9,7 +9,8 @@ const sent = new Map<string, number>();
 // 클릭 리스너는 페이지를 새로 열 때 한 번만 붙입니다. 블로그를 나가 다른 페이지(예약·상담)로 옮겨도 계속 셉니다.
 let target: Target | null = null;
 
-const KAKAO = /^https?:\/\/(?:(?:pf|open|qr)\.kakao\.com|kakao\.me)(?:\/|$)/i,
+// 카카오톡 채널은 pf·plus(예전 채널 주소)·open(오픈채팅)·qr 주소와 kakao.me 짧은 주소를 모두 셉니다.
+const KAKAO = /^https?:\/\/(?:(?:pf|plus|open|qr)\.kakao\.com|kakao\.me)(?:\/|$)/i,
   BOOKING = /^https?:\/\/(?:m\.)?booking\.naver\.com(?:\/|$)/i,
   TALK = /^https?:\/\/talk\.naver\.com(?:\/|$)/i;
 /** 문의로 세는 클릭: 전화·이메일·카카오톡 채널·네이버 예약·네이버 톡톡·문의 페이지 링크·data-track-cta 표시 */

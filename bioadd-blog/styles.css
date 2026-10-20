@@ -2,6 +2,8 @@
 /* 색은 CMS 프로젝트 정보의 '글쓰기 색상'이 --bb-* 값으로 들어옵니다(블로그 layout의 style). 아래 값은 기본색입니다. */
 .bioadd-blog{--bb-ink:#172b45;--bb-key:#2862ec;--bb-info:#0f766e;--bb-caution:#c62828;--bb-highlight:#ffe14d;--bb-quote:#d1304a;--bb-soft:#f4f7fc;--bb-muted:#58667a;--bb-line:#dde3ea;color:inherit;background:transparent;font:inherit}
 .bioadd-blog *{box-sizing:border-box}
+/* 한글은 낱말 단위로 줄을 바꿉니다(낱말 중간에서 끊기지 않게). 아주 긴 주소·영문은 넘치지 않게 끊습니다. */
+.bioadd-blog{word-break:keep-all;overflow-wrap:break-word}
 .bioadd-blog .blog-list{max-width:1200px;margin:auto;padding:48px 24px 80px}
 .bioadd-blog .blog-heading{margin:40px 0}
 .bioadd-blog h1{font-size:clamp(28px,3vw,42px);font-weight:700;line-height:1.4;letter-spacing:-.03em;margin:14px 0 20px;word-break:keep-all;color:var(--bb-ink)}

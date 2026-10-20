@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 
 import { CATALOG, CatalogDetail, detailTrail } from '@/components/catalog/catalog';
 import { breadcrumbJsonLd } from '@/components/layout/breadcrumb';
-import { GOAL_FALLBACK, getReference, getReferences, getRelatedReferences, PLAN_FALLBACK } from '@/lib/references';
+import { GOAL_FALLBACK, getReference, getReferences, getRelatedReferences, PLAN_FALLBACK, kstIso } from '@/lib/references';
 import { SITE_URL } from '@/lib/site';
 
 type PageProps = { params: Promise<{ slug: string }> };
@@ -20,7 +20,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const item = await getReference(slug);
     if (!item) return { title: '집행 사례를 찾을 수 없습니다', robots: { index: false, follow: false } };
     // 검색·AI 답변에 그대로 인용되므로 요약을 우선 쓴다
-    const description = item.summary || `${item.area} ${item.type} 집행 사례입니다.`;
+    // 요약이 없거나 짧으면(70자 미만) 지역·매체로 설명을 채운다
+    const description =
+        item.summary && item.summary.length >= 70
+            ? item.summary
+            : `${item.summary ? `${item.summary} ` : ''}${item.area ? `${item.area}에서 ` : ''}병원광고연구소가 집행한 ${item.type} 병원 옥외광고 사례입니다. 집행 목표와 매체 구성, 실제 광고 이미지를 확인할 수 있습니다.`;
     return {
         title: `${item.title} · ${item.type}`,
         description,
@@ -31,6 +35,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
             description,
             url: `${META.path}/${item.slug}`,
             type: 'article',
+            // 처음 올린 시각·마지막으로 고친 시각(+09:00)
+            publishedTime: kstIso(item.createdAt),
+            modifiedTime: kstIso(item.updatedAt),
             siteName: '병원광고연구소',
             locale: 'ko_KR',
             images: [{ url: item.image, alt: `${item.title} ${item.type}`, width: 1200, height: 630 }],

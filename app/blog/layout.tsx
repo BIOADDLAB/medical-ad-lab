@@ -8,9 +8,9 @@ const theme = Object.fromEntries(Object.entries(HOSPITAL.theme).map(([name, colo
 // 바깥 감싸기(배경·상단 여백·PageBanner)는 이 사이트가 붙인 부분입니다. 블로그 코드를 다시 받아 덮을 때 남겨 두세요.
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen bg-[#faf9f7] pt-[60px] text-slate-900 lg:pt-0">
+    <main id="main-content" className="min-h-screen bg-[#faf9f7] pt-[60px] text-slate-900 lg:pt-0">
       <PageBanner variant="journal" />
       <div className="bioadd-blog" style={theme}><BlogTracker />{children}</div>
-    </div>
+    </main>
   );
 }

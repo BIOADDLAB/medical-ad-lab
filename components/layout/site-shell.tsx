@@ -7,7 +7,8 @@ import { SiteFooter } from '@/components/layout/site-footer';
 import { ScrollTopButton } from '@/components/layout/scroll-top-button';
 import { DiagnosisModal } from '@/components/lead/diagnosis-modal';
 
-export function SiteShell({ children }: { children: React.ReactNode }) {
+/** contactEmail: 관리자 설정의 대표 이메일(layout이 서버에서 읽어 넘김) */
+export function SiteShell({ children, contactEmail = '' }: { children: React.ReactNode; contactEmail?: string }) {
     const pathname = usePathname();
     const isMain = pathname === '/';
     const isAdmin = pathname.startsWith('/admin');
@@ -78,7 +79,7 @@ export function SiteShell({ children }: { children: React.ReactNode }) {
             />
             <MobileNav open={menuOpen} onClose={() => setMenuOpen(false)} onDiagnosis={openDiagnosis} />
             {children}
-            <SiteFooter />
+            <SiteFooter contactEmail={contactEmail} />
             <ScrollTopButton hidden={menuOpen || modalOpen} />
             {!isMain && (
                 <DiagnosisModal

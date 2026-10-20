@@ -72,9 +72,10 @@ export function Hero() {
                         ref={cardRef}
                         className="scroll-mt-[76px] rounded-panel bg-white p-7 text-ink shadow-[0_30px_80px_rgba(0,16,55,.22)] md:p-10 xl:scroll-mt-[104px] xl:p-9 2xl:p-[46px]"
                     >
-                        <h2 className="m-0 text-h4 font-black tracking-tighter text-brand xl:text-[30px] xl:leading-[1.3] 2xl:text-[36px]">
+                        {/* 폼 위 안내 문구. 홈의 소제목 수를 줄이려고 제목(h2) 대신 문단으로 둔다 */}
+                        <p className="m-0 text-h4 font-black tracking-tighter text-brand xl:text-[30px] xl:leading-[1.3] 2xl:text-[36px]">
                             우리 병원 광고 무료진단
-                        </h2>
+                        </p>
                         <p className="mb-7.5  font-extrabold text-sm text-muted">
                             간단한 정보를 남겨주시면 24시간 이내 안내드립니다.
                         </p>
