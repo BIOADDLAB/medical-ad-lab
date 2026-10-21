@@ -24,7 +24,7 @@ export const HOSPITAL = {
     "이벤트": "event"
   },
   "categoryPages": {},
-  "cmsUrl": "https://article.bioaddlab.com",
+  "cmsUrl": "https://bioaddlab-cms.vercel.app",
   "siteUrl": "https://www.medicaladlab.com",
   "contactUrl": "/#apply",
   "cta": {

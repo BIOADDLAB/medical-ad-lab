@@ -58,7 +58,8 @@ export function articleProblem(a: Article) {
 
 export const getArticles = cache(async (): Promise<Article[]> => {
   const response = await fetch(`${HOSPITAL.cmsUrl}/api/public/articles?hospitalId=${encodeURIComponent(HOSPITAL.id)}`, { next: { revalidate: 60 }, signal: AbortSignal.timeout(15000) });
-  if (!response.ok) throw new Error("CMS 발행 데이터를 불러오지 못했습니다.");
+  // 응답 코드와 CMS 주소를 남겨야 배포·서버 기록에서 원인(주소 오류 404, CMS 오류 503 등)을 바로 압니다.
+  if (!response.ok) throw new Error(`CMS 발행 데이터를 불러오지 못했습니다 (${response.status} ${new URL(HOSPITAL.cmsUrl).host}).`);
   const data = await response.json();
   if (!Array.isArray(data)) throw new Error("CMS 응답 형식이 올바르지 않습니다.");
   return (data as Article[])
