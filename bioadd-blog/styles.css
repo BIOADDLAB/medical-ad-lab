@@ -52,6 +52,9 @@
 .bioadd-blog .blog-content{font-size:17px;line-height:1.9;overflow-wrap:anywhere;counter-reset:bb-h3}
 .bioadd-blog .blog-content h2{font-size:26px;font-weight:700;line-height:1.45;letter-spacing:-.02em;color:var(--bb-ink);margin:64px 0 18px;scroll-margin-top:100px;word-break:keep-all;counter-set:bb-h3 0}
 .bioadd-blog .blog-content h2::before{content:"";display:block;width:32px;height:4px;border-radius:2px;background:var(--bb-key);margin-bottom:16px}
+/* 구분선: 두 번째 소제목(H2)부터 위에 얇은 선을 그어 이야기를 나눕니다(본문 첫 줄의 H2 위에는 긋지 않음). 편집기의 구분선(<hr>)도 같은 선입니다. */
+.bioadd-blog .blog-content h2:not(:first-child),.bioadd-blog .blog-content>div:not(:first-child)>h2:first-child{margin-top:56px;padding-top:48px;border-top:1px solid var(--bb-line)}
+.bioadd-blog .blog-content hr{height:0;margin:44px 0;border:0;border-top:1px solid var(--bb-line)}
 .bioadd-blog .blog-content h3{font-size:20px;font-weight:700;line-height:1.5;color:var(--bb-ink);margin:36px 0 12px;scroll-margin-top:100px;word-break:keep-all;counter-increment:bb-h3}
 .bioadd-blog .blog-content h3::before{content:counter(bb-h3,decimal-leading-zero);display:inline-block;min-width:34px;margin-right:10px;padding:0 8px;border-radius:999px;background:var(--bb-key);color:#fff;font-size:13px;font-weight:700;line-height:24px;text-align:center;vertical-align:3px}
 .bioadd-blog .blog-content p{margin:0 0 14px}
@@ -64,6 +67,8 @@
 .bioadd-blog .blog-content ul{list-style:disc;padding-left:24px;margin:0 0 18px}
 .bioadd-blog .blog-content ol{list-style:decimal;padding-left:24px;margin:0 0 18px}
 .bioadd-blog .blog-content li{margin:6px 0}
+/* 편집기에서 고친 목록은 항목 글이 문단(<li><p>)으로 저장됩니다. 문단 간격 없이 목록 간격만 둡니다. */
+.bioadd-blog .blog-content li>p{margin:0}
 .bioadd-blog .blog-content li::marker{color:var(--bb-key);font-weight:700}
 .bioadd-blog .blog-content blockquote{margin:24px 0;padding:4px 0 4px 18px;border-left:3px solid var(--bb-line);color:var(--bb-muted)}
 .bioadd-blog .blog-table-scroll{max-width:100%;overflow-x:auto;margin:20px 0 24px}
@@ -91,7 +96,7 @@
 .bioadd-blog .blog-adjacent{display:grid;gap:16px;margin:40px 0 24px;padding-top:24px;border-top:1px solid var(--bb-line)}
 .bioadd-blog .blog-back{display:inline-block;margin-top:16px}
 @media(max-width:960px){.bioadd-blog .blog-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:640px){.bioadd-blog .blog-grid{grid-template-columns:1fr}.bioadd-blog .blog-list,.bioadd-blog .blog-article{padding:28px 20px 60px}.bioadd-blog .blog-heading{margin:28px 0}.bioadd-blog .blog-content{font-size:16px}.bioadd-blog .blog-content h2{font-size:22px;margin-top:52px}.bioadd-blog .blog-content h3{font-size:18px}}
+@media(max-width:640px){.bioadd-blog .blog-grid{grid-template-columns:1fr}.bioadd-blog .blog-list,.bioadd-blog .blog-article{padding:28px 20px 60px}.bioadd-blog .blog-heading{margin:28px 0}.bioadd-blog .blog-content{font-size:16px}.bioadd-blog .blog-content h2{font-size:22px;margin-top:52px}.bioadd-blog .blog-content h2:not(:first-child),.bioadd-blog .blog-content>div:not(:first-child)>h2:first-child{margin-top:44px;padding-top:40px}.bioadd-blog .blog-content h3{font-size:18px}}
 /* CMS에서 고른 글자색은 굵게·기울임·밑줄 글자에도 그대로 적용합니다. 사이트 공통 em·strong 색보다 우선해야 합니다. */
 .bioadd-blog .blog-content span[style*=color] :is(strong,em,u,s){color:inherit!important}
 /* CMS 에디터의 강조 문단(박스) */

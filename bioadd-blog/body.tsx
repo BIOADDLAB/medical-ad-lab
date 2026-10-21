@@ -7,7 +7,8 @@ import { cache, type CSSProperties } from "react";
 import { HOSPITAL } from "./hospital.config";
 import { origin } from "./kit";
 
-// 규칙적인 줄바꿈: 한 문단에 문장이 여러 개면 문장마다 줄을 바꿉니다(예전 글도 새 글처럼 한 줄에 한 문장).
+// 규칙적인 줄바꿈: 한 문단에 문장이 여러 개면 문장마다 문단을 나눕니다(예전 글도 새 글처럼 한 문단에 한 문장, 같은 간격).
+// 굵게·링크 같은 글자 태그 안에서 문장이 끝나면 문단을 나눌 수 없어 그 자리만 줄을 바꿉니다(<br>).
 // 글자 부분만 바꾸고 태그 속성(사진 설명 등)은 건드리지 않습니다. 표 안 문단과 요약 줄(data-role)은 그대로 둡니다.
 const SENTENCE_END = String.raw`(?:[다요까죠][.!?]|[가-힣][!?])(?:["”’')\]]|&quot;|&#39;)*`;
 const SENTENCE_GAP = String.raw`(?:[ \t]|&nbsp;)+`;
@@ -16,6 +17,8 @@ const SENTENCE_IN_TEXT = new RegExp(`(${SENTENCE_END})${SENTENCE_GAP}${SENTENCE_
 const SENTENCE_AT_END = new RegExp(`${SENTENCE_END}$`);
 const SENTENCE_AT_START = new RegExp(`^${SENTENCE_GAP}${SENTENCE_NEXT}`);
 const SENTENCE_BEFORE_TAG = new RegExp(`(${SENTENCE_END})${SENTENCE_GAP}$`);
+const INLINE_OPEN = /^<(?:strong|em|u|s|mark|span|a)\b[^>]*>$/i;
+const INLINE_CLOSE = /^<\/(?:strong|em|u|s|mark|span|a)>$/i;
 export function breakSentences(html: string) {
   return html
     .split(/(<table\b[\s\S]*?<\/table>)/i)
@@ -24,21 +27,25 @@ export function breakSentences(html: string) {
         ? block
         : block.replace(/<p>([\s\S]*?)<\/p>/g, (_, inner: string) => {
             const parts = inner.split(/(<[^>]+>)/);
-            let pending = false;
+            let pending = false,
+              depth = 0;
             for (let i = 0; i < parts.length; i++) {
               const part = parts[i];
               if (!part) continue;
               if (part.startsWith("<")) {
-                // 문장 끝 바로 뒤의 닫는 글자 태그(굵게·표시 등)는 건너뛰고 다음 글자에서 줄을 바꿉니다.
-                if (!/^<\/(?:strong|em|u|s|mark|span|a)>$/i.test(part)) pending = false;
+                if (INLINE_OPEN.test(part)) depth++;
+                else if (INLINE_CLOSE.test(part)) depth = Math.max(0, depth - 1);
+                // 문장 끝 바로 뒤의 닫는 글자 태그(굵게·표시 등)는 건너뛰고 다음 글자에서 나눕니다.
+                if (!INLINE_CLOSE.test(part)) pending = false;
                 continue;
               }
-              let text = pending ? part.replace(SENTENCE_AT_START, "<br>") : part;
-              text = text.replace(SENTENCE_IN_TEXT, "$1<br>");
-              // 문장 끝 + 띄어쓰기 바로 뒤에 여는 글자 태그(굵게·링크 등)가 오면 그 태그 앞에서 줄을 바꿉니다.
+              const cut = depth ? "<br>" : "</p><p>";
+              let text = pending ? part.replace(SENTENCE_AT_START, cut) : part;
+              text = text.replace(SENTENCE_IN_TEXT, `$1${cut}`);
+              // 문장 끝 + 띄어쓰기 바로 뒤에 여는 글자 태그(굵게·링크 등)가 오면 그 태그 앞에서 나눕니다.
               const open = parts[i + 1],
                 after = parts[i + 2];
-              if (open && after && /^<(?:strong|em|u|s|mark|span|a)\b[^>]*>$/i.test(open) && /^(?:[가-힣A-Za-z0-9"“‘(\[]|&quot;)/.test(after)) text = text.replace(SENTENCE_BEFORE_TAG, "$1<br>");
+              if (open && after && INLINE_OPEN.test(open) && /^(?:[가-힣A-Za-z0-9"“‘(\[]|&quot;)/.test(after)) text = text.replace(SENTENCE_BEFORE_TAG, `$1${cut}`);
               pending = SENTENCE_AT_END.test(text);
               parts[i] = text;
             }
