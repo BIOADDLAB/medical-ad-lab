@@ -56,10 +56,11 @@ export function BlogList({ articles, categories, category, page, total }: { arti
         </nav>
       )}
       <p className="blog-count">전체 {total}개의 글</p>
+      {/* 카드 링크는 제목 하나(앵커 텍스트 = 글 제목)이고, 그 링크가 카드 전체를 덮어 썸네일·요약 어디를 눌러도 글로 갑니다(styles.css .blog-card). */}
       <div className="blog-grid">
         {articles.map((a, i) => (
-          <article key={a.id}>
-            <Picture src={a.coverImage} alt={a.coverImageAlt} first={i === 0} eager={i < 3} sizes="(max-width: 640px) calc(100vw - 40px), (max-width: 960px) 50vw, 33vw" />
+          <article key={a.id} className="blog-card">
+            <div className="blog-thumb"><Picture src={a.coverImage} alt={a.coverImageAlt} first={i === 0} eager={i < 3} sizes="(max-width: 640px) calc(100vw - 40px), (max-width: 960px) 50vw, 33vw" /></div>
             <h2><Link href={articlePath(a.slug)}>{a.title}</Link></h2>
             <p className="blog-excerpt">{a.excerpt}</p>
             <div className="blog-meta"><Category name={a.category} /><DateLabel a={a} /></div>
@@ -105,7 +106,12 @@ export async function BlogArticle({ article: a, related, previous, next }: { art
           {faq.map((f) => <div key={f.question}><h3>Q. {f.question}</h3><p className="blog-faq-answer">A. {f.answer}</p></div>)}
         </section>
       )}
-      {a.tags?.length > 0 && <p className="blog-tags">{a.tags.map((tag) => <span key={tag}>#{tag} </span>)}</p>}
+      {a.tags?.length > 0 && (
+        <div className="blog-tags">
+          <strong id="blog-tags-title">관련 키워드</strong>
+          <ul aria-labelledby="blog-tags-title">{a.tags.map((tag) => <li key={tag}>#{tag}</li>)}</ul>
+        </div>
+      )}
       {doctorShown && (
         <section className="blog-doctor">
           <h2>의료진 소개</h2>
@@ -119,8 +125,8 @@ export async function BlogArticle({ article: a, related, previous, next }: { art
           <h2>함께 보면 좋은 정보</h2>
           <div className="blog-grid">
             {related.map((r) => (
-              <article key={r.id}>
-                <Picture src={r.coverImage} alt={r.coverImageAlt} sizes="(max-width: 640px) 100vw, 33vw" />
+              <article key={r.id} className="blog-card">
+                <div className="blog-thumb"><Picture src={r.coverImage} alt={r.coverImageAlt} sizes="(max-width: 640px) 100vw, 33vw" /></div>
                 <h3><Link href={articlePath(r.slug)}>{r.title}</Link></h3>
               </article>
             ))}
@@ -128,8 +134,8 @@ export async function BlogArticle({ article: a, related, previous, next }: { art
         </section>
       )}
       <nav className="blog-adjacent" aria-label="이전글과 다음글">
-        {previous && <Link href={articlePath(previous.slug)}>이전글 · {previous.title}</Link>}
-        {next && <Link href={articlePath(next.slug)}>다음글 · {next.title}</Link>}
+        {previous && <Link href={articlePath(previous.slug)} rel="prev"><small>이전글</small>{previous.title}</Link>}
+        {next && <Link href={articlePath(next.slug)} rel="next"><small>다음글</small>{next.title}</Link>}
       </nav>
       <Link className="blog-back" href={BLOG}>목록으로 돌아가기</Link>
     </article>
