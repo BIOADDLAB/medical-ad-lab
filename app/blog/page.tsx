@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
-import { PER_PAGE, breadcrumbSchema, categoryKey, categoryLabel, crumbs, getArticles, listMetadata, listSchema } from "@/bioadd-blog/kit";
-import { BlogList, JsonLd } from "@/bioadd-blog/ui";
+import { PER_PAGE, breadcrumbSchema, categoryKey, categoryLabel, crumbs, getArticles, listMetadata, listSchema } from "@/medicaladlab-blog/kit";
+import { BlogList, JsonLd } from "@/medicaladlab-blog/ui";
 export const revalidate = 60;
 type Props = { searchParams: Promise<{ category?: string; page?: string }> };
 async function view(params: { category?: string; page?: string }) {

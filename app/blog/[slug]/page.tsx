@@ -1,6 +1,6 @@
 import { notFound, permanentRedirect } from "next/navigation";
-import { articleMetadata, articlePath, articleSchema, breadcrumbSchema, crumbs, getArticle, getArticles, relatedArticles } from "@/bioadd-blog/kit";
-import { BlogArticle, JsonLd } from "@/bioadd-blog/ui";
+import { articleMetadata, articlePath, articleSchema, breadcrumbSchema, crumbs, getArticle, getArticles, relatedArticles } from "@/medicaladlab-blog/kit";
+import { BlogArticle, JsonLd } from "@/medicaladlab-blog/ui";
 export const revalidate = 60;
 type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props) {

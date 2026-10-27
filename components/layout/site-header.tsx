@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { MobileMenuIcon } from '@/components/layout/mobile-menu-icon';
 import { MobileNavPanel } from '@/components/layout/mobile-nav-panel';
 import { MOBILE_MENU_VARIANT } from '@/lib/ui-config';
@@ -27,27 +28,81 @@ function isCurrent(pathname: string, href: string) {
 }
 
 /** 밑줄 대신 글자색 농도로 표시한다. 시안은 전부 흰색이라 기본을 /80 까지만 낮춘다 */
-function navTone(isSolid: boolean, current: boolean) {
-    if (isSolid) return current ? 'text-ink' : 'text-ink/60 hover:text-ink';
+function navTone(light: boolean, current: boolean) {
+    if (light) return current ? 'text-ink' : 'text-ink/60 hover:text-ink';
     return current ? 'text-white' : 'text-white/80 hover:text-white';
 }
 
+/** 맨 위가 어두운 페이지(홈 히어로, 블로그 배너). 투명할 때 흰 글씨를 쓴다 */
+const isDarkTop = (pathname: string) => pathname === '/' || pathname.startsWith('/blog');
+
+/** 20px 내리면 회색 배경, 400px 넘게 내리면 숨기고 조금이라도 올리면 다시 보인다 */
+function useSmartHeader() {
+    const [scrolled, setScrolled] = useState(false);
+    const [down, setDown] = useState(false);
+
+    useEffect(() => {
+        let last = window.scrollY;
+        let frame = 0;
+        const update = () => {
+            frame = 0;
+            const y = window.scrollY;
+            setScrolled(y > 20);
+            if (y <= 400) {
+                setDown(false);
+                last = y;
+            } else if (Math.abs(y - last) >= 4) {
+                // 관성 스크롤의 1~2px 흔들림은 방향으로 치지 않는다
+                setDown(y > last);
+                last = y;
+            }
+        };
+        const onScroll = () => {
+            frame ||= requestAnimationFrame(update);
+        };
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => {
+            cancelAnimationFrame(frame);
+            window.removeEventListener('scroll', onScroll);
+        };
+    }, []);
+
+    return { scrolled, down };
+}
+
 type Props = {
-    solid: boolean;
     onDiagnosis: (opener: HTMLElement) => void;
     onMenuToggle: () => void;
     menuOpen: boolean;
 };
 
-export function SiteHeader({ solid, onDiagnosis, onMenuToggle, menuOpen }: Props) {
+export function SiteHeader({ onDiagnosis, onMenuToggle, menuOpen }: Props) {
     const pathname = usePathname();
-    const isSolid = solid || menuOpen;
+    const { scrolled, down } = useSmartHeader();
+    const [hovered, setHovered] = useState(false);
+    const darkTop = isDarkTop(pathname);
+    const active = scrolled || hovered || menuOpen;
+    // 밝은 바탕 위라 진한 글씨와 파란 로고를 쓴다
+    const light = active || !darkTop;
+    // 마우스를 올려 둔 동안, 메뉴가 열려 있는 동안은 숨기지 않는다. 높이는 scrolled에만 맞춘다(마우스 올림에 맞추면 줄어든 헤더 밖으로 커서가 빠져 깜빡인다)
+    const hidden = down && !hovered && !menuOpen;
 
     return (
         <header
-            className={`fixed inset-x-0 top-0 z-[100] h-[60px] border-b transition-[height,color,background,border-color] duration-200 md:h-[72px] xl:h-[88px] ${
-                isSolid ? 'border-ink/10 bg-white/95 text-ink backdrop-blur-lg xl:h-20' : 'border-white/20 text-white'
-            }`}
+            onPointerEnter={(event) => {
+                if (event.pointerType === 'mouse') setHovered(true);
+            }}
+            onPointerLeave={() => setHovered(false)}
+            className={`fixed inset-x-0 top-0 z-[100] h-[60px] border-b transition-[height,color,background-color,border-color,translate] duration-300 ease-out has-[:focus-visible]:translate-y-0 motion-reduce:transition-none md:h-[72px] xl:h-[88px] ${
+                scrolled ? 'xl:h-20' : ''
+            } ${
+                active
+                    ? 'border-line bg-field/95 text-ink backdrop-blur-lg'
+                    : darkTop
+                      ? 'border-white/20 text-white'
+                      : 'border-transparent text-ink'
+            } ${hidden ? '-translate-y-full' : ''}`}
         >
             <div className="site-container flex h-full items-center gap-3 sm:gap-4 xl:gap-5 2xl:gap-[30px]">
                 {/* 이미 홈이면 이동하지 않고 맨 위로 부드럽게 올린다 */}
@@ -62,7 +117,7 @@ export function SiteHeader({ solid, onDiagnosis, onMenuToggle, menuOpen }: Props
                     }}
                 >
                     <Image
-                        src={isSolid ? '/images/logo-blue-02.svg' : '/images/logo.svg'}
+                        src={light ? '/images/logo-blue-02.svg' : '/images/logo.svg'}
                         alt="병원광고연구소"
                         width={161}
                         height={25}
@@ -83,7 +138,7 @@ export function SiteHeader({ solid, onDiagnosis, onMenuToggle, menuOpen }: Props
                         <Link
                             key={href}
                             href={href}
-                            className={`whitespace-nowrap py-[28px] text-[15px] font-semibold transition-colors duration-200 2xl:py-[30px] ${navTone(isSolid, isCurrent(pathname, href))}`}
+                            className={`whitespace-nowrap py-[28px] text-[15px] font-semibold transition-colors duration-200 2xl:py-[30px] ${navTone(light, isCurrent(pathname, href))}`}
                         >
                             {label}
                         </Link>
@@ -100,7 +155,7 @@ export function SiteHeader({ solid, onDiagnosis, onMenuToggle, menuOpen }: Props
                             onDiagnosis(event.currentTarget);
                         }}
                         className={`inline-flex h-9 items-center rounded-lg px-3.5 text-[14px] font-extrabold transition-colors xl:h-12 xl:px-5 xl:text-[14px] 2xl:px-8 2xl:text-body ${
-                            isSolid ? 'bg-brand text-white' : 'bg-white text-brand'
+                            light ? 'bg-brand text-white' : 'bg-white text-brand'
                         }`}
                     >
                         <span className="xl:hidden">무료진단</span>
@@ -115,7 +170,7 @@ export function SiteHeader({ solid, onDiagnosis, onMenuToggle, menuOpen }: Props
                         className={`grid h-10 place-items-center rounded-xl border shadow-sm transition-[width,background,border-color,transform] active:scale-95 xl:hidden ${
                             MOBILE_MENU_VARIANT === 5 ? 'w-[64px]' : 'w-10'
                         } ${
-                            isSolid
+                            light
                                 ? 'border-line bg-white text-ink'
                                 : 'border-white/30 bg-deep/15 text-white backdrop-blur-sm'
                         }`}

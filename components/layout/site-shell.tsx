@@ -16,7 +16,6 @@ export function SiteShell({ children, contactEmail = '' }: { children: React.Rea
     const [menuOpen, setMenuOpen] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
     const [modalDirty, setModalDirty] = useState(false);
-    const [scrolled, setScrolled] = useState(false);
     const openerRef = useRef<HTMLElement | null>(null);
 
     // 메인은 히어로에 폼이 이미 있으므로 모달 대신 그쪽으로 보낸다
@@ -37,13 +36,6 @@ export function SiteShell({ children, contactEmail = '' }: { children: React.Rea
         setModalOpen(false);
         setModalDirty(false);
         window.setTimeout(() => openerRef.current?.focus(), 0);
-    }, []);
-
-    useEffect(() => {
-        const onScroll = () => setScrolled(window.scrollY > 24);
-        onScroll();
-        window.addEventListener('scroll', onScroll, { passive: true });
-        return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
     useEffect(() => {
@@ -72,7 +64,6 @@ export function SiteShell({ children, contactEmail = '' }: { children: React.Rea
     return (
         <>
             <SiteHeader
-                solid={scrolled || !isMain}
                 menuOpen={menuOpen}
                 onMenuToggle={() => setMenuOpen((open) => !open)}
                 onDiagnosis={openDiagnosis}

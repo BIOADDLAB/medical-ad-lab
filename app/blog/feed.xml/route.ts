@@ -1,5 +1,5 @@
-import { BLOG, MENU, absolute, articlePath, description, getArticles } from "@/bioadd-blog/kit";
-import { HOSPITAL } from "@/bioadd-blog/hospital.config";
+import { BLOG, MENU, absolute, articlePath, description, getArticles } from "@/medicaladlab-blog/kit";
+import { HOSPITAL } from "@/medicaladlab-blog/hospital.config";
 // 빌드할 때는 CMS를 부르지 않고 요청이 올 때 만듭니다(CMS가 잠시 응답하지 않아도 사이트 배포가 멈추지 않게). 글 목록은 kit.ts가 60초 동안 기억합니다.
 export const dynamic = "force-dynamic";
 const esc = (text: string) => text.replace(/[<>&'"]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", "'": "&apos;", '"': "&quot;" })[c]!);
@@ -8,7 +8,7 @@ export async function GET() {
   try {
     articles = await getArticles();
   } catch (error) {
-    console.error(`[bioadd-blog] ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`[medicaladlab-blog] ${error instanceof Error ? error.message : String(error)}`);
     return new Response("CMS 발행 데이터를 잠시 불러오지 못했습니다.", { status: 503, headers: { "Retry-After": "120", "Cache-Control": "no-store" } });
   }
   const items = articles.slice(0, 30).map((a) => {

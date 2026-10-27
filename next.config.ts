@@ -1,16 +1,13 @@
 import type { NextConfig } from 'next';
-import { HOSPITAL } from './bioadd-blog/hospital.config';
+import { HOSPITAL } from './medicaladlab-blog/hospital.config';
 
 const nextConfig: NextConfig = {
     // 끝 슬래시 주소(/company/)는 Next 기본(308) 대신 proxy.ts가 301로 옮긴다
     trailingSlash: false,
     skipTrailingSlashRedirect: true,
     images: {
-        // 블로그 이미지(CMS 저장소)는 블로그 코드(hospital.config.ts)의 목록을 따른다. 예전 CMS 주소도 남겨 둔다
-        remotePatterns: [
-            ...HOSPITAL.imageHosts.map((hostname) => ({ protocol: 'https' as const, hostname })),
-            { protocol: 'https', hostname: 'bioaddlabgeo.web.app' },
-        ],
+        // 블로그 이미지(CMS 저장소)는 블로그 코드(hospital.config.ts)의 목록을 따른다
+        remotePatterns: HOSPITAL.imageHosts.map((hostname) => ({ protocol: 'https' as const, hostname })),
         formats: ['image/webp'],
         // 레퍼런스 기본 이미지가 SVG다. 우리가 만든 public 파일만 쓰므로 스크립트를 막고 허용한다
         dangerouslyAllowSVG: true,

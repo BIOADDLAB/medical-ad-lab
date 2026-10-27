@@ -581,6 +581,10 @@
         height: auto;
         padding: 32px 0 0;
     }
+    /* 블로그 배너는 투명 헤더(60px) 밑부터 깔린다 */
+    .page-banner[data-variant='journal'] {
+        padding-top: 92px;
+    }
     .page-banner-frame {
         width: calc(100% - 40px);
         height: auto;

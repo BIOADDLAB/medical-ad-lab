@@ -66,7 +66,7 @@ export const getArticles = cache(async (): Promise<Article[]> => {
     .filter((a) => a.status === "published" && a.hospitalId === HOSPITAL.id && !a.deletedAt)
     .filter((a) => {
       const problem = articleProblem(a);
-      if (problem) console.error(`[bioadd-blog] ${problem} 규칙에 맞지 않아 공개하지 않은 글: ${a.title || a.id}`);
+      if (problem) console.error(`[medicaladlab-blog] ${problem} 규칙에 맞지 않아 공개하지 않은 글: ${a.title || a.id}`);
       return !problem;
     })
     .sort((a, b) => b.publishedAt!.localeCompare(a.publishedAt!));

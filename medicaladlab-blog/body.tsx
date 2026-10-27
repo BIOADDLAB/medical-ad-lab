@@ -148,9 +148,9 @@ export async function ArticleBody({ html }: { html: string }) {
   for (let i = 0; i < pending.length; i += 4)
     await Promise.all(pending.slice(i, i + 4).map(async (node) => {
       const { src = "", alt = "" } = node.attribs;
-      if (!alt.trim()) console.error(`[bioadd-blog] 본문 이미지 ALT가 비어 있습니다: ${src}`);
+      if (!alt.trim()) console.error(`[medicaladlab-blog] 본문 이미지 ALT가 비어 있습니다: ${src}`);
       if (dims.has(src)) return;
-      dims.set(src, await imageDimensions(src).catch((e: Error) => (console.error(`[bioadd-blog] ${e.message} ${src}`), null)));
+      dims.set(src, await imageDimensions(src).catch((e: Error) => (console.error(`[medicaladlab-blog] ${e.message} ${src}`), null)));
     }));
   return (
     <div className="blog-content">

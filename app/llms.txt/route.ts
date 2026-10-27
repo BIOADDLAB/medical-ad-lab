@@ -1,4 +1,4 @@
-import { BLOG, MENU, absolute, articlePath, description, getArticles } from '@/bioadd-blog/kit';
+import { BLOG, MENU, absolute, articlePath, description, getArticles } from '@/medicaladlab-blog/kit';
 import { faqs, mediaItems, processItems } from '@/data';
 import { getReferences, getSpots } from '@/lib/references';
 import { SITE_URL } from '@/lib/site';

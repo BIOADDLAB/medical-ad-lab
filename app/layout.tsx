@@ -4,7 +4,7 @@ import './globals.css';
 import { SiteShell } from '@/components/layout/site-shell';
 import { Analytics } from '@/components/layout/analytics';
 import { TrafficCapture } from '@/components/layout/traffic-capture';
-import { BlogTracker } from '@/bioadd-blog/tracker';
+import { BlogTracker } from '@/medicaladlab-blog/tracker';
 import { SITE_URL, SITE_VERIFICATION } from '@/lib/site';
 import { getPublicSettings } from '@/lib/site-settings';
 

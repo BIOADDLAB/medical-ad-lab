@@ -38,7 +38,7 @@ function clickKind(el: Element, contact: string) {
 }
 
 function session(hospitalId: string): Session {
-  const key = `bioadd-session-v2:${hospitalId}`;
+  const key = `medicaladlab-blog-session-v2:${hospitalId}`;
   let current = volatileSession;
   try {
     current = JSON.parse(sessionStorage.getItem(key) || "null") as Session | null;
@@ -62,7 +62,7 @@ function session(hospitalId: string): Session {
 function save(hospitalId: string, s: Session) {
   volatileSession = s;
   try {
-    sessionStorage.setItem(`bioadd-session-v2:${hospitalId}`, JSON.stringify(s));
+    sessionStorage.setItem(`medicaladlab-blog-session-v2:${hospitalId}`, JSON.stringify(s));
   } catch {}
 }
 function send(t: Target, s: Session, type: "pageview" | "click", path: string, eventName: string) {
