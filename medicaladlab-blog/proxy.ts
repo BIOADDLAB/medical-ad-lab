@@ -32,6 +32,9 @@ export async function blogRedirect(request: NextRequest) {
     params.set("category", CATEGORIES[category]);
     search = `?${params}`;
   }
-  if (path === clean && search === request.nextUrl.search && request.nextUrl.origin === canonical.origin) return null;
-  return NextResponse.redirect(new URL(clean + search, canonical), 301);
+  // 로컬 개발(localhost)은 도메인을 옮기지 않습니다. 옮기면 블로그로 가는 화면 이동이 운영 사이트로 넘어가 RSC 요청이 실패합니다.
+  const local = ["localhost", "127.0.0.1"].includes(request.nextUrl.hostname);
+  const base = local ? request.nextUrl.origin : canonical.origin;
+  if (path === clean && search === request.nextUrl.search && request.nextUrl.origin === base) return null;
+  return NextResponse.redirect(new URL(clean + search, base), 301);
 }
