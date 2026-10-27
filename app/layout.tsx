@@ -68,28 +68,20 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
     // GA·픽셀 ID와 대표 이메일은 서버에서 읽는다(공개 페이지가 Firebase 클라이언트를 불러오지 않게)
     const settings = await getPublicSettings();
-    /* 사업자 정보는 푸터 표기·네이버 플레이스와 같은 값이어야 한다 */
+    /* 푸터에 보이는 정보와 같은 값만 둔다 */
     const organization = {
         '@context': 'https://schema.org',
         '@graph': [
             {
-                '@type': ['Organization', 'LocalBusiness'],
+                '@type': 'Organization',
                 '@id': `${SITE_URL}#organization`,
                 name: '병원광고연구소',
-                alternateName: ['MEDICAL AD LAB', '바이오애드랩'],
+                alternateName: ['MEDICAL AD LAB'],
                 description: '병원 위치와 진료과에 맞는 옥외광고 매체·지역·비용을 비교하고 실행 플랜을 제안합니다.',
                 url: SITE_URL,
                 logo: { '@type': 'ImageObject', url: `${SITE_URL}/images/logo-ori.svg` },
                 image: `${SITE_URL}/og-image.jpg`,
-                telephone: '+82-2-2038-0088',
                 email: 'medicaladlab@gmail.com',
-                address: {
-                    '@type': 'PostalAddress',
-                    streetAddress: '학동로3길 27 2층 201호',
-                    addressLocality: '강남구',
-                    addressRegion: '서울특별시',
-                    addressCountry: 'KR',
-                },
                 areaServed: { '@type': 'Country', name: '대한민국' },
                 knowsAbout: [
                     '병원 옥외광고',

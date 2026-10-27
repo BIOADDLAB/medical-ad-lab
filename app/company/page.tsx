@@ -194,11 +194,7 @@ export default function CompanyPage() {
                     <h2 className="m-0 text-h4">회사 정보</h2>
                     <dl className="mt-6 grid gap-0 text-sm">
                         {[
-                            ['상호', '바이오애드랩'],
                             ['서비스명', '병원광고연구소 (MEDICAL AD LAB)'],
-                            ['사업자등록번호', '216-86-02932'],
-                            ['주소', '서울특별시 강남구 학동로3길 27 2층 201호'],
-                            ['전화', '02-2038-0088'],
                             ['이메일', 'medicaladlab@gmail.com'],
                             ['서비스 지역', '전국'],
                         ].map(([term, value]) => (

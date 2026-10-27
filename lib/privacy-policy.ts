@@ -243,7 +243,6 @@ export const privacySections: readonly PolicySection[] = [
             '연구소는 이용자의 개인정보 관련 문의가 접수된 경우 관계 법령에 따라 필요한 조치를 취하도록 노력합니다.',
             [
                 '서비스명: 병원광고연구소',
-                '운영주체: 주식회사 바이오애드랩',
                 '웹사이트: www.medicaladlab.com',
                 '개인정보 관련 문의: medicaladlab@gmail.com',
             ],

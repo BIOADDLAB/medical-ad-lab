@@ -3,13 +3,6 @@ import Link from 'next/link';
 import { DiagnosisButton } from '@/components/lead/diagnosis-button';
 import { ContactEmail } from '@/components/layout/contact-email';
 
-const businessInfo = [
-    '상호 바이오애드랩',
-    '사업자등록번호 216-86-02932',
-    '서울특별시 강남구 학동로3길 27 2층 201호',
-    '전화 02-2038-0088',
-];
-
 /** contactEmail: 관리자 설정의 대표 이메일(layout이 서버에서 읽어 넘김). 없으면 기본 주소 */
 export function SiteFooter({ contactEmail = '' }: { contactEmail?: string }) {
     return (
@@ -54,20 +47,10 @@ export function SiteFooter({ contactEmail = '' }: { contactEmail?: string }) {
 
                 <div className="grid gap-7 pt-7 lg:grid-cols-[1fr_auto] lg:items-end lg:pt-9">
                     <div className="min-w-0">
-                        <address className="m-0 grid gap-1.5 text-[13px] not-italic leading-[1.7] text-muted sm:flex sm:max-w-[900px] sm:flex-wrap sm:gap-x-2 sm:gap-y-1">
-                            {businessInfo.map((item) => (
-                                <span
-                                    key={item}
-                                    className="sm:after:ml-2 sm:after:content-['·'] last:sm:after:content-none"
-                                >
-                                    {item}
-                                </span>
-                            ))}
-                        </address>
                         <ContactEmail email={contactEmail || 'medicaladlab@gmail.com'} />
                     </div>
                     <small className="shrink-0 text-xs tracking-[.02em] text-muted sm:text-sm">
-                        Copyright ⓒ bioadd lab. All Rights Reserved.
+                        Copyright ⓒ 병원광고연구소. All Rights Reserved.
                     </small>
                 </div>
             </div>
