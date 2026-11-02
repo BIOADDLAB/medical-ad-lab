@@ -57,6 +57,24 @@
 .medicaladlab-blog .blog-toc .sub::before{content:"–";display:inline-block;width:28px;text-indent:0;color:var(--bb-muted)}
 .medicaladlab-blog .blog-toc a{color:inherit;text-decoration:none}
 .medicaladlab-blog .blog-toc a:hover{color:var(--bb-key);text-decoration:underline}
+/* 넓은 화면(1260px~): 본문은 가운데 그대로 두고, 목차를 왼쪽 빈 자리에 붙여 따라오게 합니다.
+   본문이 끝나면 목차를 흐리게 감춥니다(data-ended, tracker.tsx BlogTocSpy). 목차가 길어 스크롤돼도 아래 상담 버튼은 늘 보이게 붙여 둡니다. 사이트 고정 헤더가 높으면 --bb-sticky-top을 바꿉니다. */
+@media(min-width:1260px){
+.medicaladlab-blog .blog-article{max-width:none;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,792px) minmax(0,1fr);column-gap:40px;align-items:start}
+.medicaladlab-blog .blog-article>*{grid-column:2}
+.medicaladlab-blog .blog-article>.blog-toc{grid-column:1;grid-row:1/5;transition:opacity .25s ease,visibility .25s;justify-self:end;position:sticky;top:var(--bb-sticky-top,120px);width:100%;max-width:280px;max-height:calc(100vh - var(--bb-sticky-top,120px) - 32px);overflow-y:auto;margin:0;padding:2px 0 2px 16px;border-left:2px solid var(--bb-line);border-radius:0;background:none;font-size:14px;line-height:1.55}
+.medicaladlab-blog .blog-article>.blog-toc[data-ended]{opacity:0;visibility:hidden}
+.medicaladlab-blog .blog-article>.blog-toc strong{font-size:13px;color:var(--bb-muted)}
+.medicaladlab-blog .blog-article>.blog-toc li{margin:10px 0}
+.medicaladlab-blog .blog-article>.blog-toc li:not(.sub)::before{color:var(--bb-muted);font-weight:600}
+.medicaladlab-blog .blog-article>.blog-toc a{color:var(--bb-muted);transition:color .15s ease}
+.medicaladlab-blog .blog-article>.blog-toc a[aria-current=location]{color:var(--bb-key);font-weight:700}
+.medicaladlab-blog .blog-article>.blog-toc a.blog-toc-cta{position:sticky;bottom:0;display:flex;align-items:center;justify-content:center;margin-top:20px;padding:11px 16px;border-radius:999px;background:var(--bb-key);color:#fff;font-weight:700;text-decoration:none}
+.medicaladlab-blog .blog-article>.blog-toc a.blog-toc-cta::after{content:"→";margin-left:6px}
+@media (hover:hover){.medicaladlab-blog .blog-article>.blog-toc a.blog-toc-cta:hover{filter:brightness(1.08)}}
+}
+/* 목차 아래 상담 버튼은 왼쪽에 따라오는 목차(넓은 화면)에서만 보입니다. 좁은 화면은 글 끝 상담 박스를 씁니다. */
+@media(max-width:1259px){.medicaladlab-blog .blog-toc-cta{display:none}}
 /* 본문: 한 문장 한 문단, 소제목 막대, 작은 제목 번호(01, 02), 요약 줄, 핵심·정보·주의 표시 */
 .medicaladlab-blog .blog-content{font-size:17px;line-height:1.9;overflow-wrap:anywhere;counter-reset:bb-h3}
 .medicaladlab-blog .blog-content h2{font-size:26px;font-weight:700;line-height:1.45;letter-spacing:-.02em;color:var(--bb-ink);margin:64px 0 18px;scroll-margin-top:100px;word-break:keep-all;counter-set:bb-h3 0}
@@ -84,8 +102,8 @@
 .medicaladlab-blog table{border-collapse:collapse;min-width:100%}
 .medicaladlab-blog th,.medicaladlab-blog td{border:1px solid var(--bb-line);padding:10px 12px;line-height:1.6}
 .medicaladlab-blog th{background:var(--bb-soft);color:var(--bb-ink);font-weight:700}
-.medicaladlab-blog .blog-section,.medicaladlab-blog .blog-cta,.medicaladlab-blog .blog-doctor{border-top:1px solid var(--bb-line);margin-top:48px;padding-top:32px}
-.medicaladlab-blog .blog-section h2,.medicaladlab-blog .blog-cta h2,.medicaladlab-blog .blog-doctor h2{font-size:24px;font-weight:700;margin-bottom:24px;color:var(--bb-ink)}
+.medicaladlab-blog .blog-section,.medicaladlab-blog .blog-doctor{border-top:1px solid var(--bb-line);margin-top:48px;padding-top:32px}
+.medicaladlab-blog .blog-section h2,.medicaladlab-blog .blog-doctor h2{font-size:24px;font-weight:700;margin-bottom:24px;color:var(--bb-ink)}
 .medicaladlab-blog .blog-section h3{font-size:18px;margin:24px 0 12px;font-weight:650;color:var(--bb-ink)}
 .medicaladlab-blog .blog-card h3{font-size:17px;line-height:1.5;margin:14px 0 0}
 .medicaladlab-blog .blog-section ul{padding-left:20px}
@@ -103,11 +121,19 @@
 .medicaladlab-blog .blog-doctor-bio{white-space:pre-line;margin-top:8px}
 .medicaladlab-blog a{color:var(--bb-key);text-underline-offset:4px}
 .medicaladlab-blog a:focus-visible{outline:2px solid var(--bb-key);outline-offset:4px}
-.medicaladlab-blog .blog-cta-text{margin:-12px 0 20px;color:var(--bb-muted)}
-.medicaladlab-blog .blog-cta-links{display:flex;flex-wrap:wrap;gap:12px}
-/* 마지막 버튼(상담·문의)을 채운 버튼으로, 앞의 진료·카테고리 안내는 테두리 버튼으로 둡니다. */
-.medicaladlab-blog .blog-cta a{display:inline-block;background:transparent;color:var(--bb-key);border:1px solid var(--bb-key);padding:12px 24px;border-radius:999px;font-weight:600;text-decoration:none}
-.medicaladlab-blog .blog-cta a:last-child{background:var(--bb-key);color:#fff}
+/* 상담 박스: 위아래 섹션(선+제목)과 다르게 병원 색 배경의 둥근 카드로 두어 한눈에 상담 안내로 보이게 합니다. */
+.medicaladlab-blog .blog-cta{margin-top:56px;padding:40px 32px;border:1px solid var(--bb-line);border-radius:20px;background:var(--bb-soft);text-align:center}
+@supports (color:color-mix(in srgb,red 50%,blue)){.medicaladlab-blog .blog-cta{background:color-mix(in srgb,var(--bb-key) 7%,#fff);border-color:color-mix(in srgb,var(--bb-key) 20%,#fff)}}
+.medicaladlab-blog .blog-cta h2{font-size:24px;font-weight:700;line-height:1.45;margin:0 0 10px;color:var(--bb-ink)}
+.medicaladlab-blog .blog-cta-text{margin:0;color:var(--bb-muted)}
+.medicaladlab-blog .blog-cta-links{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:24px}
+/* 마지막 버튼(상담·문의)을 채운 버튼으로, 앞의 진료·카테고리 안내는 흰 바탕 테두리 버튼으로 둡니다. */
+.medicaladlab-blog .blog-cta a{display:inline-flex;align-items:center;justify-content:center;min-height:52px;background:#fff;color:var(--bb-key);border:1px solid var(--bb-key);padding:14px 30px;border-radius:999px;font-size:16px;font-weight:700;text-decoration:none;transition:transform .2s ease,box-shadow .2s ease}
+.medicaladlab-blog .blog-cta a:last-child{background:var(--bb-key);color:#fff;box-shadow:0 6px 16px rgba(0,0,0,.14)}
+.medicaladlab-blog .blog-cta a:last-child::after{content:"→";margin-left:8px}
+@media (hover:hover){.medicaladlab-blog .blog-cta a:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,.16)}}
+@media (prefers-reduced-motion:reduce){.medicaladlab-blog .blog-cta a{transition:none;transform:none!important}}
+@media(max-width:640px){.medicaladlab-blog .blog-cta{padding:32px 20px}.medicaladlab-blog .blog-cta h2{font-size:21px}.medicaladlab-blog .blog-cta-links{flex-direction:column}.medicaladlab-blog .blog-cta a{width:100%}}
 /* 이전글·다음글: 칸 전체가 링크인 상자 두 개. 다음글은 오른쪽 칸에 둡니다(이전글이 없어도). */
 .medicaladlab-blog .blog-adjacent{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:48px 0 0;padding-top:32px;border-top:1px solid var(--bb-line)}
 .medicaladlab-blog .blog-adjacent a{display:flex;flex-direction:column;gap:6px;min-width:0;padding:16px 20px;border:1px solid var(--bb-line);border-radius:14px;color:var(--bb-ink);font-weight:600;line-height:1.5;text-decoration:none}
@@ -131,4 +157,4 @@
 .medicaladlab-blog.blog-preview .blog-content img[data-size=l]{width:75%}
 .medicaladlab-blog.blog-preview .blog-content img[data-size=full]{width:100%}
 .medicaladlab-blog.blog-preview .blog-content img:not([data-size]){width:auto;max-height:560px}
-.medicaladlab-blog.blog-preview .blog-cta a[aria-disabled]{opacity:.5;cursor:not-allowed}
+.medicaladlab-blog.blog-preview :is(.blog-cta a,a.blog-toc-cta)[aria-disabled]{opacity:.5;cursor:not-allowed}

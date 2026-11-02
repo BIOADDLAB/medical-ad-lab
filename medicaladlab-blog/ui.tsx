@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArticleBody, allowedImage, prepareHtml } from "./body";
+import { BlogTocSpy } from "./tracker";
 import { HOSPITAL } from "./hospital.config";
 import { BLOG, CTA, MENU, PER_PAGE, articlePath, categoryKey, crumbs, ctaLinks, dateLabel, doctorShown, faqs, kst, listLead, listPath, reviewLabel, toc, type Article, type Crumb } from "./kit";
 
@@ -33,7 +34,7 @@ function Cta({ article }: { article?: Article }) {
     <section className="blog-cta">
       <h2>{CTA.title}</h2>
       {CTA.text && <p className="blog-cta-text">{CTA.text}</p>}
-      <div className="blog-cta-links">{links.map((l) => <Link key={l.href} href={l.href} data-track-cta="consultation">{l.label}</Link>)}</div>
+      <div className="blog-cta-links">{links.map((l) => <Link key={l.href} href={l.href} data-track-cta={l.href === CTA.url ? "consultation" : undefined}>{l.label}</Link>)}</div>
     </section>
   );
 }
@@ -97,6 +98,8 @@ export async function BlogArticle({ article: a, related, previous, next }: { art
         <nav className="blog-toc" aria-label="목차">
           <strong>이 글의 내용</strong>
           <ol>{items.map((item) => <li key={item.id} className={item.level === "h3" ? "sub" : ""}><a href={`#${item.id}`}>{item.title}</a></li>)}</ol>
+          {CTA.url && <Link className="blog-toc-cta" href={CTA.url} data-track-cta="consultation">{CTA.label}</Link>}
+          <BlogTocSpy />
         </nav>
       )}
       <ArticleBody html={html} />
