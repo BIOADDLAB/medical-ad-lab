@@ -1,15 +1,14 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { MobileNav, SiteHeader } from '@/components/layout/site-header';
+import { MobileNav, SiteHeader, useSitePathname } from '@/components/layout/site-header';
 import { SiteFooter } from '@/components/layout/site-footer';
 import { ScrollTopButton } from '@/components/layout/scroll-top-button';
 import { DiagnosisModal } from '@/components/lead/diagnosis-modal';
 
 /** contactEmail: 관리자 설정의 대표 이메일(layout이 서버에서 읽어 넘김) */
 export function SiteShell({ children, contactEmail = '' }: { children: React.ReactNode; contactEmail?: string }) {
-    const pathname = usePathname();
+    const pathname = useSitePathname();
     const isMain = pathname === '/';
     const isAdmin = pathname.startsWith('/admin');
 

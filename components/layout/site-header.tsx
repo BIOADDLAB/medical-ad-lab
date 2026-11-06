@@ -19,6 +19,12 @@ export const navItems = [
     ['병원광고 가이드', '/blog', 'GUIDE'],
 ] as const;
 
+/** 운영(Vercel)에서는 미리 만든 홈 페이지의 경로가 '/index'로 잡힌다. '/'로 맞춰 쓴다 */
+export function useSitePathname() {
+    const pathname = usePathname();
+    return pathname === '/index' ? '/' : pathname;
+}
+
 /** 현재 경로가 그 메뉴에 속하는지 */
 function isCurrent(pathname: string, href: string) {
     if (href === '/blog') return pathname.startsWith('/blog');
@@ -78,7 +84,7 @@ type Props = {
 };
 
 export function SiteHeader({ onDiagnosis, onMenuToggle, menuOpen }: Props) {
-    const pathname = usePathname();
+    const pathname = useSitePathname();
     const { scrolled, down } = useSmartHeader();
     const [hovered, setHovered] = useState(false);
     const darkTop = isDarkTop(pathname);
@@ -192,7 +198,7 @@ export function MobileNav({
     onClose: () => void;
     onDiagnosis: (opener: HTMLElement) => void;
 }) {
-    const pathname = usePathname();
+    const pathname = useSitePathname();
 
     return (
         <div
